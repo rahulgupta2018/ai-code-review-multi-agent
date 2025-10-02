@@ -90,6 +90,7 @@ The current `src/agents/base/base_agent.py` contains 11 critical TODOs that must
   - [ ] Implement `on_session_finished()` with proper AGDK session cleanup
   - [ ] Build `handle_agdk_event()` with comprehensive AGDK event handling
   - [ ] Add tool registration and lifecycle management
+  - [ ] Existing `base_agent.yaml` must be integrated with consolidated BaseAgent code
 
 - [ ] **Docker Infrastructure**
   - [ ] Build shared tooling Docker image with AGDK CLI + dev portal binaries
