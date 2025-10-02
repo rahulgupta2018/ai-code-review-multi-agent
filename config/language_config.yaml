@@ -1,0 +1,141 @@
+# Language Configuration for Tree-sitter AST Parsing
+
+# Supported programming languages and their configurations
+languages:
+  python:
+    extensions: [".py"]
+    tree_sitter_grammar: "python"
+    ast_patterns:
+      functions: ["function_definition", "async_function_definition"]
+      classes: ["class_definition"]
+      imports: ["import_statement", "import_from_statement"]
+      complexity_nodes: ["if_statement", "while_statement", "for_statement", "try_statement", "and", "or"]
+    
+  javascript:
+    extensions: [".js", ".mjs"]
+    tree_sitter_grammar: "javascript"
+    ast_patterns:
+      functions: ["function_declaration", "arrow_function", "method_definition"]
+      classes: ["class_declaration"]
+      imports: ["import_statement"]
+      complexity_nodes: ["if_statement", "while_statement", "for_statement", "try_statement", "&&", "||"]
+    
+  typescript:
+    extensions: [".ts", ".tsx"]
+    tree_sitter_grammar: "typescript"
+    ast_patterns:
+      functions: ["function_declaration", "arrow_function", "method_definition"]
+      classes: ["class_declaration", "interface_declaration"]
+      imports: ["import_statement"]
+      complexity_nodes: ["if_statement", "while_statement", "for_statement", "try_statement", "&&", "||"]
+    
+  java:
+    extensions: [".java"]
+    tree_sitter_grammar: "java"
+    ast_patterns:
+      functions: ["method_declaration", "constructor_declaration"]
+      classes: ["class_declaration", "interface_declaration"]
+      imports: ["import_declaration"]
+      complexity_nodes: ["if_statement", "while_statement", "for_statement", "try_statement", "&&", "||"]
+    
+  go:
+    extensions: [".go"]
+    tree_sitter_grammar: "go"
+    ast_patterns:
+      functions: ["function_declaration", "method_declaration"]
+      classes: ["type_declaration"]
+      imports: ["import_declaration"]
+      complexity_nodes: ["if_statement", "for_statement", "switch_statement", "&&", "||"]
+    
+  rust:
+    extensions: [".rs"]
+    tree_sitter_grammar: "rust"
+    ast_patterns:
+      functions: ["function_item"]
+      classes: ["struct_item", "trait_item", "enum_item"]
+      imports: ["use_declaration"]
+      complexity_nodes: ["if_expression", "while_expression", "for_expression", "match_expression", "&&", "||"]
+    
+  cpp:
+    extensions: [".cpp", ".cxx", ".cc", ".c", ".h", ".hpp"]
+    tree_sitter_grammar: "cpp"
+    ast_patterns:
+      functions: ["function_definition", "function_declarator"]
+      classes: ["class_specifier", "struct_specifier"]
+      imports: ["preproc_include"]
+      complexity_nodes: ["if_statement", "while_statement", "for_statement", "switch_statement", "&&", "||"]
+    
+  csharp:
+    extensions: [".cs"]
+    tree_sitter_grammar: "c_sharp"
+    ast_patterns:
+      functions: ["method_declaration", "constructor_declaration"]
+      classes: ["class_declaration", "interface_declaration"]
+      imports: ["using_directive"]
+      complexity_nodes: ["if_statement", "while_statement", "for_statement", "foreach_statement", "&&", "||"]
+    
+  swift:
+    extensions: [".swift"]
+    tree_sitter_grammar: "swift"
+    ast_patterns:
+      functions: ["function_declaration"]
+      classes: ["class_declaration", "struct_declaration", "protocol_declaration"]
+      imports: ["import_declaration"]
+      complexity_nodes: ["if_statement", "while_statement", "for_statement", "guard_statement", "&&", "||"]
+    
+  kotlin:
+    extensions: [".kt", ".kts"]
+    tree_sitter_grammar: "kotlin"
+    ast_patterns:
+      functions: ["function_declaration"]
+      classes: ["class_declaration", "interface_declaration"]
+      imports: ["import_header"]
+      complexity_nodes: ["if_expression", "while_statement", "for_statement", "try_expression", "&&", "||"]
+    
+  sql:
+    extensions: [".sql"]
+    tree_sitter_grammar: "sql"
+    ast_patterns:
+      functions: ["function_definition"]
+      classes: ["table_definition"]
+      imports: []
+      complexity_nodes: ["case_expression", "if_statement", "loop_statement"]
+
+# Default complexity weights for different node types
+complexity_weights:
+  default: 1
+  if_statement: 1
+  while_statement: 1
+  for_statement: 1
+  try_statement: 1
+  case_expression: 1
+  switch_statement: 1
+  conditional_expression: 1
+  logical_and: 1
+  logical_or: 1
+
+# File type detection patterns
+file_detection:
+  patterns:
+    - extension: [".py"]
+      language: "python"
+    - extension: [".js", ".mjs"]
+      language: "javascript"
+    - extension: [".ts", ".tsx"]
+      language: "typescript"
+    - extension: [".java"]
+      language: "java"
+    - extension: [".go"]
+      language: "go"
+    - extension: [".rs"]
+      language: "rust"
+    - extension: [".cpp", ".cxx", ".cc", ".c", ".h", ".hpp"]
+      language: "cpp"
+    - extension: [".cs"]
+      language: "csharp"
+    - extension: [".swift"]
+      language: "swift"
+    - extension: [".kt", ".kts"]
+      language: "kotlin"
+    - extension: [".sql"]
+      language: "sql"

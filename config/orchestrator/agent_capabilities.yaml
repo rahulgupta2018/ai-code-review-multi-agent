@@ -1,0 +1,436 @@
+# Agent Capabilities Configuration
+# Defines capabilities, dependencies, and characteristics of each specialized agent
+
+agents:
+  # Code Analysis Agent
+  code_analyzer:
+    name: "Code Structure & Complexity Analyzer"
+    description: "Analyzes code structure, complexity, and architectural patterns"
+    
+    # Language support
+    languages:
+      - java
+      - typescript
+      - javascript
+      - python
+      - go
+      - rust
+      - csharp
+      - swift
+      - kotlin
+    
+    # Analysis categories
+    categories:
+      - complexity
+      - architecture
+      - structure
+      - patterns
+      - maintainability
+    
+    # Supported complexity levels
+    complexity_levels:
+      - simple
+      - moderate
+      - complex
+      - enterprise
+    
+    # Dependencies (agents that should run before this one)
+    dependencies: []
+    
+    # Execution characteristics
+    execution_priority: 1  # Higher priority (lower number)
+    parallel_safe: true
+    confidence_threshold: 0.7
+    
+    # Resource requirements
+    resource_requirements:
+      memory_mb: 256
+      cpu_cores: 1
+      execution_time_seconds: 60
+    
+    # Quality thresholds
+    quality_thresholds:
+      min_findings_expected: 1
+      max_findings_per_file: 20
+      confidence_threshold: 0.6
+
+  # Security Standards Agent
+  security_standards:
+    name: "Security Standards & Vulnerability Analyzer"
+    description: "Analyzes security vulnerabilities and compliance with security standards"
+    
+    languages:
+      - java
+      - typescript
+      - javascript
+      - python
+      - go
+      - csharp
+      - php
+    
+    categories:
+      - security
+      - vulnerabilities
+      - compliance
+      - authentication
+      - encryption
+      - input_validation
+    
+    complexity_levels:
+      - simple
+      - moderate
+      - complex
+      - enterprise
+    
+    dependencies: []
+    
+    execution_priority: 2
+    parallel_safe: true
+    confidence_threshold: 0.8  # Higher threshold for security
+    
+    resource_requirements:
+      memory_mb: 512
+      cpu_cores: 1
+      execution_time_seconds: 90
+    
+    quality_thresholds:
+      min_findings_expected: 0  # Security issues may not always be present
+      max_findings_per_file: 15
+      confidence_threshold: 0.7
+
+  # Engineering Practices Agent
+  engineering_practices:
+    name: "Engineering Practices & Quality Analyzer"
+    description: "Analyzes adherence to engineering best practices and code quality"
+    
+    languages:
+      - java
+      - typescript
+      - javascript
+      - python
+      - go
+      - rust
+      - csharp
+      - swift
+      - kotlin
+    
+    categories:
+      - maintainability
+      - quality
+      - best_practices
+      - solid_principles
+      - design_patterns
+      - code_smells
+    
+    complexity_levels:
+      - moderate
+      - complex
+      - enterprise
+    
+    dependencies:
+      - code_analyzer  # Benefits from structural analysis first
+    
+    execution_priority: 3
+    parallel_safe: true
+    confidence_threshold: 0.7
+    
+    resource_requirements:
+      memory_mb: 384
+      cpu_cores: 1
+      execution_time_seconds: 75
+    
+    quality_thresholds:
+      min_findings_expected: 2
+      max_findings_per_file: 25
+      confidence_threshold: 0.6
+
+  # Performance Analyzer Agent
+  performance_analyzer:
+    name: "Performance & Optimization Analyzer"
+    description: "Analyzes performance bottlenecks and optimization opportunities"
+    
+    languages:
+      - java
+      - typescript
+      - javascript
+      - python
+      - go
+      - rust
+      - csharp
+    
+    categories:
+      - performance
+      - optimization
+      - scalability
+      - resource_usage
+      - algorithms
+    
+    complexity_levels:
+      - moderate
+      - complex
+      - enterprise
+    
+    dependencies:
+      - code_analyzer
+    
+    execution_priority: 4
+    parallel_safe: true
+    confidence_threshold: 0.7
+    
+    resource_requirements:
+      memory_mb: 448
+      cpu_cores: 1
+      execution_time_seconds: 80
+    
+    quality_thresholds:
+      min_findings_expected: 1
+      max_findings_per_file: 15
+      confidence_threshold: 0.6
+
+  # Cloud Native Agent
+  cloud_native:
+    name: "Cloud Native & 12-Factor Analyzer"
+    description: "Analyzes cloud-native patterns and 12-factor app compliance"
+    
+    languages:
+      - java
+      - typescript
+      - javascript
+      - python
+      - go
+      - csharp
+    
+    categories:
+      - cloud_native
+      - containers
+      - twelve_factor
+      - scalability
+      - configuration
+      - monitoring
+    
+    complexity_levels:
+      - complex
+      - enterprise
+    
+    dependencies:
+      - code_analyzer
+      - engineering_practices
+    
+    execution_priority: 5
+    parallel_safe: true
+    confidence_threshold: 0.7
+    
+    resource_requirements:
+      memory_mb: 320
+      cpu_cores: 1
+      execution_time_seconds: 70
+    
+    quality_thresholds:
+      min_findings_expected: 0
+      max_findings_per_file: 10
+      confidence_threshold: 0.6
+
+  # Microservices Agent
+  microservices:
+    name: "Microservices Architecture Analyzer"
+    description: "Analyzes microservices patterns and service boundaries"
+    
+    languages:
+      - java
+      - typescript
+      - javascript
+      - python
+      - go
+      - csharp
+    
+    categories:
+      - microservices
+      - service_boundaries
+      - api_design
+      - communication_patterns
+      - data_consistency
+    
+    complexity_levels:
+      - complex
+      - enterprise
+    
+    dependencies:
+      - code_analyzer
+      - engineering_practices
+    
+    execution_priority: 6
+    parallel_safe: true
+    confidence_threshold: 0.7
+    
+    resource_requirements:
+      memory_mb: 384
+      cpu_cores: 1
+      execution_time_seconds: 85
+    
+    quality_thresholds:
+      min_findings_expected: 0
+      max_findings_per_file: 8
+      confidence_threshold: 0.6
+
+  # Carbon Efficiency Agent
+  carbon_efficiency:
+    name: "Carbon Efficiency & Sustainability Analyzer"
+    description: "Analyzes code for environmental impact and energy efficiency"
+    
+    languages:
+      - java
+      - typescript
+      - javascript
+      - python
+      - go
+      - rust
+      - csharp
+    
+    categories:
+      - sustainability
+      - energy_efficiency
+      - resource_optimization
+      - green_computing
+    
+    complexity_levels:
+      - moderate
+      - complex
+      - enterprise
+    
+    dependencies:
+      - performance_analyzer
+    
+    execution_priority: 7
+    parallel_safe: true
+    confidence_threshold: 0.6
+    
+    resource_requirements:
+      memory_mb: 256
+      cpu_cores: 1
+      execution_time_seconds: 60
+    
+    quality_thresholds:
+      min_findings_expected: 0
+      max_findings_per_file: 5
+      confidence_threshold: 0.5
+
+# Agent interaction patterns
+interaction_patterns:
+  # Sequential dependencies
+  sequential_chains:
+    - ["code_analyzer", "engineering_practices"]
+    - ["code_analyzer", "performance_analyzer", "carbon_efficiency"]
+    - ["engineering_practices", "cloud_native"]
+    - ["engineering_practices", "microservices"]
+  
+  # Parallel groups (can run simultaneously)
+  parallel_groups:
+    - ["code_analyzer", "security_standards"]
+    - ["engineering_practices", "performance_analyzer"]
+    - ["cloud_native", "microservices", "carbon_efficiency"]
+  
+  # Information sharing
+  information_sharing:
+    # Agents that benefit from sharing results
+    code_analyzer:
+      shares_with: ["engineering_practices", "performance_analyzer"]
+      receives_from: []
+    
+    security_standards:
+      shares_with: ["engineering_practices"]
+      receives_from: []
+    
+    engineering_practices:
+      shares_with: ["cloud_native", "microservices"]
+      receives_from: ["code_analyzer", "security_standards"]
+    
+    performance_analyzer:
+      shares_with: ["carbon_efficiency"]
+      receives_from: ["code_analyzer"]
+
+# Agent selection rules
+selection_rules:
+  # Language-based auto-selection
+  language_rules:
+    java:
+      mandatory: ["code_analyzer", "security_standards"]
+      recommended: ["engineering_practices", "performance_analyzer"]
+      optional: ["cloud_native", "microservices"]
+    
+    typescript:
+      mandatory: ["code_analyzer", "security_standards"]
+      recommended: ["engineering_practices", "performance_analyzer"]
+      optional: ["cloud_native", "microservices"]
+    
+    javascript:
+      mandatory: ["code_analyzer", "security_standards"]
+      recommended: ["engineering_practices"]
+      optional: ["performance_analyzer", "cloud_native"]
+    
+    python:
+      mandatory: ["code_analyzer", "security_standards"]
+      recommended: ["engineering_practices", "performance_analyzer"]
+      optional: ["cloud_native", "carbon_efficiency"]
+    
+    go:
+      mandatory: ["code_analyzer", "security_standards"]
+      recommended: ["performance_analyzer", "cloud_native"]
+      optional: ["engineering_practices", "microservices"]
+  
+  # Complexity-based selection
+  complexity_rules:
+    simple:
+      max_agents: 3
+      preferred: ["code_analyzer", "security_standards", "engineering_practices"]
+    
+    moderate:
+      max_agents: 4
+      preferred: ["code_analyzer", "security_standards", "engineering_practices", "performance_analyzer"]
+    
+    complex:
+      max_agents: 6
+      preferred: ["code_analyzer", "security_standards", "engineering_practices", "performance_analyzer", "cloud_native"]
+    
+    enterprise:
+      max_agents: 7
+      preferred: ["code_analyzer", "security_standards", "engineering_practices", "performance_analyzer", "cloud_native", "microservices", "carbon_efficiency"]
+  
+  # Project type rules
+  project_type_rules:
+    web_application:
+      mandatory: ["code_analyzer", "security_standards"]
+      recommended: ["engineering_practices", "performance_analyzer"]
+    
+    microservice:
+      mandatory: ["code_analyzer", "security_standards", "microservices"]
+      recommended: ["engineering_practices", "cloud_native"]
+    
+    library:
+      mandatory: ["code_analyzer", "engineering_practices"]
+      recommended: ["security_standards"]
+    
+    api:
+      mandatory: ["code_analyzer", "security_standards"]
+      recommended: ["engineering_practices", "performance_analyzer"]
+
+# Quality gates for agent execution
+quality_gates:
+  # Pre-execution validation
+  pre_execution:
+    validate_agent_availability: true
+    check_resource_requirements: true
+    verify_dependency_satisfaction: true
+    validate_language_support: true
+  
+  # During execution monitoring
+  execution_monitoring:
+    monitor_resource_usage: true
+    track_execution_time: true
+    validate_intermediate_results: true
+  
+  # Post-execution validation
+  post_execution:
+    validate_result_structure: true
+    check_quality_thresholds: true
+    verify_confidence_scores: true
+    validate_evidence_requirements: true

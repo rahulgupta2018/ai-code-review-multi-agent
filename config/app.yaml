@@ -1,0 +1,69 @@
+# Application Configuration
+app:
+  name: "Agentic Code Review"
+  version: "1.0.0"
+  environment: "${ENVIRONMENT:development}"
+  
+# AGDK Configuration
+agdk:
+  enabled: "${AGDK_ENABLED:false}"
+  project_id: "${AGDK_PROJECT_ID}"
+  dev_portal_host: "${AGDK_DEV_PORTAL_HOST:localhost}"
+  dev_portal_port: "${AGDK_DEV_PORTAL_PORT:8200}"
+  runtime_config:
+    session_timeout: 3600
+    max_concurrent_sessions: 10
+
+# Analysis Configuration
+analysis:
+  use_agdk: "${USE_AGDK:false}"
+  default_strategy: "smart"
+  max_file_size: 1048576  # 1MB
+  supported_languages:
+    - python
+    - javascript
+    - typescript
+    - java
+    - go
+    - rust
+    - cpp
+    - csharp
+    - swift
+    - kotlin
+    - sql
+
+# Memory System Configuration
+memory:
+  enabled: true
+  storage:
+    sqlite_path: "data/memory.db"
+    redis_url: "${REDIS_URL:redis://localhost:6379}"
+  retrieval:
+    default_strategy: "contextual"
+    max_results: 100
+    confidence_threshold: 0.6
+  learning:
+    pattern_recognition: true
+    confidence_calibration: true
+    cross_project_learning: true
+
+# Output Configuration
+output:
+  base_directory: "outputs"
+  default_formats:
+    - json
+    - html
+  dashboard_export: true
+  consolidation: true
+
+# Logging Configuration
+logging:
+  level: "${LOG_LEVEL:INFO}"
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+  file: "logs/app.log"
+
+# Performance Configuration
+performance:
+  max_workers: 4
+  timeout: 300
+  memory_limit: "2GB"

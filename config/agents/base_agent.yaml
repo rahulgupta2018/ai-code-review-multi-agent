@@ -1,0 +1,147 @@
+agent:
+  id: "base_agent"
+  name: "Base Agent Framework"
+  description: "Foundation framework for all specialized analysis agents"
+  version: "1.0.0"
+
+# Core agent behavior configuration
+behavior:
+  # Timeout settings
+  default_timeout: ${ANALYSIS_TIMEOUT}
+  max_retry_attempts: 3
+  retry_delay_seconds: 2
+  
+  # Result validation
+  confidence_threshold: 0.7
+  max_findings_per_file: 25
+  max_recommendations_per_analysis: 10
+  
+  # Memory integration
+  enable_memory_integration: true
+  memory_retrieval_limit: 50
+  memory_confidence_threshold: 0.6
+  
+  # Learning and adaptation
+  enable_learning: true
+  enable_pattern_storage: true
+  enable_feedback_integration: true
+
+# Bias prevention and quality control
+quality_control:
+  # Hallucination prevention
+  hallucination_prevention:
+    enable_fact_checking: true
+    require_evidence_citation: true
+    cross_validate_findings: true
+    confidence_degradation_threshold: 0.5
+    
+  # Bias mitigation
+  bias_prevention:
+    enable_diverse_perspectives: true
+    rotate_analysis_approaches: true
+    validate_against_standards: true
+    require_justification: true
+    
+  # Output validation
+  output_validation:
+    validate_finding_structure: true
+    check_recommendation_feasibility: true
+    verify_code_snippet_accuracy: true
+    ensure_severity_consistency: true
+    
+  # Quality gates
+  quality_gates:
+    min_confidence_for_critical: 0.9
+    min_confidence_for_high: 0.8
+    min_confidence_for_medium: 0.7
+    min_confidence_for_low: 0.6
+    max_findings_without_evidence: 5
+
+# LLM interaction patterns
+llm_interaction:
+  # Prompting strategy
+  prompting:
+    use_structured_prompts: true
+    include_context_boundaries: true
+    specify_output_format: true
+    include_uncertainty_handling: true
+    
+  # Response validation
+  response_validation:
+    validate_json_structure: true
+    check_required_fields: true
+    verify_confidence_scores: true
+    validate_severity_levels: true
+    
+  # Error handling
+  error_handling:
+    max_malformed_responses: 3
+    fallback_to_conservative_analysis: true
+    log_llm_errors: true
+    enable_graceful_degradation: true
+
+# Performance optimization
+performance:
+  # Caching strategy
+  caching:
+    enable_result_caching: true
+    cache_ttl_minutes: 60
+    cache_key_strategy: "content_hash"
+    enable_memory_caching: true
+    
+  # Resource management
+  resource_management:
+    max_memory_usage_mb: 512
+    max_cpu_time_seconds: 30
+    enable_resource_monitoring: true
+    cleanup_temp_files: true
+    
+  # Parallel processing
+  parallel_processing:
+    enable_file_level_parallelism: true
+    max_concurrent_files: 5
+    enable_finding_level_parallelism: false
+
+# Logging and monitoring
+monitoring:
+  # Execution tracking
+  execution_tracking:
+    log_analysis_start: true
+    log_analysis_completion: true
+    log_finding_creation: true
+    log_memory_operations: true
+    
+  # Performance metrics
+  performance_metrics:
+    track_execution_time: true
+    track_memory_usage: true
+    track_llm_token_usage: true
+    track_confidence_scores: true
+    
+  # Error reporting
+  error_reporting:
+    log_validation_failures: true
+    log_timeout_errors: true
+    log_memory_errors: true
+    log_llm_errors: true
+
+# Integration settings
+integration:
+  # Memory system
+  memory_integration:
+    auto_store_experiences: true
+    auto_retrieve_patterns: true
+    enable_cross_agent_learning: true
+    memory_context_size: 10
+    
+  # State management
+  state_management:
+    auto_save_progress: true
+    enable_checkpoint_recovery: true
+    state_persistence_interval: 30
+    
+  # Orchestration
+  orchestration:
+    enable_dependency_tracking: true
+    enable_result_sharing: true
+    enable_coordination_messages: true

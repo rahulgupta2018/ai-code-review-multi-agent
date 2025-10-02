@@ -1,0 +1,1 @@
+# CI/CD platform integration formats (GitHub, GitLab, etc.)

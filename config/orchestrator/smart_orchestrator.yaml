@@ -1,0 +1,802 @@
+# Smart Master Orchestrator Configuration
+# Unified configuration for intelligent code analysis coordination
+
+# Analysis behavior
+analysis:
+  # Strategy configuration
+  default_strategy: "smart"  # smart, parallel, sequential, focused
+  max_agents: 6
+  timeout_seconds: 300
+  enable_parallel: true
+  enable_memory: true
+  require_security: true
+  
+  # Complexity thresholds
+  complexity_thresholds:
+    simple:
+      max_files: 20
+      max_languages: 1
+      max_complexity_indicators: 1
+    moderate:
+      max_files: 100
+      max_languages: 2
+      max_complexity_indicators: 2
+    complex:
+      max_files: 500
+      max_languages: 3
+      max_complexity_indicators: 3
+
+# LLM Intelligence Configuration
+llm:
+  # Provider settings
+  provider: ${LLM_PROVIDER}
+  model: "llama3.1:8b"
+  temperature: 0.1
+  max_tokens: 2000
+  enable_intelligence: true
+  
+  # Decision making
+  decision_making:
+    agent_selection:
+      temperature: 0.1
+      confidence_threshold: 0.7
+      require_reasoning: true
+      enable_fallback: true
+      max_agents: 6
+      min_agents: 2
+      require_security_agent: true
+      require_code_analyzer: true
+      prefer_parallel_execution: true
+    
+    context_analysis:
+      temperature: 0.2
+      focus_on_patterns: true
+      include_complexity_assessment: true
+      max_tokens: 1000
+      top_p: 0.85
+    
+    execution_strategy:
+      prefer_parallel: true
+      consider_dependencies: true
+      optimize_for_speed: true
+      temperature: 0.1
+  
+  # Complexity assessment factors
+  complexity_assessment:
+    factors:
+      codebase_size:
+        weight: 0.25
+        thresholds:
+          simple: 20      # files
+          moderate: 100   # files
+          complex: 500    # files
+          
+      language_diversity:
+        weight: 0.20
+        thresholds:
+          simple: 1       # languages
+          moderate: 2     # languages
+          complex: 3      # languages
+          
+      architectural_patterns:
+        weight: 0.20
+        indicators:
+          - microservices_architecture
+          - event_driven_architecture
+          - layered_architecture
+          - hexagonal_architecture
+          
+      dependency_complexity:
+        weight: 0.15
+        factors:
+          - external_dependencies
+          - internal_coupling
+          - circular_dependencies
+          
+      domain_complexity:
+        weight: 0.20
+        indicators:
+          - business_logic_complexity
+          - integration_complexity
+          - security_requirements
+          - performance_requirements
+  
+  # Workflow routing intelligence
+  workflow_routing:
+    strategy_selection:
+      parallel_conditions:
+        - independent_agents: true
+        - resource_availability: high
+        - time_constraints: tight
+        
+      sequential_conditions:
+        - dependent_agents: true
+        - resource_constraints: limited
+        - debugging_mode: true
+        
+      adaptive_conditions:
+        - mixed_dependencies: true
+        - uncertain_complexity: true
+        - learning_mode: true
+  
+  # Bias prevention strategies
+  bias_prevention:
+    # Cognitive bias mitigation
+    cognitive_bias:
+      confirmation_bias:
+        enable_devil_advocate: true
+        require_alternative_solutions: true
+        validate_against_standards: true
+        
+      anchoring_bias:
+        randomize_agent_order: true
+        use_multiple_starting_points: true
+        avoid_first_impression_lock: true
+        
+      availability_heuristic:
+        use_statistical_baselines: true
+        reference_industry_data: true
+        weight_by_relevance: true
+        
+      recency_bias:
+        balance_historical_context: true
+        weight_by_significance: true
+        include_long_term_patterns: true
+
+    # Technical bias mitigation
+    technical_bias:
+      language_preference:
+        apply_consistent_standards: true
+        use_objective_metrics: true
+        avoid_subjective_rankings: true
+        
+      tool_preference:
+        evaluate_based_on_context: true
+        consider_team_expertise: true
+        assess_maintenance_cost: true
+        
+      architecture_bias:
+        consider_project_constraints: true
+        evaluate_trade_offs: true
+        include_future_scalability: true
+
+  # Hallucination prevention
+  hallucination_prevention:
+    # Fact verification
+    fact_checking:
+      verify_agent_capabilities: true
+      validate_technical_claims: true
+      cross_reference_documentation: true
+      
+    # Evidence requirements
+    evidence_validation:
+      require_supporting_data: true
+      validate_reasoning_chain: true
+      check_logical_consistency: true
+      
+    # Output validation
+    output_validation:
+      validate_json_structure: true
+      check_value_ranges: true
+      verify_enum_values: true
+      ensure_completeness: true
+  
+  # Performance optimization
+  performance:
+    # Caching strategy
+    caching:
+      enable_decision_cache: true
+      cache_ttl_minutes: 30
+      cache_key_factors:
+        - code_context_hash
+        - available_agents
+        - complexity_factors
+        
+    # Fallback strategies
+    fallback:
+      enable_rule_based_fallback: true
+      fallback_timeout_seconds: 5
+      log_fallback_usage: true
+      
+    # Resource management
+    resource_management:
+      max_llm_calls_per_session: 10
+      rate_limit_calls: true
+      monitor_token_usage: true
+  
+  # Prompt templates for different LLM tasks
+  prompt_templates:
+    # System prompts
+    context_analysis_system: |
+      You are a code analysis expert. Analyze the given codebase characteristics and provide insights.
+      Focus on architectural patterns, complexity assessment, and analysis priorities.
+      
+    agent_selection_system: |
+      You are an expert code analysis coordinator. Select the most appropriate agents based on the code context. 
+      Always ensure essential agents are included and avoid redundancy.
+      
+    # Context analysis prompt 
+    context_analysis: |
+      Analyze this codebase:
+
+      **CHARACTERISTICS:**
+      - Total files: {total_files}
+      - Total lines: {total_lines}
+      - Languages: {languages}
+      - Language distribution: {language_dist}
+      - Complexity indicators: {complexity_indicators}
+
+      **ANALYSIS REQUIREMENTS:**
+      - Determine complexity level (simple/moderate/complex)
+      - Identify primary language and architectural patterns
+      - Recommend focus areas for analysis
+      - Suggest optimal approach (parallel/sequential)
+
+      **OUTPUT FORMAT (JSON):**
+      {{
+        "complexity": "simple|moderate|complex",
+        "primary_language": "java|python|typescript|etc",
+        "focus_areas": ["security", "performance", "architecture"],
+        "analysis_priorities": ["security_first", "performance_optimization"],
+        "recommended_approach": "parallel|sequential|adaptive",
+        "reasoning": "detailed explanation of assessment"
+      }}
+      
+    # Agent selection prompt
+    agent_selection: |
+      Select optimal analysis agents for this codebase:
+
+      **CODE CONTEXT:**
+      - Primary Language: {primary_language}
+      - Total Files: {total_files}
+      - Total Lines: {total_lines}
+      - Language Distribution: {language_distribution}
+      - Complexity: {complexity}
+      - Focus Areas: {focus_areas}
+
+      **AVAILABLE AGENTS:**
+      {agent_descriptions}
+
+      **SELECTION CRITERIA:**
+      - Always include 'code_analyzer' and 'security_standards' (essential)
+      - Select agents that match the primary language: {primary_language}
+      - Consider complexity level: {complexity}
+      - Focus on: {focus_areas}
+      - Avoid redundant capabilities
+      - Prefer parallel-safe agents when possible
+
+      **OUTPUT FORMAT (JSON):**
+      {{
+        "selected_agents": ["agent1", "agent2", ...],
+        "reasoning": "explanation for selection decision",
+        "confidence": 0.8,
+        "execution_order": ["agent1", "agent2", ...]
+      }}
+      
+    agent_selection: |
+      You are an expert software architecture advisor selecting optimal analysis agents.
+      
+      **CODE CHARACTERISTICS:**
+      Languages: {languages}
+      Project Type: {project_type}
+      Complexity: {complexity}
+      File Count: {file_count}
+      Has API: {has_api}
+      Has Database: {has_database}
+      
+      **AVAILABLE AGENTS:**
+      {available_agents_description}
+      
+      **CONSTRAINTS:**
+      - Maximum agents: {max_agents}
+      - Must include: {essential_agents}
+      - Prefer parallel execution: {prefer_parallel}
+      
+      Select optimal agents ensuring comprehensive coverage without redundancy.
+      
+      **OUTPUT FORMAT (JSON):**
+      {{
+        "selected_agents": ["agent1", "agent2", ...],
+        "reasoning": "detailed explanation of selection criteria",
+        "confidence": 0.85,
+        "execution_order": ["agent1", "agent2", ...],
+        "parallel_groups": [["agent1", "agent2"], ["agent3"]]
+      }}
+    
+    complexity_assessment: |
+      Assess project complexity for optimal analysis planning.
+      
+      **CODEBASE METRICS:**
+      Total Files: {total_files}
+      Languages: {languages}
+      File Size Distribution: {file_sizes}
+      Dependency Count: {dependencies}
+      
+      **ARCHITECTURAL INDICATORS:**
+      {architectural_patterns}
+      
+      **ASSESSMENT FACTORS:**
+      - Codebase Size (weight: 0.25): Files > 100 = complex
+      - Language Diversity (weight: 0.20): Languages > 2 = complex  
+      - Architecture Patterns (weight: 0.20): Microservices/Event-driven = complex
+      - Dependencies (weight: 0.15): High coupling = complex
+      - Domain Complexity (weight: 0.20): Security/Performance critical = complex
+      
+      Determine complexity level with detailed reasoning.
+      
+      **OUTPUT FORMAT (JSON):**
+      {{
+        "complexity_level": "SIMPLE|MODERATE|COMPLEX",
+        "complexity_score": 0.75,
+        "primary_factors": ["factor1", "factor2"],
+        "recommended_approach": "PARALLEL|SEQUENTIAL|ADAPTIVE",
+        "reasoning": "detailed assessment explanation",
+        "confidence": 0.85
+      }}
+    
+    workflow_routing: |
+      Determine optimal workflow execution strategy based on project context.
+      
+      **PROJECT CONTEXT:**
+      Complexity: {complexity}
+      Agent Count: {agent_count}
+      Resource Availability: {resources}
+      Time Constraints: {time_constraints}
+      Dependencies: {agent_dependencies}
+      
+      **EXECUTION OPTIONS:**
+      1. PARALLEL: All agents run simultaneously (fast, resource-intensive)
+      2. SEQUENTIAL: Agents run one after another (slow, resource-efficient)
+      3. ADAPTIVE: Mixed approach based on dependencies (balanced)
+      
+      **SELECTION CRITERIA:**
+      - Choose PARALLEL if: independent agents, high resources, tight deadlines
+      - Choose SEQUENTIAL if: dependent agents, limited resources, debugging
+      - Choose ADAPTIVE if: mixed dependencies, uncertain complexity
+      
+      Select optimal strategy with detailed justification.
+      
+      **OUTPUT FORMAT (JSON):**
+      {{
+        "execution_strategy": "PARALLEL|SEQUENTIAL|ADAPTIVE",
+        "execution_plan": {{
+          "parallel_groups": [["agent1", "agent2"], ["agent3"]],
+          "sequence_order": ["group1", "group2"],
+          "estimated_duration": "5 minutes"
+        }},
+        "reasoning": "strategy selection explanation",
+        "confidence": 0.85,
+        "resource_requirements": {{
+          "cpu_cores": 4,
+          "memory_mb": 2048,
+          "estimated_tokens": 15000
+        }}
+      }}
+    
+    context_analysis: |
+      Analyze code context for intelligent orchestration decisions.
+      
+      **CODE CHARACTERISTICS:**
+      - Total files: {total_files}
+      - Total lines: {total_lines}
+      - Languages: {languages}
+      - Language distribution: {language_dist}
+      - Complexity indicators: {complexity_indicators}
+      
+      **ANALYSIS FOCUS:**
+      - Identify primary patterns and architectural styles
+      - Assess security and performance requirements  
+      - Determine domain complexity and business logic depth
+      - Evaluate integration and dependency complexity
+      
+      Provide comprehensive context analysis for agent selection.
+      
+      **OUTPUT FORMAT (JSON):**
+      {{
+        "primary_language": "java",
+        "architectural_style": "microservices",
+        "complexity_indicators": ["security_critical", "high_performance"],
+        "focus_areas": ["security", "performance", "architecture"],
+        "recommended_agents": ["security_standards", "performance_analyzer"],
+        "analysis_priorities": ["security_first", "performance_optimization"],
+        "reasoning": "context analysis explanation",
+        "confidence": 0.85
+      }}
+    
+    bias_detection: |
+      Review analysis results for potential biases and ensure balanced assessment.
+      
+      **ANALYSIS RESULTS:**
+      {analysis_results}
+      
+      **BIAS CHECK AREAS:**
+      - Language bias: Over-representation of findings in specific languages
+      - Severity bias: Consistently high/low severity ratings
+      - Agent bias: Preference for specific agents or tools
+      - Confirmation bias: Results confirming preconceptions
+      
+      Identify potential biases and recommend corrections.
+      
+      **OUTPUT FORMAT (JSON):**
+      {{
+        "bias_detected": true,
+        "bias_types": ["language_bias", "severity_bias"],
+        "bias_evidence": {{
+          "language_distribution": {{"java": 0.8, "typescript": 0.2}},
+          "severity_skew": "high_severity_preference"
+        }},
+        "recommendations": ["include_more_typescript_analysis", "validate_severity_ratings"],
+        "confidence": 0.75
+      }}
+    
+    quality_validation: |
+      Validate analysis quality and evidence requirements.
+      
+      **ANALYSIS TO VALIDATE:**
+      {analysis_results}
+      
+      **VALIDATION CRITERIA:**
+      - Evidence quality: Code snippets, line numbers, reasoning provided
+      - Confidence scores: Above minimum threshold
+      - Completeness: All required categories covered
+      - Consistency: No contradicting findings
+      
+      Assess analysis quality and identify improvements needed.
+      
+      **OUTPUT FORMAT (JSON):**
+      {{
+        "quality_score": 0.85,
+        "evidence_quality": "sufficient",
+        "missing_elements": ["performance_metrics", "security_examples"],
+        "inconsistencies": [],
+        "recommendations": ["add_performance_benchmarks"],
+        "approved": true,
+        "confidence": 0.85
+      }}
+
+# Agent Configuration
+agents:
+  # Essential agents (always included)
+  essential:
+    - "code_analyzer"
+    - "security_standards"
+  
+  # Available agents with capabilities
+  available:
+    - "code_analyzer"
+    - "security_standards"
+    - "engineering_practices"
+    - "performance_analyzer"
+    - "cloud_native"
+    - "microservices"
+    - "carbon_efficiency"
+  
+  # Agent capabilities and focus areas
+  capabilities:
+    code_analyzer:
+      languages: 
+        - "java"
+        - "typescript"
+        - "javascript"
+        - "python"
+        - "go"
+        - "rust"
+        - "csharp"
+        - "swift"
+        - "kotlin"
+      focus: "code structure, complexity, architecture patterns"
+      categories:
+        - "complexity"
+        - "architecture"
+        - "maintainability"
+      parallel_safe: true
+      execution_priority: 1
+      
+    security_standards:
+      languages:
+        - "java"
+        - "typescript"
+        - "javascript"
+        - "python"
+        - "go"
+        - "rust"
+        - "csharp"
+      focus: "security vulnerabilities, OWASP compliance, threat detection"
+      categories:
+        - "security"
+        - "vulnerabilities"
+        - "compliance"
+      parallel_safe: true
+      execution_priority: 1
+      
+    engineering_practices:
+      languages:
+        - "java"
+        - "typescript"
+        - "javascript"
+        - "python"
+        - "go"
+        - "rust"
+        - "csharp"
+      focus: "SOLID principles, best practices, code quality"
+      categories:
+        - "quality"
+        - "practices"
+        - "maintainability"
+        - "design_patterns"
+      parallel_safe: true
+      execution_priority: 2
+      
+    performance_analyzer:
+      languages:
+        - "java"
+        - "typescript"
+        - "javascript"
+        - "python"
+        - "go"
+        - "rust"
+      focus: "performance optimization, resource usage, efficiency"
+      categories:
+        - "performance"
+        - "optimization"
+        - "resources"
+      parallel_safe: true
+      execution_priority: 3
+      
+    cloud_native:
+      languages:
+        - "java"
+        - "typescript"
+        - "javascript"
+        - "python"
+        - "go"
+      focus: "12-factor app, containerization, cloud patterns"
+      categories:
+        - "cloud"
+        - "containers"
+        - "scalability"
+        - "deployment"
+      parallel_safe: true
+      execution_priority: 4
+      
+    microservices:
+      languages:
+        - "java"
+        - "typescript"
+        - "javascript"
+        - "python"
+        - "go"
+      focus: "service boundaries, API design, distributed systems"
+      categories:
+        - "architecture"
+        - "apis"
+        - "distribution"
+        - "communication"
+      parallel_safe: true
+      execution_priority: 4
+      
+    carbon_efficiency:
+      languages:
+        - "java"
+        - "typescript"
+        - "javascript"
+        - "python"
+        - "go"
+        - "rust"
+      focus: "energy efficiency, sustainable coding practices"
+      categories:
+        - "sustainability"
+        - "efficiency"
+        - "green_computing"
+      parallel_safe: true
+      execution_priority: 5
+
+# Quality Control
+quality:
+  # Confidence and validation
+  confidence_threshold: 0.7
+  enable_bias_prevention: true
+  enable_cross_validation: true
+  require_evidence: true
+  
+  # Bias prevention
+  bias_prevention:
+    check_language_bias: true
+    check_severity_bias: true
+    check_agent_bias: true
+    language_bias_threshold: 0.8
+    severity_bias_threshold: 0.7
+    
+  # Cross-validation
+  cross_validation:
+    enable_finding_correlation: true
+    enable_severity_consensus: true
+    flag_inconsistencies: true
+    min_consensus_threshold: 0.6
+    
+  # Evidence requirements
+  evidence_requirements:
+    require_code_snippets: true
+    require_line_numbers: true
+    require_reasoning: true
+    min_evidence_confidence: 0.6
+
+# Execution Strategies
+execution:
+  # Strategy selection criteria
+  strategy_selection:
+    smart:
+      enable_llm_decision: true
+      consider_complexity: true
+      optimize_for_accuracy: true
+      
+    parallel:
+      max_concurrent_agents: 6
+      enable_resource_monitoring: true
+      timeout_per_agent: 300
+      
+    sequential:
+      respect_dependencies: true
+      fail_fast: false
+      continue_on_error: true
+      
+    focused:
+      essential_agents_only: true
+      quick_analysis: true
+      reduced_thoroughness: true
+  
+  # Resource management
+  resource_management:
+    max_memory_mb: 2048
+    max_cpu_cores: 4
+    enable_monitoring: true
+    cleanup_on_completion: true
+
+# Learning and Memory
+learning:
+  # Memory storage
+  memory_storage:
+    enable_session_learning: true
+    store_successful_patterns: true
+    store_failed_attempts: true
+    retention_days: 90
+    
+  # Pattern recognition
+  pattern_recognition:
+    learn_from_selections: true
+    improve_agent_mapping: true
+    refine_complexity_assessment: true
+    adapt_execution_strategies: true
+    
+  # Feedback integration
+  feedback_integration:
+    learn_from_user_feedback: true
+    adjust_confidence_scoring: true
+    improve_bias_detection: true
+    refine_quality_thresholds: true
+
+# Monitoring and Reporting
+monitoring:
+  # Performance tracking
+  performance:
+    track_execution_times: true
+    monitor_resource_usage: true
+    measure_accuracy: true
+    analyze_agent_effectiveness: true
+    
+  # Quality metrics
+  quality_metrics:
+    track_finding_quality: true
+    monitor_bias_incidents: true
+    measure_consistency: true
+    analyze_user_satisfaction: true
+    
+  # LLM-specific monitoring
+  llm_monitoring:
+    # Decision quality tracking
+    decision_quality:
+      track_selection_accuracy: true
+      monitor_complexity_assessment: true
+      measure_workflow_efficiency: true
+      
+    # Learning and adaptation
+    adaptation:
+      learn_from_feedback: true
+      update_decision_weights: true
+      refine_prompts: true
+      adapt_temperature_settings: true
+      
+    # Performance monitoring
+    llm_performance:
+      track_response_times: true
+      monitor_token_usage: true
+      measure_confidence_accuracy: true
+      analyze_prompt_effectiveness: true
+    
+  # Alerting
+  alerts:
+    low_performance_threshold: 0.6
+    high_error_rate_threshold: 0.1
+    bias_detection_threshold: 0.3
+    quality_degradation_threshold: 0.2
+    llm_confidence_threshold: 0.5
+    high_fallback_rate_threshold: 0.3
+    decision_inconsistency_threshold: 0.4
+    
+  # Reporting
+  reporting:
+    generate_session_reports: true
+    create_performance_analytics: true
+    export_learning_insights: true
+    enable_dashboard_metrics: true
+    include_llm_decision_logs: true
+    generate_bias_reports: true
+
+# Integration Settings
+integration:
+  # Memory system
+  memory_integration:
+    enable_persistent_storage: true
+    enable_cross_session_learning: true
+    share_patterns_across_projects: true
+    
+  # Agent coordination
+  agent_coordination:
+    enable_result_sharing: true
+    enable_context_passing: true
+    enable_dependency_resolution: true
+    
+  # External systems
+  external_systems:
+    enable_ci_cd_integration: true
+    enable_webhook_notifications: true
+    enable_metrics_export: true
+
+# Development and Debugging
+development:
+  # Debug settings
+  debug:
+    enable_verbose_logging: ${DEBUG}
+    log_llm_interactions: false
+    log_decision_reasoning: true
+    log_execution_details: true
+    log_prompt_details: false
+    log_response_parsing: false
+    
+  # Testing
+  testing:
+    enable_mock_agents: false
+    simulate_llm_responses: true
+    enable_performance_profiling: false
+    test_prompt_variations: false
+    validate_prompt_templates: true
+    
+  # Fallback behavior
+  fallback:
+    enable_rule_based_fallback: true
+    graceful_degradation: true
+    continue_without_llm: true
+    use_cached_decisions: true
+    fallback_decision_logging: true
+    
+  # LLM development settings
+  llm_development:
+    # Prompt engineering
+    prompt_engineering:
+      enable_prompt_variations: false
+      test_temperature_ranges: false
+      validate_output_formats: true
+      track_prompt_performance: true
+      
+    # Model comparison
+    model_comparison:
+      enable_multi_model_testing: false
+      compare_response_quality: false
+      benchmark_response_times: false
+      
+    # Quality assurance
+    quality_assurance:
+      validate_json_responses: true
+      check_confidence_calibration: true
+      verify_reasoning_quality: true
+      test_edge_cases: false
