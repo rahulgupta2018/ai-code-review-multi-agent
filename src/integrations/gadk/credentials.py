@@ -1,7 +1,7 @@
 """
-AGDK Credentials Management
+GADK Credentials Management
 
-Shared Google auth helpers for AGDK integration.
+Shared Google auth helpers for GADK integration.
 Handles authentication and credential management for Google Cloud services.
 """
 import os
@@ -12,8 +12,8 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-class AGDKCredentialsManager:
-    """Manages Google Cloud credentials for AGDK integration."""
+class GADKCredentialsManager:
+    """Manages Google Cloud credentials for GADK integration."""
     
     def __init__(self):
         """Initialize the credentials manager."""
@@ -37,9 +37,9 @@ class AGDKCredentialsManager:
             with open(creds_path, 'r') as f:
                 self._credentials = json.load(f)
                 
-            self._project_id = self._credentials.get('project_id') or os.getenv('AGDK_PROJECT_ID')
+            self._project_id = self._credentials.get('project_id') or os.getenv('GADK_PROJECT_ID')
             
-            logger.info("Successfully loaded AGDK credentials")
+            logger.info("Successfully loaded GADK credentials")
             return True
             
         except Exception as e:
@@ -78,4 +78,4 @@ class AGDKCredentialsManager:
 
 
 # Global credentials manager instance
-credentials_manager = AGDKCredentialsManager()
+credentials_manager = GADKCredentialsManager()

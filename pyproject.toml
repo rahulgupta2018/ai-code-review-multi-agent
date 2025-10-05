@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "ai-code-review-multi-agent"
 version = "1.0.0"
-description = "Multi-agent code review system with Google AGDK integration"
+description = "Multi-agent code review system with Google GADK integration"
 authors = ["Rahul Gupta rahulgupta2002@gmail.com"]
 readme = "README.md"
 packages = [{include = "src"}]
@@ -23,7 +23,7 @@ click = "^8.1.7"
 python-multipart = "^0.0.6"
 aiofiles = "^23.2.1"
 
-# Google Cloud & AGDK Integration
+# Google Cloud & GADK Integration
 google-cloud-aiplatform = "^1.50.0"
 google-cloud-discoveryengine = "^0.11.0"
 google-cloud-dialogflow = "^2.23.0"
@@ -51,7 +51,7 @@ requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry.scripts]
-agdk-review = "src.cli.main:main"
+gadk-review = "src.cli.main:main"
 
 [tool.black]
 line-length = 100
@@ -104,7 +104,7 @@ markers = [
     "integration: marks tests as integration tests",
     "unit: marks tests as unit tests",
     "memory: marks tests for memory system",
-    "agdk: marks tests for AGDK integration",
+    "gadk: marks tests for GADK integration",
 ]
 
 [tool.coverage.run]

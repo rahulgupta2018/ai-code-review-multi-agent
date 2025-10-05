@@ -1,7 +1,7 @@
 """
-AGDK Runtime Factory for Google Cloud Vertex AI Agents Integration
+GADK Runtime Factory for Google Cloud Vertex AI Agents Integration
 
-This module provides production-ready initialization and management of Google AGDK runtime
+This module provides production-ready initialization and management of Google GADK runtime
 components including Vertex AI Agents, Discovery Engine, and Dialogflow CX.
 
 Features:
@@ -32,8 +32,8 @@ logger = logging.getLogger(__name__)
 
 
 @dataclass
-class AGDKRuntimeConfig:
-    """Configuration for AGDK runtime initialization."""
+class GADKRuntimeConfig:
+    """Configuration for GADK runtime initialization."""
     project_id: str
     location: str
     agent_builder_location: str = "global"
@@ -48,14 +48,14 @@ class AGDKRuntimeConfig:
 
 
 @dataclass
-class AGDKSession:
-    """Represents an active AGDK session with all initialized components."""
+class GADKSession:
+    """Represents an active GADK session with all initialized components."""
     session_id: str
     vertex_ai_client: Optional[aiplatform.Endpoint] = None
     discovery_engine_client: Optional[discoveryengine.SearchServiceClient] = None
     dialogflow_client: Optional[dialogflow_v2.SessionsClient] = None
     tools_registry: Dict[str, Any] = None
-    config: AGDKRuntimeConfig = None
+    config: GADKRuntimeConfig = None
     is_active: bool = False
     
     def __post_init__(self):
@@ -63,9 +63,9 @@ class AGDKSession:
             self.tools_registry = {}
 
 
-class AGDKRuntimeFactory:
+class GADKRuntimeFactory:
     """
-    Factory class for creating and managing AGDK runtime instances.
+    Factory class for creating and managing GADK runtime instances.
     
     Provides production-ready Google Cloud service integration with:
     - Vertex AI Agents for intelligent orchestration
@@ -74,15 +74,15 @@ class AGDKRuntimeFactory:
     """
     
     def __init__(self, config_manager: ConfigManager):
-        """Initialize the AGDK runtime factory with configuration management."""
+        """Initialize the GADK runtime factory with configuration management."""
         self.config_manager = config_manager
-        self._active_sessions: Dict[str, AGDKSession] = {}
+        self._active_sessions: Dict[str, GADKSession] = {}
         self._credentials = None
         self._project_id = None
         
-    async def initialize_runtime(self, config: AGDKRuntimeConfig) -> bool:
+    async def initialize_runtime(self, config: GADKRuntimeConfig) -> bool:
         """
-        Initialize the AGDK runtime with Google Cloud services.
+        Initialize the GADK runtime with Google Cloud services.
         
         Args:
             config: Runtime configuration including project details and service settings
@@ -95,7 +95,7 @@ class AGDKRuntimeFactory:
             Exception: For other initialization errors
         """
         try:
-            logger.info(f"Initializing AGDK runtime for project: {config.project_id}")
+            logger.info(f"Initializing GADK runtime for project: {config.project_id}")
             
             # Initialize Google Cloud credentials
             if not await self._initialize_credentials(config):
@@ -125,26 +125,26 @@ class AGDKRuntimeFactory:
                     logger.error("Failed to initialize Dialogflow")
                     return False
                     
-            logger.info("AGDK runtime initialized successfully")
+            logger.info("GADK runtime initialized successfully")
             return True
             
         except DefaultCredentialsError as e:
             logger.error(f"Google Cloud credentials error: {e}")
             raise
         except Exception as e:
-            logger.error(f"Failed to initialize AGDK runtime: {e}")
+            logger.error(f"Failed to initialize GADK runtime: {e}")
             return False
     
-    async def create_session(self, session_id: str, config: AGDKRuntimeConfig) -> AGDKSession:
+    async def create_session(self, session_id: str, config: GADKRuntimeConfig) -> GADKSession:
         """
-        Create a new AGDK session with initialized Google Cloud services.
+        Create a new GADK session with initialized Google Cloud services.
         
         Args:
             session_id: Unique identifier for the session
             config: Runtime configuration for the session
             
         Returns:
-            AGDKSession: Initialized session object
+            GADKSession: Initialized session object
             
         Raises:
             ValueError: If session already exists or configuration is invalid
@@ -153,10 +153,10 @@ class AGDKRuntimeFactory:
         if session_id in self._active_sessions:
             raise ValueError(f"Session {session_id} already exists")
             
-        logger.info(f"Creating AGDK session: {session_id}")
+        logger.info(f"Creating GADK session: {session_id}")
         
         try:
-            session = AGDKSession(
+            session = GADKSession(
                 session_id=session_id,
                 config=config
             )
@@ -176,20 +176,20 @@ class AGDKRuntimeFactory:
             session.is_active = True
             self._active_sessions[session_id] = session
             
-            logger.info(f"AGDK session {session_id} created successfully")
+            logger.info(f"GADK session {session_id} created successfully")
             return session
             
         except Exception as e:
-            logger.error(f"Failed to create AGDK session {session_id}: {e}")
+            logger.error(f"Failed to create GADK session {session_id}: {e}")
             raise
     
-    async def get_session(self, session_id: str) -> Optional[AGDKSession]:
-        """Get an existing AGDK session by ID."""
+    async def get_session(self, session_id: str) -> Optional[GADKSession]:
+        """Get an existing GADK session by ID."""
         return self._active_sessions.get(session_id)
     
     async def close_session(self, session_id: str) -> bool:
         """
-        Close an AGDK session and cleanup resources.
+        Close an GADK session and cleanup resources.
         
         Args:
             session_id: ID of the session to close
@@ -211,16 +211,16 @@ class AGDKRuntimeFactory:
             session.is_active = False
             del self._active_sessions[session_id]
             
-            logger.info(f"AGDK session {session_id} closed successfully")
+            logger.info(f"GADK session {session_id} closed successfully")
             return True
             
         except Exception as e:
-            logger.error(f"Failed to close AGDK session {session_id}: {e}")
+            logger.error(f"Failed to close GADK session {session_id}: {e}")
             return False
     
     async def register_tool(self, session_id: str, tool_name: str, tool_instance: Any) -> bool:
         """
-        Register a tool with an AGDK session.
+        Register a tool with an GADK session.
         
         Args:
             session_id: ID of the session to register the tool with
@@ -252,9 +252,9 @@ class AGDKRuntimeFactory:
         return session.tools_registry.copy()
     
     @asynccontextmanager
-    async def session_context(self, session_id: str, config: AGDKRuntimeConfig):
+    async def session_context(self, session_id: str, config: GADKRuntimeConfig):
         """
-        Context manager for AGDK sessions with automatic cleanup.
+        Context manager for GADK sessions with automatic cleanup.
         
         Usage:
             async with runtime_factory.session_context("session_1", config) as session:
@@ -283,7 +283,7 @@ class AGDKRuntimeFactory:
     
     # Private methods for service initialization
     
-    async def _initialize_credentials(self, config: AGDKRuntimeConfig) -> bool:
+    async def _initialize_credentials(self, config: GADKRuntimeConfig) -> bool:
         """Initialize Google Cloud credentials."""
         try:
             if config.credentials_path:
@@ -301,7 +301,7 @@ class AGDKRuntimeFactory:
             logger.error(f"Failed to initialize credentials: {e}")
             return False
     
-    async def _validate_project_access(self, config: AGDKRuntimeConfig) -> bool:
+    async def _validate_project_access(self, config: GADKRuntimeConfig) -> bool:
         """Validate access to the Google Cloud project."""
         try:
             # Simple validation by trying to initialize Vertex AI
@@ -316,7 +316,7 @@ class AGDKRuntimeFactory:
             logger.error(f"Failed to validate project access: {e}")
             return False
     
-    async def _initialize_vertex_ai(self, config: AGDKRuntimeConfig) -> bool:
+    async def _initialize_vertex_ai(self, config: GADKRuntimeConfig) -> bool:
         """Initialize Vertex AI service."""
         try:
             aiplatform.init(
@@ -331,7 +331,7 @@ class AGDKRuntimeFactory:
             logger.error(f"Failed to initialize Vertex AI: {e}")
             return False
     
-    async def _initialize_discovery_engine(self, config: AGDKRuntimeConfig) -> bool:
+    async def _initialize_discovery_engine(self, config: GADKRuntimeConfig) -> bool:
         """Initialize Discovery Engine service."""
         try:
             # Validate Discovery Engine access by creating a client
@@ -343,7 +343,7 @@ class AGDKRuntimeFactory:
             logger.error(f"Failed to initialize Discovery Engine: {e}")
             return False
     
-    async def _initialize_dialogflow(self, config: AGDKRuntimeConfig) -> bool:
+    async def _initialize_dialogflow(self, config: GADKRuntimeConfig) -> bool:
         """Initialize Dialogflow service."""
         try:
             # Validate Dialogflow access by creating a client
@@ -355,21 +355,21 @@ class AGDKRuntimeFactory:
             logger.error(f"Failed to initialize Dialogflow: {e}")
             return False
     
-    async def _create_vertex_ai_client(self, config: AGDKRuntimeConfig):
+    async def _create_vertex_ai_client(self, config: GADKRuntimeConfig):
         """Create a Vertex AI client for a session."""
         # For session-specific Vertex AI operations
         # This would be customized based on specific agent needs
         return None  # Placeholder for actual client creation
     
-    async def _create_discovery_engine_client(self, config: AGDKRuntimeConfig):
+    async def _create_discovery_engine_client(self, config: GADKRuntimeConfig):
         """Create a Discovery Engine client for a session."""
         return discoveryengine.SearchServiceClient(credentials=self._credentials)
     
-    async def _create_dialogflow_client(self, config: AGDKRuntimeConfig):
+    async def _create_dialogflow_client(self, config: GADKRuntimeConfig):
         """Create a Dialogflow client for a session."""
         return dialogflow_v2.SessionsClient(credentials=self._credentials)
     
-    async def _cleanup_session_resources(self, session: AGDKSession) -> None:
+    async def _cleanup_session_resources(self, session: GADKSession) -> None:
         """Cleanup resources for a session."""
         try:
             # Close any open clients
@@ -388,12 +388,12 @@ class AGDKRuntimeFactory:
             logger.error(f"Error cleaning up session {session.session_id}: {e}")
 
 
-def create_runtime_config_from_env() -> AGDKRuntimeConfig:
+def create_runtime_config_from_env() -> GADKRuntimeConfig:
     """
-    Create AGDK runtime configuration from environment variables.
+    Create GADK runtime configuration from environment variables.
     
     Returns:
-        AGDKRuntimeConfig: Configuration object populated from environment
+        GADKRuntimeConfig: Configuration object populated from environment
         
     Raises:
         ValueError: If required environment variables are missing
@@ -404,7 +404,7 @@ def create_runtime_config_from_env() -> AGDKRuntimeConfig:
         
     location = os.getenv('GOOGLE_CLOUD_LOCATION', 'us-central1')
     
-    return AGDKRuntimeConfig(
+    return GADKRuntimeConfig(
         project_id=project_id,
         location=location,
         agent_builder_location=os.getenv('AGENT_BUILDER_LOCATION', 'global'),
@@ -413,34 +413,34 @@ def create_runtime_config_from_env() -> AGDKRuntimeConfig:
         enable_vertex_ai=os.getenv('ENABLE_VERTEX_AI', 'true').lower() == 'true',
         enable_discovery_engine=os.getenv('ENABLE_DISCOVERY_ENGINE', 'true').lower() == 'true',
         enable_dialogflow=os.getenv('ENABLE_DIALOGFLOW', 'true').lower() == 'true',
-        session_timeout=int(os.getenv('AGDK_SESSION_TIMEOUT', '3600')),
-        max_retries=int(os.getenv('AGDK_MAX_RETRIES', '3')),
-        retry_delay=float(os.getenv('AGDK_RETRY_DELAY', '1.0'))
+        session_timeout=int(os.getenv('GADK_SESSION_TIMEOUT', '3600')),
+        max_retries=int(os.getenv('GADK_MAX_RETRIES', '3')),
+        retry_delay=float(os.getenv('GADK_RETRY_DELAY', '1.0'))
     )
 
 
-def create_runtime_config_from_config_manager(config_manager: ConfigManager) -> AGDKRuntimeConfig:
+def create_runtime_config_from_config_manager(config_manager: ConfigManager) -> GADKRuntimeConfig:
     """
-    Create AGDK runtime configuration from ConfigManager.
+    Create GADK runtime configuration from ConfigManager.
     
     Args:
         config_manager: Application configuration manager
         
     Returns:
-        AGDKRuntimeConfig: Configuration object populated from config manager
+        GADKRuntimeConfig: Configuration object populated from config manager
     """
-    agdk_config = config_manager.get_config('agdk', {})
+    gadk_config = config_manager.get_config('gadk', {})
     
-    return AGDKRuntimeConfig(
-        project_id=agdk_config.get('project_id', os.getenv('GOOGLE_CLOUD_PROJECT_ID')),
-        location=agdk_config.get('location', 'us-central1'),
-        agent_builder_location=agdk_config.get('agent_builder_location', 'global'),
-        dialogflow_location=agdk_config.get('dialogflow_location', 'global'),
-        credentials_path=agdk_config.get('credentials_path', os.getenv('GOOGLE_APPLICATION_CREDENTIALS')),
-        enable_vertex_ai=agdk_config.get('enable_vertex_ai', True),
-        enable_discovery_engine=agdk_config.get('enable_discovery_engine', True),
-        enable_dialogflow=agdk_config.get('enable_dialogflow', True),
-        session_timeout=agdk_config.get('session_timeout', 3600),
-        max_retries=agdk_config.get('max_retries', 3),
-        retry_delay=agdk_config.get('retry_delay', 1.0)
+    return GADKRuntimeConfig(
+        project_id=gadk_config.get('project_id', os.getenv('GOOGLE_CLOUD_PROJECT_ID')),
+        location=gadk_config.get('location', 'us-central1'),
+        agent_builder_location=gadk_config.get('agent_builder_location', 'global'),
+        dialogflow_location=gadk_config.get('dialogflow_location', 'global'),
+        credentials_path=gadk_config.get('credentials_path', os.getenv('GOOGLE_APPLICATION_CREDENTIALS')),
+        enable_vertex_ai=gadk_config.get('enable_vertex_ai', True),
+        enable_discovery_engine=gadk_config.get('enable_discovery_engine', True),
+        enable_dialogflow=gadk_config.get('enable_dialogflow', True),
+        session_timeout=gadk_config.get('session_timeout', 3600),
+        max_retries=gadk_config.get('max_retries', 3),
+        retry_delay=gadk_config.get('retry_delay', 1.0)
     )

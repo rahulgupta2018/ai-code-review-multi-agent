@@ -1,16 +1,16 @@
-# Agentic Code Review on Google AGDK – Specification & Design Document
+# Agentic Code Review on Google GADK – Specification & Design Document
 
 ---
 
 ## 1. Executive Summary
 
-The goal of this project is to implement a multi-agent code review platform leveraging the Google Agent Development Kit (AGDK). 
+The goal of this project is to implement a multi-agent code review platform leveraging the Google Agent Development Kit (GADK). 
 
 
 **Key Outcomes:**
-- End-to-end multi-agent code review using AGDK runtime.
+- End-to-end multi-agent code review using GADK runtime.
 - Feature-flag based incremental rollout to minimize disruption.
-- Improved observability and developer debugging using AGDK’s portal.
+- Improved observability and developer debugging using GADK’s portal.
 - Support for Ollama, OpenAI, and Gemini as pluggable LLM providers.
 
 ---
@@ -18,7 +18,7 @@ The goal of this project is to implement a multi-agent code review platform leve
 ## 2. Specification (The "What")
 
 ### 2.1 Scope & Goals
-- Provide automated multi-agent code review workflows on AGDK.
+- Provide automated multi-agent code review workflows on GADK.
 - Detect complexity, anti-patterns, and architectural issues.
 - Integrate deterministic tools (heuristics, static analyzers, memory lookup).
 - Maintain session-based memory persistence and retrieval.
@@ -30,7 +30,7 @@ The goal of this project is to implement a multi-agent code review platform leve
 ### 2.3 System Requirements
 
 **Functional:**
-- Run analysis agents within AGDK runtime sessions.
+- Run analysis agents within GADK runtime sessions.
 - Orchestrator must trigger agents on defined lifecycle events (`on_session_started`, `on_event`, `on_complete`).
 - Tools must be callable with deterministic results and structured input/output.
 - Memory persistence must survive session boundaries.
@@ -39,7 +39,7 @@ The goal of this project is to implement a multi-agent code review platform leve
 - Latency per review: < 3 seconds for deterministic tools, < 15 seconds for LLM-based analysis.
 - High availability: 99.9% uptime for runtime execution.
 - Auditability: Logs of agent decisions must be exportable.
-- Observability: All execution flows must be visible in AGDK portal.
+- Observability: All execution flows must be visible in GADK portal.
 
 ### 2.4 Interfaces & Contracts
 
@@ -86,9 +86,9 @@ memory:
 
 ### 3.1 Enhanced Architecture Overview
 
-The system implements a comprehensive multi-agent architecture built on Google AGDK with advanced memory and learning capabilities:
+The system implements a comprehensive multi-agent architecture built on Google GADK with advanced memory and learning capabilities:
 
-- **AGDK Runtime** hosts all six specialized domain agents with session management
+- **GADK Runtime** hosts all six specialized domain agents with session management
 - **Memory-Aware Agents** encapsulate domain-specific analysis logic with learning integration
 - **Advanced Memory System** provides dual storage (SQLite + Redis) with pattern recognition
 - **Real-time Coordination** manages multi-agent dependencies and progress tracking
@@ -194,7 +194,7 @@ The system implements a comprehensive multi-agent architecture built on Google A
 #### 3.3.2 Memory-Enhanced Analysis Flow
 1. **Memory Initialization**: Load relevant patterns and historical context
 2. **Agent Selection**: Intelligent selection based on code characteristics and memory
-3. **Session Creation**: AGDK session with memory context and coordination setup
+3. **Session Creation**: GADK session with memory context and coordination setup
 4. **Tool Orchestration**: Memory-aware tool execution with pattern learning
 5. **Real-time Coordination**: Progress tracking and agent dependency management
 6. **Quality Control**: Evidence-based validation with bias prevention
@@ -231,7 +231,7 @@ The system implements a comprehensive multi-agent architecture built on Google A
 ### 3.5 Enhanced Dependencies & Assumptions
 
 #### 3.5.1 Core Dependencies
-- **Google AGDK Runtime**: Agent hosting and session management
+- **Google GADK Runtime**: Agent hosting and session management
 - **Redis Cluster**: Real-time coordination and caching
 - **SQLite Database**: Persistent memory and pattern storage
 - **Tree-sitter Parsers**: Multi-language AST parsing
@@ -241,12 +241,12 @@ The system implements a comprehensive multi-agent architecture built on Google A
 - **LLM Providers**: Ollama (local), OpenAI, Google Gemini
 - **Version Control**: Git, GitHub API, GitLab API
 - **CI/CD Platforms**: GitHub Actions, GitLab CI, Jenkins
-- **Monitoring**: Prometheus, Grafana, AGDK Developer Portal
+- **Monitoring**: Prometheus, Grafana, GADK Developer Portal
 
 ### 3.6 Enhanced Trade-offs & Alternatives
 
 #### 3.6.1 Architecture Decisions
-**Why AGDK Runtime?**
+**Why GADK Runtime?**
 - Standardized agent hosting and session management
 - Built-in observability through Developer Portal
 - Tool integration patterns and lifecycle management
@@ -265,7 +265,7 @@ The system implements a comprehensive multi-agent architecture built on Google A
 - **Failure Handling**: Graceful degradation vs full rollback
 
 #### 3.6.2 Alternative Approaches Considered
-**Custom Orchestrator**: Rejected due to AGDK's superior observability and tooling
+**Custom Orchestrator**: Rejected due to GADK's superior observability and tooling
 **Single-Agent Architecture**: Rejected for lack of domain specialization
 **File-based Memory**: Rejected for poor query performance and concurrency
 **Synchronous Processing**: Rejected for poor user experience with large codebases
@@ -276,15 +276,15 @@ The system implements a comprehensive multi-agent architecture built on Google A
 
 ### 4.1 Enhanced Phase-by-Phase Roadmap
 
-#### Phase 0 – AGDK Enablement & Developer Portal (Weeks 0-1)
+#### Phase 0 – GADK Enablement & Developer Portal (Weeks 0-1)
 | Deliverable | Key Tasks |
 | --- | --- |
-| **Tooling Access** | Secure AGDK preview/API access; build and publish shared tooling container with AGDK CLI + dev portal binaries |
-| **Runtime Bootstrap** | Implement `integrations/agdk/runtime_factory.py`; register placeholder tools; surface feature flag `analysis.use_agdk` |
-| **Configuration** | Extend YAML configs with AGDK toggles, dev portal settings, LLM provider selection, credential management |
+| **Tooling Access** | Secure GADK preview/API access; build and publish shared tooling container with GADK CLI + dev portal binaries |
+| **Runtime Bootstrap** | Implement `integrations/gadk/runtime_factory.py`; register placeholder tools; surface feature flag `analysis.use_gadk` |
+| **Configuration** | Extend YAML configs with GADK toggles, dev portal settings, LLM provider selection, credential management |
 | **Portal Validation** | Deploy dev portal container in cluster, execute sample session, confirm telemetry visibility |
 
-**Exit Criteria**: AGDK runtime + dev portal operational; feature flags available; Google Cloud credentials configured
+**Exit Criteria**: GADK runtime + dev portal operational; feature flags available; Google Cloud credentials configured
 
 #### Phase 0.5 – Foundation Infrastructure Integration (Weeks 1-2)
 | Deliverable | Key Tasks |
@@ -300,12 +300,12 @@ The system implements a comprehensive multi-agent architecture built on Google A
 #### Phase 1 – Tool Extraction & Contracts (Weeks 1-3)
 | Deliverable | Key Tasks |
 | --- | --- |
-| **Tool Modules** | Extract heuristics into AGDK-ready modules for all tool categories (complexity, pattern, architecture, LLM, QC, memory) |
+| **Tool Modules** | Extract heuristics into GADK-ready modules for all tool categories (complexity, pattern, architecture, LLM, QC, memory) |
 | **Typed Schemas** | Define request/response dataclasses for deterministic tool interfaces |
 | **Unit Tests** | Comprehensive tests for tool parity with existing functionality |
-| **Tool Registry** | Build `integrations/agdk/tool_adapters.py` for tool registration and dependency injection |
+| **Tool Registry** | Build `integrations/gadk/tool_adapters.py` for tool registration and dependency injection |
 
-**Exit Criteria**: All core tools callable via AGDK with validated schemas and green unit tests
+**Exit Criteria**: All core tools callable via GADK with validated schemas and green unit tests
 
 #### Phase 2 – Advanced Memory & Learning Foundation (Weeks 3-6)
 | Deliverable | Key Tasks |
@@ -332,19 +332,19 @@ The system implements a comprehensive multi-agent architecture built on Google A
 #### Phase 3 – Enhanced Orchestrator & Real-time Coordination (Weeks 8-10)
 | Deliverable | Key Tasks |
 | --- | --- |
-| **Runtime Integration** | Update `SmartMasterOrchestrator` for AGDK runtime with memory integration |
+| **Runtime Integration** | Update `SmartMasterOrchestrator` for GADK runtime with memory integration |
 | **State Management** | Redis coordination with session lifecycle; multi-agent dependencies; progress tracking |
-| **Execution Paths** | AGDK session calls with learning integration; preserve legacy path with feature flags |
-| **Data Mapping** | Convert AGDK payloads to `AgentResult` with memory context; validate reporting compatibility |
+| **Execution Paths** | GADK session calls with learning integration; preserve legacy path with feature flags |
+| **Data Mapping** | Convert GADK payloads to `AgentResult` with memory context; validate reporting compatibility |
 
-**Exit Criteria**: End-to-end AGDK execution with memory; real-time coordination operational; dev portal traces validated
+**Exit Criteria**: End-to-end GADK execution with memory; real-time coordination operational; dev portal traces validated
 
 #### Phase 4 – Comprehensive Testing & Quality Assurance (Weeks 10-12)
 | Deliverable | Key Tasks |
 | --- | --- |
 | **Test Suite** | Integration tests with memory validation; unit tests for tools and memory components |
 | **Memory Validation** | Test retrieval strategies, partitioning, pattern recognition, cross-project learning |
-| **Performance Baseline** | Benchmark AGDK vs legacy with memory overhead; profile concurrent analysis |
+| **Performance Baseline** | Benchmark GADK vs legacy with memory overhead; profile concurrent analysis |
 | **Quality Control** | Test bias prevention, evidence validation, configuration rules, feedback loops |
 | **Failure Handling** | Chaos scenarios with graceful degradation; Redis failover; session cleanup |
 
@@ -424,13 +424,13 @@ Leverage existing configuration structure (`config/agents/`, `config/rules/`, `c
 ### 4.4 Enhanced Adoption Strategy
 
 #### 4.4.1 Incremental Rollout
-- **Feature Flags**: AGDK runtime toggle with legacy fallback
+- **Feature Flags**: GADK runtime toggle with legacy fallback
 - **Agent Graduation**: Sequential agent deployment based on validation
 - **Memory Learning**: Gradual confidence building with feedback integration
 - **Performance Validation**: Continuous benchmarking and optimization
 
 #### 4.4.2 Risk Mitigation
-- **Parallel Operation**: Legacy and AGDK systems during transition
+- **Parallel Operation**: Legacy and GADK systems during transition
 - **Rollback Procedures**: Quick reversion to legacy system if needed
 - **Data Migration**: Gradual memory system population and validation
 - **Customer Communication**: Clear migration timeline and benefits
@@ -530,12 +530,12 @@ app:
   version: "1.0.0"
   
 analysis:
-  use_agdk: true
+  use_gadk: true
   memory_enabled: true
   real_time_coordination: true
   
-agdk:
-  project_id: "${AGDK_PROJECT_ID}"
+gadk:
+  project_id: "${GADK_PROJECT_ID}"
   dev_portal_host: "localhost"
   dev_portal_port: 8200
   runtime_config:
@@ -712,24 +712,24 @@ POST /api/v1/memory/feedback
 ### 5.6 Deployment Architecture
 
 #### 5.6.1 Container Architecture
-- **AGDK Runtime Container**: Hosts agents and tools
+- **GADK Runtime Container**: Hosts agents and tools
 - **API Gateway Container**: FastAPI application
 - **Memory Services**: SQLite + Redis coordination
-- **Development Portal**: AGDK dev portal container
+- **Development Portal**: GADK dev portal container
 
 #### 5.6.2 Kubernetes Deployment
 ```yaml
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: agdk-runtime
+  name: gadk-runtime
 spec:
   replicas: 3
   template:
     spec:
       containers:
-      - name: agdk-runtime
-        image: registry/agdk-review:latest
+      - name: gadk-runtime
+        image: registry/gadk-review:latest
         resources:
           requests:
             memory: "2Gi"
@@ -740,21 +740,21 @@ spec:
             cpu: "2000m"
             nvidia.com/gpu: 1
         env:
-        - name: AGDK_PROJECT_ID
+        - name: GADK_PROJECT_ID
           valueFrom:
             secretKeyRef:
-              name: agdk-secrets
+              name: gadk-secrets
               key: project-id
         - name: GOOGLE_APPLICATION_CREDENTIALS
-          value: "/secrets/agdk-sa.json"
+          value: "/secrets/gadk-sa.json"
         volumeMounts:
-        - name: agdk-credentials
+        - name: gadk-credentials
           mountPath: /secrets
           readOnly: true
 ```
 
 #### 5.6.3 Monitoring & Observability
-- **AGDK Developer Portal**: Session visualization and debugging
+- **GADK Developer Portal**: Session visualization and debugging
 - **Prometheus Metrics**: Performance and health monitoring
 - **Distributed Tracing**: Request flow across agents
 - **Log Aggregation**: Centralized logging with ELK stack
@@ -775,7 +775,7 @@ spec:
 ```python
 # Testing Framework Configuration
 pytest_plugins = [
-    "tests.fixtures.agdk_runtime",
+    "tests.fixtures.gadk_runtime",
     "tests.fixtures.memory_systems", 
     "tests.fixtures.mock_llm_providers",
     "tests.fixtures.sample_repositories",
@@ -1057,7 +1057,7 @@ REGRESSION_CATEGORIES = {
 
 #### 6.10.1 Canary Testing
 - **Staged Rollout**: 1% → 5% → 25% → 100% traffic
-- **A/B Testing**: AGDK vs legacy system comparison
+- **A/B Testing**: GADK vs legacy system comparison
 - **Feature Validation**: Individual agent performance comparison
 - **Memory Learning**: Production learning loop validation
 
@@ -1089,17 +1089,17 @@ def test_network_partition_recovery():
 # Test Environment Configuration
 test_environments:
   unit:
-    agdk_runtime: "mock"
+    gadk_runtime: "mock"
     memory_backend: "in_memory"
     llm_providers: "mock"
   
   integration:
-    agdk_runtime: "local"
+    gadk_runtime: "local"
     memory_backend: "sqlite+redis"
     llm_providers: "ollama_local"
   
   staging:
-    agdk_runtime: "cloud"
+    gadk_runtime: "cloud"
     memory_backend: "production_like"
     llm_providers: "all_providers"
 ```
@@ -1112,7 +1112,7 @@ test_environments:
 
 | Risk | Impact | Probability | Enhanced Mitigation Strategy |
 |------|--------|-------------|------------------------------|
-| **AGDK API Evolution** | High - Breaking changes could disrupt entire system | Medium | Pin SDK versions; implement adapter pattern; maintain compatibility layer; automated dependency monitoring |
+| **GADK API Evolution** | High - Breaking changes could disrupt entire system | Medium | Pin SDK versions; implement adapter pattern; maintain compatibility layer; automated dependency monitoring |
 | **Memory System Performance** | High - Slow retrieval affects user experience | Medium | Implement caching layers; optimize indexing; performance monitoring; horizontal scaling |
 | **Learning Accuracy Issues** | Medium - Poor patterns reduce system value | Medium | Comprehensive validation; feedback loops; confidence thresholds; manual pattern review |
 | **Cross-Agent Coordination Failures** | High - System-wide analysis failures | Low | Circuit breakers; graceful degradation; independent agent operation; retry mechanisms |
@@ -1146,11 +1146,11 @@ test_environments:
 ### 8.1 Comprehensive Glossary
 
 **Agent Ecosystem Terms**
-- **AGDK**: Google Agent Development Kit - Platform for building and deploying intelligent agents
+- **GADK**: Google Agent Development Kit - Platform for building and deploying intelligent agents
 - **Memory-Aware Agent**: Agent with integrated learning and pattern recognition capabilities
 - **Tool**: Deterministic callable that provides specific analysis functionality
-- **Agent Runtime**: AGDK environment that hosts and manages agent sessions
-- **Developer Portal**: AGDK web interface for observability and debugging
+- **Agent Runtime**: GADK environment that hosts and manages agent sessions
+- **Developer Portal**: GADK web interface for observability and debugging
 
 **Memory & Learning Terms**
 - **Memory Retrieval Coordinator**: Unified interface for accessing stored patterns and experiences
@@ -1171,9 +1171,9 @@ test_environments:
 - **Quality Control Rules**: Bias prevention and evidence validation parameters
 - **Memory Configuration**: Learning parameters and retrieval strategy settings
 
-### 8.2 Enhanced AGDK Construct Mapping
+### 8.2 Enhanced GADK Construct Mapping
 
-| AGDK Construct | Usage in Multi-Agent Code Review | Enhanced Capabilities |
+| GADK Construct | Usage in Multi-Agent Code Review | Enhanced Capabilities |
 |----------------|-----------------------------------|----------------------|
 | **Agent Runtime** | Hosts 6 specialized domain agents; manages sessions with memory integration | Session persistence, memory context, real-time coordination |
 | **Agent** | Domain-specific analysis logic with learning integration | Pattern recognition, confidence calibration, cross-agent collaboration |
@@ -1184,7 +1184,7 @@ test_environments:
 
 ### 8.3 Architecture Component Mapping
 
-| Component | Traditional Implementation | AGDK-Enhanced Implementation |
+| Component | Traditional Implementation | GADK-Enhanced Implementation |
 |-----------|---------------------------|------------------------------|
 | **Code Analyzer** | Single-agent complexity analysis | Memory-aware agent with pattern learning and historical context |
 | **Orchestrator** | Simple sequential execution | Smart coordination with agent dependencies and real-time state management |
@@ -1196,7 +1196,7 @@ test_environments:
 ### 8.4 Technology Stack References
 
 **Core Technologies**
-- **Google AGDK**: Agent Development Kit documentation and runtime specifications
+- **Google GADK**: Agent Development Kit documentation and runtime specifications
 - **Redis Cluster**: Real-time coordination and session management
 - **SQLite**: Persistent memory storage with advanced indexing
 - **FastAPI**: REST API framework with async support and OpenAPI integration
@@ -1210,14 +1210,14 @@ test_environments:
 **Monitoring & Observability**
 - **Prometheus**: Metrics collection and alerting
 - **Grafana**: Dashboard visualization and monitoring
-- **AGDK Developer Portal**: Agent-specific observability and debugging
+- **GADK Developer Portal**: Agent-specific observability and debugging
 
 ### 8.5 Configuration Schema References
 
 **Environment Variables**
 ```bash
-# Core AGDK Configuration
-AGDK_PROJECT_ID=your-gcp-project
+# Core GADK Configuration
+GADK_PROJECT_ID=your-gcp-project
 GOOGLE_APPLICATION_CREDENTIALS=/path/to/credentials.json
 
 # Memory System Configuration  
@@ -1234,7 +1234,7 @@ OPENAI_API_KEY=your-openai-key
 GEMINI_API_KEY=your-gemini-key
 
 # Analysis Configuration
-ANALYSIS_USE_AGDK=true
+ANALYSIS_USE_GADK=true
 ANALYSIS_MEMORY_ENABLED=true
 ANALYSIS_REAL_TIME_COORDINATION=true
 ```
@@ -1250,7 +1250,7 @@ ANALYSIS_REAL_TIME_COORDINATION=true
 ### 8.6 Development Resources
 
 **Documentation Links**
-- Google AGDK Developer Documentation
+- Google GADK Developer Documentation
 - Agent Development Best Practices
 - Memory System Design Patterns
 - Multi-Agent Coordination Strategies
@@ -1264,7 +1264,7 @@ ANALYSIS_REAL_TIME_COORDINATION=true
 - Testing Strategy Templates
 
 **Training Materials**
-- AGDK Runtime Quick Start Guide
+- GADK Runtime Quick Start Guide
 - Memory System Usage Patterns
 - Multi-Agent Development Workshop
 - Production Deployment Checklist
@@ -1292,11 +1292,11 @@ ANALYSIS_REAL_TIME_COORDINATION=true
 
 ### 9.1 Legacy Integration Mapping
 
-This section maps existing components from the current implementation to the enhanced AGDK architecture:
+This section maps existing components from the current implementation to the enhanced GADK architecture:
 
-**Current Implementation → AGDK Enhancement**
+**Current Implementation → GADK Enhancement**
 - `src/agents/base/base_agent.py` → `src/agents/base/memory_aware_agent.py`
-- `src/core/orchestrator/smart_master_orchestrator.py` → Enhanced with AGDK runtime integration
+- `src/core/orchestrator/smart_master_orchestrator.py` → Enhanced with GADK runtime integration
 - `src/memory/` → Expanded with Redis coordination and pattern recognition
 - `config/` → Extended with agent-specific and quality control configurations
 - `src/api/` → Enhanced with WebSocket support and comprehensive endpoints
@@ -1304,13 +1304,13 @@ This section maps existing components from the current implementation to the enh
 ### 9.2 Migration Timeline
 
 **Phase 0-1**: Foundation Setup (2 weeks)
-- AGDK runtime deployment and configuration
+- GADK runtime deployment and configuration
 - Developer tooling and environment setup
 - Basic integration testing and validation
 
 **Phase 2-3**: Core Agent Migration (6 weeks)  
 - Memory system implementation and testing
-- Code analyzer agent enhancement with AGDK
+- Code analyzer agent enhancement with GADK
 - Orchestrator integration and coordination setup
 
 **Phase 4-6**: Full System Implementation (12 weeks)
@@ -1321,7 +1321,7 @@ This section maps existing components from the current implementation to the enh
 ### 9.3 Training & Enablement Plan
 
 **Developer Training**
-- AGDK fundamentals and agent development
+- GADK fundamentals and agent development
 - Memory system usage and optimization
 - Multi-agent coordination patterns
 - Testing strategies and quality assurance
@@ -1340,4 +1340,4 @@ This section maps existing components from the current implementation to the enh
 
 ---
 
-*This comprehensive design document provides the complete specification for implementing a production-ready, multi-agent code review platform using Google AGDK with advanced memory and learning capabilities. The enhanced architecture supports six specialized agents working in coordination to provide comprehensive code analysis with continuous improvement through pattern learning and cross-project intelligence.*
+*This comprehensive design document provides the complete specification for implementing a production-ready, multi-agent code review platform using Google GADK with advanced memory and learning capabilities. The enhanced architecture supports six specialized agents working in coordination to provide comprehensive code analysis with continuous improvement through pattern learning and cross-project intelligence.*

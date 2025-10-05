@@ -1,7 +1,7 @@
 """
 Smart Master Orchestrator
 
-Enhanced orchestrator with AGDK runtime integration and memory-aware coordination.
+Enhanced orchestrator with GADK runtime integration and memory-aware coordination.
 Manages multi-agent workflows with intelligent agent selection and real-time coordination.
 """
 from typing import Dict, List, Any, Optional
@@ -40,15 +40,15 @@ class OrchestrationResult:
 
 
 class SmartMasterOrchestrator:
-    """Enhanced orchestrator with AGDK integration and memory coordination."""
+    """Enhanced orchestrator with GADK integration and memory coordination."""
     
     def __init__(self, config: Optional[Dict[str, Any]] = None):
         """Initialize the smart orchestrator."""
         self.config = config or {}
-        self.use_agdk = self.config.get("analysis", {}).get("use_agdk", False)
+        self.use_gadk = self.config.get("analysis", {}).get("use_gadk", False)
         
         # Initialize components
-        self._agdk_runtime = None
+        self._gadk_runtime = None
         self._memory_coordinator = None
         self._state_manager = None
         
@@ -111,9 +111,9 @@ class SmartMasterOrchestrator:
         """Initialize analysis session."""
         session_id = f"session_{self._get_timestamp()}"
         
-        if self.use_agdk:
-            # Initialize AGDK runtime session
-            self._init_agdk_session(session_id, request)
+        if self.use_gadk:
+            # Initialize GADK runtime session
+            self._init_gadk_session(session_id, request)
         
         # Initialize memory and state coordination
         self._init_memory_session(session_id, request)
@@ -145,8 +145,8 @@ class SmartMasterOrchestrator:
             if agent_name in self._available_agents:
                 logger.info(f"Executing agent: {agent_name}")
                 
-                if self.use_agdk:
-                    result = self._execute_agdk_agent(agent_name, request, session_id, results)
+                if self.use_gadk:
+                    result = self._execute_gadk_agent(agent_name, request, session_id, results)
                 else:
                     result = self._execute_legacy_agent(agent_name, request, session_id, results)
                 
@@ -168,16 +168,16 @@ class SmartMasterOrchestrator:
         logger.info("Focused execution not yet implemented, falling back to sequential")
         return self._execute_sequential(request, session_id)
     
-    def _execute_agdk_agent(self, agent_name: str, request: AnalysisRequest, 
+    def _execute_gadk_agent(self, agent_name: str, request: AnalysisRequest, 
                            session_id: str, context: Dict[str, Any]) -> Dict[str, Any]:
-        """Execute agent using AGDK runtime."""
-        # TODO: Implement AGDK agent execution
-        logger.info(f"AGDK execution for {agent_name} (placeholder)")
+        """Execute agent using GADK runtime."""
+        # TODO: Implement GADK agent execution
+        logger.info(f"GADK execution for {agent_name} (placeholder)")
         
         return {
             "agent": agent_name,
             "findings": [],
-            "execution_method": "agdk",
+            "execution_method": "gadk",
             "session_id": session_id,
             "status": "completed"
         }
@@ -196,10 +196,10 @@ class SmartMasterOrchestrator:
             "status": "completed"
         }
     
-    def _init_agdk_session(self, session_id: str, request: AnalysisRequest):
-        """Initialize AGDK runtime session."""
-        # TODO: Implement AGDK session initialization
-        logger.info(f"Initializing AGDK session: {session_id}")
+    def _init_gadk_session(self, session_id: str, request: AnalysisRequest):
+        """Initialize GADK runtime session."""
+        # TODO: Implement GADK session initialization
+        logger.info(f"Initializing GADK session: {session_id}")
     
     def _init_memory_session(self, session_id: str, request: AnalysisRequest):
         """Initialize memory and state coordination."""

@@ -148,7 +148,7 @@ def main():
     
     if all_passed:
         print("🎉 All checks passed! Google Cloud is properly configured.")
-        print("\n✅ Ready to proceed with AGDK Module Structure implementation")
+        print("\n✅ Ready to proceed with GADK Module Structure implementation")
         return 0
     else:
         print("❌ Some checks failed. Please review the errors above.")

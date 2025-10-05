@@ -1,8 +1,8 @@
 """
-AGDK Tool Adapters
+GADK Tool Adapters
 
-Wraps heuristics, memory services, LLM manager as AGDK tools.
-Provides the bridge between existing analysis tools and AGDK runtime.
+Wraps heuristics, memory services, LLM manager as GADK tools.
+Provides the bridge between existing analysis tools and GADK runtime.
 """
 from typing import Any, Dict, List, Optional
 import logging
@@ -10,17 +10,17 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-class AGDKToolAdapter:
-    """Base adapter for converting analysis tools to AGDK format."""
+class GADKToolAdapter:
+    """Base adapter for converting analysis tools to GADK format."""
     
     def __init__(self, tool_name: str, tool_instance: Any):
         """Initialize the tool adapter."""
         self.tool_name = tool_name
         self.tool_instance = tool_instance
         
-    def adapt_for_agdk(self) -> Dict[str, Any]:
-        """Adapt the tool for AGDK runtime."""
-        # TODO: Implement AGDK tool adaptation
+    def adapt_for_gadk(self) -> Dict[str, Any]:
+        """Adapt the tool for GADK runtime."""
+        # TODO: Implement GADK tool adaptation
         return {
             "name": self.tool_name,
             "instance": self.tool_instance,
@@ -29,23 +29,23 @@ class AGDKToolAdapter:
 
 
 class ToolRegistry:
-    """Registry for managing AGDK tool adapters."""
+    """Registry for managing GADK tool adapters."""
     
     def __init__(self):
         """Initialize the tool registry."""
-        self.tools: Dict[str, AGDKToolAdapter] = {}
+        self.tools: Dict[str, GADKToolAdapter] = {}
         
     def register_tool(self, tool_name: str, tool_instance: Any):
-        """Register a tool with the AGDK runtime."""
-        adapter = AGDKToolAdapter(tool_name, tool_instance)
+        """Register a tool with the GADK runtime."""
+        adapter = GADKToolAdapter(tool_name, tool_instance)
         self.tools[tool_name] = adapter
         logger.info(f"Registered tool: {tool_name}")
         
-    def get_tool(self, tool_name: str) -> Optional[AGDKToolAdapter]:
+    def get_tool(self, tool_name: str) -> Optional[GADKToolAdapter]:
         """Get a registered tool adapter."""
         return self.tools.get(tool_name)
         
-    def get_all_tools(self) -> Dict[str, AGDKToolAdapter]:
+    def get_all_tools(self) -> Dict[str, GADKToolAdapter]:
         """Get all registered tool adapters."""
         return self.tools.copy()
         

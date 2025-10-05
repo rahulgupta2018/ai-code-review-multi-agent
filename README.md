@@ -1,6 +1,6 @@
 # AI Code Review Multi-Agent System
 
-A comprehensive multi-agent code review platform built with Google AGDK (Agent Development Kit) integration, featuring memory-aware analysis, real-time coordination, and dashboard-ready output generation.
+A comprehensive multi-agent code review platform built with Google GADK (Agent Development Kit) integration, featuring memory-aware analysis, real-time coordination, and dashboard-ready output generation.
 
 ## 🏗️ Architecture Overview
 
@@ -20,9 +20,9 @@ This system implements a memory-first, multi-agent architecture with six special
 - **Real-time Coordination**: Redis-based session management with WebSocket broadcasting
 - **Intelligent Orchestration**: LLM-driven strategy selection (SMART/FOCUSED/PARALLEL)
 
-### Google AGDK Integration
+### Google GADK Integration
 - **Developer Portal**: End-to-end session visualization and debugging
-- **Tool Orchestration**: AGDK-compatible tool adapters with deterministic interfaces
+- **Tool Orchestration**: GADK-compatible tool adapters with deterministic interfaces
 - **Event-Driven Architecture**: Typed events and session lifecycle management
 
 ### Comprehensive Input Processing
@@ -45,7 +45,7 @@ This system implements a memory-first, multi-agent architecture with six special
 
 ```
 src/
-├── integrations/agdk/          # Google AGDK integration
+├── integrations/gadk/          # Google GADK integration
 ├── core/                       # Core infrastructure
 │   ├── config/                # Configuration management
 │   ├── input/                 # Multi-source input processing
@@ -90,7 +90,7 @@ config/                         # Configuration files
 - Python 3.11+
 - Redis (for real-time coordination)
 - Poetry (for dependency management)
-- Google Cloud credentials (for AGDK integration)
+- Google Cloud credentials (for GADK integration)
 
 ### Development Setup
 
@@ -122,20 +122,20 @@ config/                         # Configuration files
    poetry run uvicorn src.api.main:app --reload --host 0.0.0.0 --port 8000
    ```
 
-### Google AGDK Setup
+### Google GADK Setup
 
-1. **Enable AGDK Preview** (if required)
+1. **Enable GADK Preview** (if required)
    - Configure Google Cloud console / Agent Builder program access
 
-2. **Install AGDK CLI and Dev Portal**
+2. **Install GADK CLI and Dev Portal**
    ```bash
-   pip install google-agdk
-   agdk components install dev-portal
+   pip install google-gadk
+   gadk components install dev-portal
    ```
 
 3. **Start Developer Portal**
    ```bash
-   agdk dev-portal start --project $AGDK_PROJECT_ID --port 8200 --bind 0.0.0.0
+   gadk dev-portal start --project $GADK_PROJECT_ID --port 8200 --bind 0.0.0.0
    ```
 
 ## 🔧 Configuration
@@ -144,13 +144,13 @@ config/                         # Configuration files
 ```bash
 # Core Configuration
 ENVIRONMENT=development
-USE_AGDK=false
+USE_GADK=false
 
-# AGDK Configuration
-AGDK_ENABLED=false
-AGDK_PROJECT_ID=your-project-id
-AGDK_DEV_PORTAL_HOST=localhost
-AGDK_DEV_PORTAL_PORT=8200
+# GADK Configuration
+GADK_ENABLED=false
+GADK_PROJECT_ID=your-project-id
+GADK_DEV_PORTAL_HOST=localhost
+GADK_DEV_PORTAL_PORT=8200
 
 # LLM Providers
 DEFAULT_LLM_PROVIDER=ollama
@@ -181,13 +181,13 @@ Each agent can be configured individually in `config/agents/`:
 ### CLI Interface
 ```bash
 # Analyze local directory
-poetry run agdk-review analyze ./src --agents code_analyzer,security_standards
+poetry run gadk-review analyze ./src --agents code_analyzer,security_standards
 
 # Analyze Git repository
-poetry run agdk-review analyze https://github.com/user/repo --strategy smart
+poetry run gadk-review analyze https://github.com/user/repo --strategy smart
 
 # Generate dashboard export
-poetry run agdk-review export --format dashboard --output ./reports
+poetry run gadk-review export --format dashboard --output ./reports
 ```
 
 ### API Usage
@@ -276,7 +276,7 @@ poetry run pytest
 poetry run pytest -m unit          # Unit tests only
 poetry run pytest -m integration   # Integration tests only
 poetry run pytest -m memory        # Memory system tests
-poetry run pytest -m agdk          # AGDK integration tests
+poetry run pytest -m gadk          # GADK integration tests
 
 # Generate coverage report
 poetry run pytest --cov=src --cov-report=html
@@ -284,7 +284,7 @@ poetry run pytest --cov=src --cov-report=html
 
 ## 📈 Monitoring and Observability
 
-### AGDK Developer Portal
+### GADK Developer Portal
 - Session visualization and debugging
 - Tool invocation traces
 - Memory access patterns
@@ -323,8 +323,8 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 🔗 Related Documentation
 
-- [Google AGDK Documentation](https://cloud.google.com/agent-builder)
-- [Implementation Plan](docs/google_agdk_implementation_plan.md)
+- [Google GADK Documentation](https://cloud.google.com/agent-builder)
+- [Implementation Plan](docs/google_gadk_implementation_plan.md)
 - [Agent Architecture](docs/AGENT_ARCHITECTURE_EXPLANATION.md)
 - [Memory System Design](docs/MEMORY_INTEGRATION_SUMMARY.md)
 

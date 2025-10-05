@@ -1,1 +1,1 @@
-"""Code analyzer tools for AGDK integration."""
+"""Code analyzer tools for GADK integration."""

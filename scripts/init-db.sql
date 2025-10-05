@@ -46,14 +46,14 @@ CREATE TABLE IF NOT EXISTS ai_agents.agent_sessions (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     agent_id UUID REFERENCES ai_agents.agent_configs(id),
     session_token VARCHAR(255) UNIQUE,
-    agdk_session_id VARCHAR(255),
+    gadk_session_id VARCHAR(255),
     status VARCHAR(50) DEFAULT 'active',
     metadata JSONB,
     started_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     ended_at TIMESTAMP WITH TIME ZONE,
     
     INDEX idx_agent_sessions_token (session_token),
-    INDEX idx_agent_sessions_agdk (agdk_session_id)
+    INDEX idx_agent_sessions_gadk (gadk_session_id)
 );
 
 -- ============================================================================
@@ -238,7 +238,7 @@ CREATE OR REPLACE VIEW ai_agents.active_sessions AS
 SELECT 
     s.id,
     s.session_token,
-    s.agdk_session_id,
+    s.gadk_session_id,
     c.agent_type,
     c.agent_name,
     s.started_at,
@@ -321,7 +321,7 @@ $$ LANGUAGE plpgsql;
 
 -- Insert default agent configurations
 INSERT INTO ai_agents.agent_configs (agent_type, agent_name, configuration) VALUES
-    ('base_agent', 'primary', '{"agdk_enabled": true, "model": "gemini-1.5-pro"}'),
+    ('base_agent', 'primary', '{"gadk_enabled": true, "model": "gemini-1.5-pro"}'),
     ('code_analyzer', 'security', '{"focus": "security", "severity_threshold": 0.7}'),
     ('code_analyzer', 'performance', '{"focus": "performance", "optimization_level": "high"}'),
     ('microservices', 'architecture', '{"pattern_detection": true, "compliance_check": true}')

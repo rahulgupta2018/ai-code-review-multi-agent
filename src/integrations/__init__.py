@@ -5,10 +5,10 @@ This package contains integration modules for various external services
 used by the agentic code review system.
 
 Available integrations:
-- agdk: Google AGDK (Agent Development Kit) integration for Vertex AI Agents,
+- gadk: Google GADK (Google Agent Development Kit) integration for Vertex AI Agents,
         Discovery Engine, and Dialogflow CX
 """
 
-from . import agdk
+from . import gadk
 
-__all__ = ["agdk"]
+__all__ = ["gadk"]

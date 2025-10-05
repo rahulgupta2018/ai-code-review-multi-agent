@@ -1,8 +1,8 @@
-# Comprehensive Milestone Plan - Agentic Code Review with Google AGDK
+# Comprehensive Milestone Plan - Agentic Code Review with Google GADK
 
 ## Executive Summary
 
-This document provides a detailed phase-wise milestone plan for implementing the complete 6-agent code review system with Google AGDK integration. The plan builds on the existing strong foundation (85% complete infrastructure) while focusing on the critical AGDK integration and remaining components needed for production deployment.
+This document provides a detailed phase-wise milestone plan for implementing the complete 6-agent code review system with Google GADK integration. The plan builds on the existing strong foundation (85% complete infrastructure) while focusing on the critical GADK integration and remaining components needed for production deployment.
 
 ### **Quality Standards & Acceptance Criteria**
 
@@ -12,7 +12,7 @@ This document provides a detailed phase-wise milestone plan for implementing the
 - **❌ NO FALLBACK CODE**: Eliminate placeholder code, graceful degradation only for critical failures
 - **❌ NO HARDCODING**: All values must be configuration-driven with environment/YAML overrides
 - **✅ MODULAR DESIGN**: Components must be loosely coupled with clear interfaces and dependency injection
-- **✅ REAL INTEGRATIONS**: Actual memory systems, LLM providers, AGDK tools, and external APIs
+- **✅ REAL INTEGRATIONS**: Actual memory systems, LLM providers, GADK tools, and external APIs
 - **✅ COMPREHENSIVE TESTING**: Unit, integration, and system tests with >90% coverage
 - **✅ CONFIGURATION-DRIVEN**: All behavior configurable via YAML/environment variables
 - **✅ PRODUCTION-READY**: Error handling, monitoring, logging, and graceful degradation
@@ -23,7 +23,7 @@ The current `src/agents/base/base_agent.py` contains 11 critical TODOs that must
 
 - **Configuration Integration** (Phase 0) ⚠️ **CRITICAL DEPENDENCY**
   - Integration of existing `config/agents/base_agent.yaml` with consolidated BaseAgent
-  - Configuration-driven behavior for all agent features (memory, AGDK, quality control)
+  - Configuration-driven behavior for all agent features (memory, GADK, quality control)
   - Real configuration loading via config_manager (no hardcoded values)
 
 - **Memory System Integration** (Phase 2)
@@ -32,8 +32,8 @@ The current `src/agents/base/base_agent.py` contains 11 critical TODOs that must
   - PatternRecognitionEngine for learning
   - Sophisticated pattern matching algorithms
 
-- **AGDK Integration** (Phase 0-1)
-  - AGDK component initialization and session management
+- **GADK Integration** (Phase 0-1)
+  - GADK component initialization and session management
   - Event handling and tool registration
   - Runtime lifecycle management
 
@@ -46,7 +46,7 @@ The current `src/agents/base/base_agent.py` contains 11 critical TODOs that must
 
 ## **Phase-by-Phase Milestone Plan**
 
-### **Phase 0: AGDK Enablement Foundation** (Weeks 1-2)
+### **Phase 0: GADK Enablement Foundation** (Weeks 1-2)
 *Priority: CRITICAL - Foundation for entire system*
 
 - [] **Base Agent Framework** - `src/agents/base/base_agent.py` (851 lines)
@@ -69,52 +69,52 @@ The current `src/agents/base/base_agent.py` contains 11 critical TODOs that must
   - [] Quality control rules in `config/rules/`
   - [] LLM provider configuration in `config/llm/`
 
-#### **Milestone 0.1: AGDK Runtime & BaseAgent Integration** (Week 1)
-**Goal**: Complete AGDK integration and resolve BaseAgent TODOs
+#### **Milestone 0.1: GADK Runtime & BaseAgent Integration** (Week 1)
+**Goal**: Complete GADK integration and resolve BaseAgent TODOs
 
-**AGDK Integration Tasks**:
-- [x] **Google AGDK API Access** ✅ **COMPLETED**
-  - [x] Secure AGDK preview/API access via Google Cloud console
+**GADK Integration Tasks**:
+- [x] **Google GADK API Access** ✅ **COMPLETED**
+  - [x] Secure GADK preview/API access via Google Cloud console
   - [x] Create Google Cloud project with Agent Builder APIs enabled
-  - [x] Generate service account credentials for AGDK runtime access
+  - [x] Generate service account credentials for GADK runtime access
   - [x] **Implemented**: Complete Google Cloud setup with automated scripts
   - [x] **Implemented**: Documentation and verification system
   - [x] **Implemented**: Poetry dependency management integration
 
-- [x] **AGDK Module Structure** ✅ **COMPLETED**
-  - [x] Create `src/integrations/agdk/` directory structure
-  - [x] Implement `runtime_factory.py` with full AGDK runtime initialization
+- [x] **GADK Module Structure** ✅ **COMPLETED**
+  - [x] Create `src/integrations/gadk/` directory structure
+  - [x] Implement `runtime_factory.py` with full GADK runtime initialization
   - [x] Add `credentials.py` for shared Google auth helpers
-  - [x] Create `__init__.py` with AGDK module exports
+  - [x] Create `__init__.py` with GADK module exports
   - [x] **Implemented**: Complete module structure with production-ready components
-  - [x] **Implemented**: Configuration-driven setup via `config/agdk/runtime.yaml`
+  - [x] **Implemented**: Configuration-driven setup via `config/gadk/runtime.yaml`
   - [x] **Implemented**: Comprehensive error handling and logging
 
-- [x] **BaseAgent AGDK Integration** *(Resolves TODOs 2, 3, 4, 5)* ✅ **COMPLETED**
-  - [x] Implement `_initialize_agdk_components()` with real AGDK session management
-  - [x] Complete `on_session_started()` with actual AGDK session initialization
-  - [x] Implement `on_session_finished()` with proper AGDK session cleanup
-  - [x] Build `handle_agdk_event()` with comprehensive AGDK event handling
+- [x] **BaseAgent GADK Integration** *(Resolves TODOs 2, 3, 4, 5)* ✅ **COMPLETED**
+  - [x] Implement `_initialize_gadk_components()` with real GADK session management
+  - [x] Complete `on_session_started()` with actual GADK session initialization
+  - [x] Implement `on_session_finished()` with proper GADK session cleanup
+  - [x] Build `handle_gadk_event()` with comprehensive GADK event handling
   - [x] Add tool registration and lifecycle management
   - [x] Existing `base_agent.yaml` must be integrated with consolidated BaseAgent code
-  - [x] **Implemented**: Real AGDK runtime factory integration with Google Cloud services
-  - [x] **Implemented**: Configuration-driven AGDK setup with full YAML integration
+  - [x] **Implemented**: Real GADK runtime factory integration with Google Cloud services
+  - [x] **Implemented**: Configuration-driven GADK setup with full YAML integration
   - [x] **Implemented**: Production-ready session management and cleanup
   - [x] **Implemented**: Comprehensive event handling with tool coordination
   - [x] **Implemented**: Base agent tool registration framework
 
 - [ ] **Docker Infrastructure**
-  - [ ] Build shared tooling Docker image with AGDK CLI + dev portal binaries
+  - [ ] Build shared tooling Docker image with GADK CLI + dev portal binaries
   - [ ] Configure container with Python 3.11 base and project dependencies
-  - [ ] Install AGDK CLI: `pip install google-agdk`
-  - [ ] Install dev portal: `agdk components install dev-portal`
+  - [ ] Install GADK CLI: `pip install google-gadk`
+  - [ ] Install dev portal: `gadk components install dev-portal`
 
 - [ ] **Environment Configuration** *(Configuration-Driven Implementation)*
-  - [ ] Add comprehensive AGDK environment variables to `.env.example`
+  - [ ] Add comprehensive GADK environment variables to `.env.example`
   - [ ] Configure `GOOGLE_APPLICATION_CREDENTIALS` path
-  - [ ] Set `AGDK_PROJECT_ID` from Google Cloud project
-  - [ ] Add feature flag `analysis.use_agdk=false` (default to legacy)
-  - [ ] Create AGDK-specific configuration schema in `config/agdk/`
+  - [ ] Set `GADK_PROJECT_ID` from Google Cloud project
+  - [ ] Add feature flag `analysis.use_gadk=false` (default to legacy)
+  - [ ] Create GADK-specific configuration schema in `config/gadk/`
 
 - [ ] **Dev Portal Setup**
   - [ ] Deploy dev portal container with port 8200 exposure
@@ -123,25 +123,25 @@ The current `src/agents/base/base_agent.py` contains 11 critical TODOs that must
   - [ ] Test sample session creation and trace visualization
 
 **Acceptance Criteria**:
-- ✅ **NO MOCK CODE**: All AGDK integration uses real Google AGDK APIs
-- ✅ **NO FALLBACK CODE**: AGDK failures handled gracefully with proper error messages
-- ✅ **CONFIGURATION-DRIVEN**: All AGDK settings configurable via `config/agdk/runtime.yaml`
-- ✅ **MODULAR DESIGN**: AGDK components loosely coupled and dependency-injected
-- AGDK runtime can be initialized programmatically with real Google APIs
+- ✅ **NO MOCK CODE**: All GADK integration uses real Google GADK APIs
+- ✅ **NO FALLBACK CODE**: GADK failures handled gracefully with proper error messages
+- ✅ **CONFIGURATION-DRIVEN**: All GADK settings configurable via `config/gadk/runtime.yaml`
+- ✅ **MODULAR DESIGN**: GADK components loosely coupled and dependency-injected
+- GADK runtime can be initialized programmatically with real Google APIs
 - Google Cloud credentials properly configured and validated
 - Dev portal accessible via Docker container on port 8200
-- Feature flag `analysis.use_agdk` toggles between AGDK and legacy execution
-- Sample AGDK session visible in developer portal with real telemetry
+- Feature flag `analysis.use_gadk` toggles between GADK and legacy execution
+- Sample GADK session visible in developer portal with real telemetry
 - BaseAgent TODOs 2, 3, 4, 5 completely resolved
 
-**Dependencies**: Google Cloud project setup, AGDK preview access approval
+**Dependencies**: Google Cloud project setup, GADK preview access approval
 
-#### **Milestone 0.2: AGDK Tool Framework & BaseAgent Completion** (Week 2) 
+#### **Milestone 0.2: GADK Tool Framework & BaseAgent Completion** (Week 2) 
 **Goal**: Complete tool adapter framework and finalize BaseAgent implementation
 
 **Tool Adaptation Tasks**:
 - [ ] **Base Tool Wrapper Framework** *(Real Implementation - No Mocks)*
-  - [ ] Implement `tool_adapters.py` with production AGDK tool wrapper class
+  - [ ] Implement `tool_adapters.py` with production GADK tool wrapper class
   - [ ] Create abstract base tool with standardized input/output handling
   - [ ] Add comprehensive error handling and structured logging for tool execution
   - [ ] Implement tool metadata and documentation generation from schema
@@ -162,7 +162,7 @@ The current `src/agents/base/base_agent.py` contains 11 critical TODOs that must
   - [ ] Integrate existing `config/agents/base_agent.yaml` with consolidated BaseAgent
   - [ ] Implement configuration loading via `self.config_manager.get_agent_config("base_agent")`
   - [ ] Add configuration validation for all behavior, quality_control, and integration settings
-  - [ ] Validate memory, AGDK, performance, and monitoring configuration sections
+  - [ ] Validate memory, GADK, performance, and monitoring configuration sections
   - [ ] Ensure all BaseAgent features are driven by configuration (no hardcoding)
 
 - [ ] **BaseAgent TODO Resolution** *(Resolves TODOs 1, 11)*
@@ -174,17 +174,17 @@ The current `src/agents/base/base_agent.py` contains 11 critical TODOs that must
 - [ ] **Production Tool Implementation** *(No Proof of Concept)*
   - [ ] Implement production-ready `ComplexityAnalysisTool`
   - [ ] Integrate with existing complexity analysis algorithms
-  - [ ] Test tool execution within AGDK runtime environment
+  - [ ] Test tool execution within GADK runtime environment
   - [ ] Validate tool input/output schema compliance
   - [ ] Add comprehensive error handling and logging
 
 **Acceptance Criteria**:
-- ✅ **NO MOCK CODE**: All tool adapters use real AGDK tool interfaces
+- ✅ **NO MOCK CODE**: All tool adapters use real GADK tool interfaces
 - ✅ **NO FALLBACK CODE**: Tool failures handled with proper error messages and recovery
 - ✅ **CONFIGURATION-DRIVEN**: Tool registration configurable via `config/tools/registry.yaml`
 - ✅ **MODULAR DESIGN**: Tools loosely coupled with dependency injection
 - ✅ **BaseAgent Configuration**: `config/agents/base_agent.yaml` fully integrated and driving all agent behavior
-- Tool adapter framework supports all AGDK tool types
+- Tool adapter framework supports all GADK tool types
 - BaseAgent TODOs 1 and 11 completely resolved with real implementations
 - BaseAgent configuration loading working with all sections (behavior, quality_control, integration)
 - Tool registry dynamically loads tools based on configuration
@@ -204,27 +204,27 @@ The current `src/agents/base/base_agent.py` contains 11 critical TODOs that must
   - [ ] Validate GPU access for Ollama when available
 
 - [ ] **Secrets Management**
-  - [ ] Configure Kubernetes secrets for AGDK credentials
+  - [ ] Configure Kubernetes secrets for GADK credentials
   - [ ] Mount service account JSON into runtime containers
   - [ ] Set up secure environment variable injection
   - [ ] Implement credential rotation and validation procedures
 
 - [ ] **Development Workflow**
-  - [ ] Update development scripts for AGDK environment
-  - [ ] Add AGDK runtime startup to docker-compose
-  - [ ] Configure VS Code dev container with AGDK tools
-  - [ ] Create debugging procedures for AGDK sessions
+  - [ ] Update development scripts for GADK environment
+  - [ ] Add GADK runtime startup to docker-compose
+  - [ ] Configure VS Code dev container with GADK tools
+  - [ ] Create debugging procedures for GADK sessions
 
 #### **Validation and Testing**
 - [ ] **Integration Testing**
-  - [ ] Create test suite for AGDK runtime initialization
+  - [ ] Create test suite for GADK runtime initialization
   - [ ] Test tool wrapper framework with mock tools
-  - [ ] Validate feature flag switching between AGDK/legacy
+  - [ ] Validate feature flag switching between GADK/legacy
   - [ ] Test dev portal session creation and visualization
 
 - [ ] **Performance Baseline**
-  - [ ] Benchmark AGDK tool execution vs legacy implementation
-  - [ ] Measure memory overhead of AGDK runtime
+  - [ ] Benchmark GADK tool execution vs legacy implementation
+  - [ ] Measure memory overhead of GADK runtime
   - [ ] Test concurrent tool execution capabilities
   - [ ] Document performance characteristics and limits
 
@@ -451,14 +451,14 @@ The current `src/agents/base/base_agent.py` contains 11 critical TODOs that must
 **Dependencies**: Redis installation, Docker infrastructure
 
 #### **Milestone 3.2: Enhanced Orchestrator Integration** (Week 9)
-**Goal**: Update orchestrator for production AGDK runtime with memory integration
+**Goal**: Update orchestrator for production GADK runtime with memory integration
 
 **Orchestrator Enhancement** *(Production Implementation)*:
-- [ ] **AGDK Runtime Integration**
-  - [ ] Modify `SmartMasterOrchestrator` for production AGDK runtime initialization
-  - [ ] Implement real agent session management with AGDK APIs
+- [ ] **GADK Runtime Integration**
+  - [ ] Modify `SmartMasterOrchestrator` for production GADK runtime initialization
+  - [ ] Implement real agent session management with GADK APIs
   - [ ] Add comprehensive error handling and recovery mechanisms
-  - [ ] Create orchestrator configuration via `config/orchestrator/agdk.yaml`
+  - [ ] Create orchestrator configuration via `config/orchestrator/gadk.yaml`
 
 - [ ] **Memory-Enhanced Orchestration** *(No Mock Code)*
   - [ ] Add real memory integration to orchestrator workflows
@@ -473,7 +473,7 @@ The current `src/agents/base/base_agent.py` contains 11 critical TODOs that must
   - [ ] Build coordination performance monitoring
 
 - [ ] **Feature Flag Management** *(Configuration-Driven)*
-  - [ ] Implement production feature flag support for AGDK vs legacy execution
+  - [ ] Implement production feature flag support for GADK vs legacy execution
   - [ ] Add gradual rollout capabilities with A/B testing
   - [ ] Create feature flag configuration via `config/features/`
   - [ ] Add feature flag monitoring and analytics
@@ -483,7 +483,7 @@ The current `src/agents/base/base_agent.py` contains 11 critical TODOs that must
 - ✅ **NO FALLBACK CODE**: Legacy mode available only via explicit configuration
 - ✅ **CONFIGURATION-DRIVEN**: Orchestration behavior configurable via `config/orchestrator/`
 - ✅ **MODULAR DESIGN**: Orchestrator components replaceable and testable in isolation
-- Orchestrator seamlessly switches between AGDK and legacy modes via configuration
+- Orchestrator seamlessly switches between GADK and legacy modes via configuration
 - Memory context enhances agent selection decisions with measurable improvement
 - Session coordination works reliably under high load (100+ concurrent sessions)
 - Performance metrics guide orchestration optimization automatically
@@ -497,13 +497,13 @@ The current `src/agents/base/base_agent.py` contains 11 critical TODOs that must
 *Priority: MEDIUM - Core business value delivery
 
 #### **Milestone 4.1: Code Analyzer Agent** (Week 10)
-**Goal**: Migrate existing code analyzer to production AGDK with complete memory enhancement
+**Goal**: Migrate existing code analyzer to production GADK with complete memory enhancement
 
 **Background**: Existing code analyzer implementation (2,185 lines) provides foundation but requires production enhancement
 
 **Production Code Analyzer Implementation** *(No Mock Code)*:
-- [ ] **AGDK Tool Migration**
-  - [ ] Create production `src/agents/code_analyzer/google/agent.py` with full AGDK integration
+- [ ] **GADK Tool Migration**
+  - [ ] Create production `src/agents/code_analyzer/google/agent.py` with full GADK integration
   - [ ] Implement production `ComplexityAnalysisTool` with real algorithms (no placeholders)
   - [ ] Create `PatternDetectionTool` with machine learning-based pattern recognition
   - [ ] Implement `ArchitectureDiagnosticsTool` with comprehensive architecture analysis
@@ -527,14 +527,14 @@ The current `src/agents/base/base_agent.py` contains 11 critical TODOs that must
 - ✅ **NO FALLBACK CODE**: Analysis failures handled with proper error recovery
 - ✅ **CONFIGURATION-DRIVEN**: Analysis behavior configurable via comprehensive YAML
 - ✅ **MODULAR DESIGN**: Each tool independently testable and replaceable
-- All existing analysis capabilities preserved and enhanced in AGDK tools
+- All existing analysis capabilities preserved and enhanced in GADK tools
 - Memory integration improves analysis accuracy by 20% over baseline
-- AGDK developer portal shows complete tool execution flow with real telemetry
+- GADK developer portal shows complete tool execution flow with real telemetry
 - Performance equals or exceeds legacy implementation (sub-10 second analysis)
 - Quality control maintains >95% precision with <5% false positive rate
 - Cross-project learning demonstrates measurable improvement over time
 
-**Dependencies**: Phase 0-3 completion (AGDK framework, memory system), existing code analyzer
+**Dependencies**: Phase 0-3 completion (GADK framework, memory system), existing code analyzer
 
 #### **Milestone 4.2: Engineering Practices Agent** (Week 11)
 **Goal**: Implement production SOLID principles and code quality analysis
@@ -576,7 +576,7 @@ The current `src/agents/base/base_agent.py` contains 11 critical TODOs that must
 - Output stored in `outputs/engineering_practices/` with standardized format
 - Memory learning improves recommendations by 25% over 100 analyses
 
-**Dependencies**: AGDK tool framework, AST parsing infrastructure, pattern from code analyzer
+**Dependencies**: GADK tool framework, AST parsing infrastructure, pattern from code analyzer
 
 #### **Milestone 4.3: Security Standards Agent** (Week 12)
 **Goal**: Implement production OWASP and security pattern analysis
@@ -858,7 +858,7 @@ The current `src/agents/base/base_agent.py` contains 11 critical TODOs that must
 
 ### **Production-Grade Testing Framework**
 - **Unit Tests**: 100% coverage for all production components with no mock dependencies where possible
-- **Integration Tests**: End-to-end testing with real memory, Redis, and AGDK systems
+- **Integration Tests**: End-to-end testing with real memory, Redis, and GADK systems
 - **Performance Tests**: Load testing at each phase for scalability with production-like data
 - **Security Tests**: Comprehensive vulnerability assessment and penetration testing
 - **Memory Tests**: Pattern learning accuracy validation and cross-project benefit measurement
@@ -874,7 +874,7 @@ The current `src/agents/base/base_agent.py` contains 11 critical TODOs that must
 
 ### **BaseAgent TODO Resolution Status**
 - **✅ Resolved in Phase 0**: Configuration Integration (`config/agents/base_agent.yaml` integration)
-- **✅ Resolved in Phase 0**: TODOs 2, 3, 4, 5 (AGDK integration)
+- **✅ Resolved in Phase 0**: TODOs 2, 3, 4, 5 (GADK integration)
 - **✅ Resolved in Phase 0**: TODOs 1, 11 (Memory components, coverage calculation)
 - **✅ Resolved in Phase 2**: TODOs 6, 7, 8, 9, 10 (Memory retrieval, learning, pattern matching)
 - **Total TODOs**: 11 identified + Configuration Integration, all resolved across phases with production implementations
@@ -884,14 +884,14 @@ The current `src/agents/base/base_agent.py` contains 11 critical TODOs that must
 ## **Risk Mitigation & Dependencies**
 
 ### **High-Risk Items**
-1. **AGDK API Stability**: Pin versions, implement adapter patterns
+1. **GADK API Stability**: Pin versions, implement adapter patterns
 2. **Memory System Performance**: Implement caching, optimize indexing
 3. **Multi-Agent Coordination**: Start with sequential execution, add parallelism gradually
 4. **Tree-sitter Integration**: Extensive testing across languages
 5. **Production Scalability**: Load testing and performance monitoring
 
 ### **Critical Dependencies**
-1. **Google AGDK Access**: Required for Phase 0 start
+1. **Google GADK Access**: Required for Phase 0 start
 2. **Redis Infrastructure**: Required for Phase 4
 3. **Tree-sitter Parsers**: Required for Phase 1
 4. **LLM Provider Access**: Maintain existing Ollama/OpenAI/Gemini setup
@@ -919,22 +919,22 @@ The current `src/agents/base/base_agent.py` contains 11 critical TODOs that must
 
 ## **Immediate Next Steps (Next 2 Weeks)**
 
-### **Week 1: AGDK Foundation**
-1. **Day 1-2**: Secure Google AGDK access and setup development environment
+### **Week 1: GADK Foundation**
+1. **Day 1-2**: Secure Google GADK access and setup development environment
 2. **Day 3-4**: Implement basic `runtime_factory.py` and tool adapter framework
-3. **Day 5**: Create Docker image with AGDK CLI and dev portal
+3. **Day 5**: Create Docker image with GADK CLI and dev portal
 
 ### **Week 2: Tool Integration Proof of Concept**
-1. **Day 1-2**: Wrap complexity analysis as AGDK tool
+1. **Day 1-2**: Wrap complexity analysis as GADK tool
 2. **Day 3-4**: Implement tool registry and schema validation
-3. **Day 5**: Demonstrate end-to-end AGDK execution with dev portal visibility
+3. **Day 5**: Demonstrate end-to-end GADK execution with dev portal visibility
 
 ### **Critical Success Factors**
-- Google AGDK access secured rapidly
+- Google GADK access secured rapidly
 - Development environment stable and reproducible
 - Tool adapter pattern established for rapid agent migration
-- Team familiar with AGDK concepts and developer portal usage
+- Team familiar with GADK concepts and developer portal usage
 
 ---
 
-*This comprehensive milestone plan provides clear deliverables, acceptance criteria, and dependencies for each phase, ensuring successful delivery of the complete 6-agent code review system with Google AGDK integration.*
+*This comprehensive milestone plan provides clear deliverables, acceptance criteria, and dependencies for each phase, ensuring successful delivery of the complete 6-agent code review system with Google GADK integration.*

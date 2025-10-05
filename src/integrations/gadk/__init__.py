@@ -1,46 +1,46 @@
 """
-AGDK Integration Module for Google Cloud Agent Development
+GADK Integration Module for Google Cloud Agent Development
 
-This module provides the main interface for Google AGDK (Agent Development Kit) integration
+This module provides the main interface for Google GADK (Agent Development Kit) integration
 with Vertex AI Agents, Discovery Engine, and Dialogflow CX services.
 
 Main Components:
-- AGDKRuntimeFactory: Factory for creating and managing AGDK runtime instances
-- AGDKCredentialManager: Secure credential management for Google Cloud services
-- AGDKSession: Session management for agent interactions
+- GADKRuntimeFactory: Factory for creating and managing GADK runtime instances
+- GADKCredentialManager: Secure credential management for Google Cloud services
+- GADKSession: Session management for agent interactions
 - Configuration utilities for environment and config-driven setup
 
 Usage:
-    from src.integrations.agdk import (
-        AGDKRuntimeFactory, 
-        AGDKCredentialManager,
+    from src.integrations.gadk import (
+        GADKRuntimeFactory, 
+        GADKCredentialManager,
         create_runtime_config_from_env
     )
     
     # Initialize credentials
-    credential_manager = AGDKCredentialManager()
+    credential_manager = GADKCredentialManager()
     credential_manager.load_credentials()
     
     # Create runtime factory
-    factory = AGDKRuntimeFactory(config_manager)
+    factory = GADKRuntimeFactory(config_manager)
     
     # Create runtime configuration
     config = create_runtime_config_from_env()
     
-    # Initialize and use AGDK runtime
+    # Initialize and use GADK runtime
     await factory.initialize_runtime(config)
 """
 
 from .runtime.factory import (
-    AGDKRuntimeFactory,
-    AGDKRuntimeConfig, 
-    AGDKSession,
+    GADKRuntimeFactory,
+    GADKRuntimeConfig, 
+    GADKSession,
     create_runtime_config_from_env,
     create_runtime_config_from_config_manager
 )
 
 from .auth.credentials import (
-    AGDKCredentialManager,
+    GADKCredentialManager,
     CredentialInfo,
     get_credentials_from_environment,
     validate_credentials_file,
@@ -51,19 +51,19 @@ from .auth.credentials import (
 # Version information
 __version__ = "0.1.0"
 __author__ = "AI Code Review Team"
-__description__ = "Google AGDK Integration for Multi-Agent Code Review System"
+__description__ = "Google GADK Integration for Multi-Agent Code Review System"
 
 # Main exports for external use
 __all__ = [
     # Runtime factory and configuration
-    "AGDKRuntimeFactory",
-    "AGDKRuntimeConfig", 
-    "AGDKSession",
+    "GADKRuntimeFactory",
+    "GADKRuntimeConfig", 
+    "GADKSession",
     "create_runtime_config_from_env",
     "create_runtime_config_from_config_manager",
     
     # Credential management
-    "AGDKCredentialManager",
+    "GADKCredentialManager",
     "CredentialInfo",
     "get_credentials_from_environment",
     "validate_credentials_file", 
@@ -79,13 +79,13 @@ __all__ = [
 
 def get_module_info():
     """
-    Get information about the AGDK integration module.
+    Get information about the GADK integration module.
     
     Returns:
         dict: Module information including version, components, and status
     """
     return {
-        "name": "AGDK Integration",
+        "name": "GADK Integration",
         "version": __version__,
         "description": __description__,
         "author": __author__,
@@ -112,7 +112,7 @@ def get_module_info():
 
 def validate_module_dependencies():
     """
-    Validate that required dependencies are available for AGDK integration.
+    Validate that required dependencies are available for GADK integration.
     
     Returns:
         dict: Validation results with status and missing dependencies
@@ -146,11 +146,11 @@ def validate_module_dependencies():
 # Initialize module-level logging
 import logging
 logger = logging.getLogger(__name__)
-logger.info(f"AGDK Integration Module {__version__} loaded")
+logger.info(f"GADK Integration Module {__version__} loaded")
 
 # Validate dependencies on import
 dependency_status = validate_module_dependencies()
 if dependency_status["status"] == "invalid":
-    logger.warning(f"AGDK module has missing dependencies: {dependency_status['missing_dependencies']}")
+    logger.warning(f"GADK module has missing dependencies: {dependency_status['missing_dependencies']}")
 if dependency_status["warnings"]:
-    logger.info(f"AGDK module warnings: {dependency_status['warnings']}")
+    logger.info(f"GADK module warnings: {dependency_status['warnings']}")

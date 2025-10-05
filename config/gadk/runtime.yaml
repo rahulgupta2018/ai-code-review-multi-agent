@@ -1,5 +1,5 @@
-# AGDK Runtime Configuration
-# Configuration for Google Cloud Agent Development Kit integration
+# GADK Runtime Configuration
+# Configuration for Google Agent Development Kit integration
 
 # Google Cloud Project Settings
 project_id: ${GOOGLE_CLOUD_PROJECT_ID}
@@ -33,20 +33,20 @@ services:
 
 # Session Management
 session:
-  timeout: ${AGDK_SESSION_TIMEOUT:3600}  # 1 hour in seconds
+  timeout: ${GADK_SESSION_TIMEOUT:3600}  # 1 hour in seconds
   max_concurrent_sessions: 10
   cleanup_interval: 300  # 5 minutes in seconds
   
 # Retry and Error Handling
 retry:
-  max_retries: ${AGDK_MAX_RETRIES:3}
-  retry_delay: ${AGDK_RETRY_DELAY:1.0}
+  max_retries: ${GADK_MAX_RETRIES:3}
+  retry_delay: ${GADK_RETRY_DELAY:1.0}
   exponential_backoff: true
   max_retry_delay: 60.0
 
 # Logging Configuration
 logging:
-  level: ${AGDK_LOG_LEVEL:INFO}
+  level: ${GADK_LOG_LEVEL:INFO}
   enable_request_logging: ${ENABLE_REQUEST_LOGGING:false}
   enable_response_logging: ${ENABLE_RESPONSE_LOGGING:false}
   log_credentials: false  # Never log credentials

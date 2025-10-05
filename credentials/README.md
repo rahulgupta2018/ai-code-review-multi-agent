@@ -1,6 +1,6 @@
 # Google Cloud Setup for Agentic Code Review
 
-This directory contains the setup and configuration for integrating with Google Cloud's Vertex AI Agent Builder (formerly AGDK).
+This directory contains the setup and configuration for integrating with Google Cloud's Vertex AI Agent Builder (formerly GADK).
 
 ## 🚀 Quick Start
 
@@ -178,7 +178,7 @@ gcloud compute project-info describe --project=$GOOGLE_CLOUD_PROJECT
 After successful setup:
 
 1. ✅ **Verify** connection with `python scripts/verify_google_cloud.py`
-2. 🔄 **Proceed** to AGDK Module Structure implementation
+2. 🔄 **Proceed** to GADK Module Structure implementation
 3. 🏗️ **Build** the agent framework integration
 4. 🚀 **Deploy** your first agent
 

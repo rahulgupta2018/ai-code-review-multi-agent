@@ -1,7 +1,5 @@
-# Docker Compose Configuration for AI Code Review Multi-Agent System with AGDK Integration
+# Docker Compose Configuration for AI Code Review Multi-Agent System with GADK Integration
 # Production-ready multi-service orchestration
-
-version: '3.8'
 
 services:
   # ============================================================================
@@ -9,40 +7,47 @@ services:
   # ============================================================================
   
   # Main Application Service
-  ai-code-review-agdk:
+  ai-code-review-gadk:
     build:
       context: .
       dockerfile: Dockerfile
       target: development
       args:
         - BUILDKIT_INLINE_CACHE=1
-    container_name: ai-code-review-agdk
-    hostname: ai-code-review-agdk
+    container_name: ai-code-review-gadk
+    hostname: ai-code-review-gadk
     restart: unless-stopped
+    command: >
+      sh -c "
+        echo 'Starting AI Code Review GADK Development Environment...';
+        python -c 'import sys; print(f\"Python {sys.version}\")';
+        echo 'Environment ready. Keeping container alive...';
+        tail -f /dev/null
+      "
     environment:
       # Core Environment
       - ENVIRONMENT=development
       - DEBUG=true
       - DEV_MODE=true
       
-      # Google Cloud & AGDK
+      # Google Cloud & GADK
       - GOOGLE_CLOUD_PROJECT_ID=${GOOGLE_CLOUD_PROJECT_ID}
       - GOOGLE_CLOUD_LOCATION=${GOOGLE_CLOUD_LOCATION:-us-central1}
       - GOOGLE_APPLICATION_CREDENTIALS=/app/credentials/google-cloud-credentials.json
-      - AGDK_ENABLED=true
-      - USE_AGDK=true
-      - ANALYSIS_USE_AGDK=true
+      - GADK_ENABLED=true
+      - USE_GADK=true
+      - ANALYSIS_USE_GADK=true
       
-      # AGDK Configuration
-      - AGDK_PROJECT_ID=${GOOGLE_CLOUD_PROJECT_ID}
-      - AGDK_DEV_PORTAL_HOST=0.0.0.0
-      - AGDK_DEV_PORTAL_PORT=8200
-      - AGDK_WORKSPACE=/app/agdk-workspace
-      - AGDK_LOG_LEVEL=${AGDK_LOG_LEVEL:-INFO}
+      # GADK Configuration
+      - GADK_PROJECT_ID=${GOOGLE_CLOUD_PROJECT_ID}
+      - GADK_DEV_PORTAL_HOST=0.0.0.0
+      - GADK_DEV_PORTAL_PORT=8200
+      - GADK_WORKSPACE=/app/gadk-workspace
+      - GADK_LOG_LEVEL=${GADK_LOG_LEVEL:-INFO}
       
       # LLM Providers
       - DEFAULT_LLM_PROVIDER=${DEFAULT_LLM_PROVIDER:-ollama}
-      - OLLAMA_BASE_URL=http://ollama:11434
+      - OLLAMA_BASE_URL=http://host.docker.internal:11434
       - OPENAI_API_KEY=${OPENAI_API_KEY}
       - GEMINI_API_KEY=${GEMINI_API_KEY}
       
@@ -66,8 +71,7 @@ services:
       - LOG_FILE=/app/logs/app.log
     ports:
       - "8000:8000"     # Main API
-      - "8200:8200"     # AGDK Dev Portal
-      - "8888:8888"     # Jupyter Lab
+      - "8200:8200"     # GADK Dev Portal
     volumes:
       # Source code for development
       - .:/app
@@ -75,14 +79,13 @@ services:
       - ./logs:/app/logs
       - ./outputs:/app/outputs
       - ./credentials:/app/credentials
-      # AGDK workspace
-      - agdk-workspace:/app/agdk-workspace
+      # GADK workspace
+      - gadk-workspace:/app/gadk-workspace
       # Cache volumes
       - pip-cache:/root/.cache/pip
       - poetry-cache:/root/.cache/pypoetry
     depends_on:
       - redis
-      - ollama
     networks:
       - ai-code-review-network
     healthcheck:
@@ -125,71 +128,38 @@ services:
       - development
       - minimal
 
-  # Ollama for local LLM inference
-  ollama:
-    image: ollama/ollama:latest
-    container_name: ai-code-review-ollama
-    hostname: ollama
-    restart: unless-stopped
-    environment:
-      - OLLAMA_HOST=0.0.0.0
-      - OLLAMA_ORIGINS=*
-      - OLLAMA_NUM_PARALLEL=2
-      - OLLAMA_MAX_LOADED_MODELS=2
-    ports:
-      - "11434:11434"
-    volumes:
-      - ollama-data:/root/.ollama
-    networks:
-      - ai-code-review-network
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:11434/api/version"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 60s
-    profiles:
-      - full
-      - development
-      - ollama
+  # Ollama for local LLM inference (DISABLED - using native Ollama with GPU acceleration)
+  # Access via: http://host.docker.internal:11434
+  # ollama:
+  #   image: ollama/ollama:latest
+  #   container_name: ai-code-review-ollama
+  #   hostname: ollama
+  #   restart: unless-stopped
+  #   environment:
+  #     - OLLAMA_HOST=0.0.0.0
+  #     - OLLAMA_ORIGINS=*
+  #     - OLLAMA_NUM_PARALLEL=2
+  #     - OLLAMA_MAX_LOADED_MODELS=2
+  #   ports:
+  #     - "11434:11434"
+  #   volumes:
+  #     - ollama-data:/root/.ollama
+  #   networks:
+  #     - ai-code-review-network
+  #   healthcheck:
+  #     test: ["CMD", "curl", "-f", "http://localhost:11434/api/version"]
+  #     interval: 30s
+  #     timeout: 10s
+  #     retries: 3
+  #     start_period: 60s
+  #   profiles:
+  #     - full
+  #     - development
+  #     - ollama
 
   # ============================================================================
-  # DEVELOPMENT SERVICES
+  # DEVELOPMENT SERVICES (Jupyter Lab removed - use main GADK container for development)
   # ============================================================================
-  
-  # Jupyter Lab for development and experimentation
-  jupyter:
-    build:
-      context: .
-      dockerfile: Dockerfile
-      target: development
-    container_name: ai-code-review-jupyter
-    hostname: jupyter
-    restart: unless-stopped
-    command: >
-      sh -c "
-        jupyter lab --ip=0.0.0.0 --port=8888 --no-browser --allow-root 
-        --NotebookApp.token='' --NotebookApp.password='' 
-        --ServerApp.allow_origin='*' --ServerApp.allow_remote_access=True
-      "
-    environment:
-      - JUPYTER_ENABLE_LAB=yes
-      - JUPYTER_TOKEN=
-      - JUPYTER_PASSWORD=
-    ports:
-      - "8888:8888"
-    volumes:
-      - .:/app
-      - ./notebooks:/app/notebooks
-      - jupyter-data:/root/.jupyter
-    depends_on:
-      - redis
-    networks:
-      - ai-code-review-network
-    profiles:
-      - full
-      - development
-      - jupyter
 
   # PostgreSQL for production deployments (alternative to SQLite)
   postgres:
@@ -334,14 +304,12 @@ volumes:
     name: ai-code-review-redis-data
   postgres-data:
     name: ai-code-review-postgres-data
-  ollama-data:
-    name: ai-code-review-ollama-data
+  # ollama-data: (DISABLED - using native Ollama)
+  #   name: ai-code-review-ollama-data
   
   # Development data
-  jupyter-data:
-    name: ai-code-review-jupyter-data
-  agdk-workspace:
-    name: ai-code-review-agdk-workspace
+  gadk-workspace:
+    name: ai-code-review-gadk-workspace
   
   # Cache volumes
   pip-cache:

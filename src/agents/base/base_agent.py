@@ -2,7 +2,7 @@
 Base Agent - Comprehensive Foundation
 
 Enhanced foundation class for all analysis agents with memory integration,
-AGDK support, and advanced learning capabilities. Provides a unified interface
+GADK support, and advanced learning capabilities. Provides a unified interface
 for specialized agents with configurable feature sets.
 """
 from abc import ABC, abstractmethod
@@ -63,11 +63,11 @@ class AnalysisResult:
 
 class BaseAgent(ABC):
     """
-    Enhanced base class for all analysis agents with memory integration and AGDK support.
+    Enhanced base class for all analysis agents with memory integration and GADK support.
     
     Features:
     - Memory-aware analysis with pattern learning
-    - AGDK integration for tool-based execution
+    - GADK integration for tool-based execution
     - Configurable feature enablement
     - Comprehensive quality control and bias prevention
     - Historical accuracy tracking and confidence calibration
@@ -80,7 +80,7 @@ class BaseAgent(ABC):
         # Initialize configuration management
         self._load_agent_configuration(config)
         
-        self.version = "2.0.0"  # Enhanced version with memory + AGDK
+        self.version = "2.0.0"  # Enhanced version with memory + GADK
         
         # Agent capabilities
         self.capabilities = self._define_capabilities()
@@ -96,10 +96,10 @@ class BaseAgent(ABC):
         if self.memory_enabled:
             self._initialize_memory_components()
         
-        if self.agdk_enabled:
-            self._initialize_agdk_components()
+        if self.gadk_enabled:
+            self._initialize_gadk_components()
         
-        logger.info(f"Initialized {self.name} v{self.version} - Memory: {self.memory_enabled}, AGDK: {self.agdk_enabled}")
+        logger.info(f"Initialized {self.name} v{self.version} - Memory: {self.memory_enabled}, GADK: {self.gadk_enabled}")
     
     def _load_agent_configuration(self, provided_config: Optional[Dict[str, Any]] = None):
         """Load agent configuration from multiple sources with proper precedence."""
@@ -182,28 +182,28 @@ class BaseAgent(ABC):
         self.state_management_config = integration_config.get("state_management", {})
         self.orchestration_config = integration_config.get("orchestration", {})
         
-        # AGDK configuration
-        agdk_config = self.config.get("agdk", {})
-        self.agdk_enabled = agdk_config.get("enabled", False)
-        self.agdk_use_config_manager = agdk_config.get("use_config_manager", True)
-        self.agdk_events_config = agdk_config.get("events", {})
-        self.agdk_tools_config = agdk_config.get("tools", {})
+        # GADK configuration
+        gadk_config = self.config.get("gadk", {})
+        self.gadk_enabled = gadk_config.get("enabled", False)
+        self.gadk_use_config_manager = gadk_config.get("use_config_manager", True)
+        self.gadk_events_config = gadk_config.get("events", {})
+        self.gadk_tools_config = gadk_config.get("tools", {})
         
         # Initialize state containers
         self._learned_patterns: List[Dict[str, Any]] = []
         self._historical_accuracy: Dict[str, float] = {}
         
-        # AGDK state initialization
-        self._agdk_session_id: Optional[str] = None
-        self._agdk_session = None
-        self._agdk_tools_registered = False
-        self._agdk_event_handlers: Dict[str, Any] = {}
-        self._agdk_session_state: Dict[str, Any] = {}
-        self._agdk_events_processed = 0
-        self._agdk_errors_count = 0
-        self._agdk_event_stats: Dict[str, Dict[str, int]] = {}
-        self._agdk_tool_instances: Dict[str, Any] = {}
-        self._agdk_last_state = 'unknown'
+        # GADK state initialization
+        self._gadk_session_id: Optional[str] = None
+        self._gadk_session = None
+        self._gadk_tools_registered = False
+        self._gadk_event_handlers: Dict[str, Any] = {}
+        self._gadk_session_state: Dict[str, Any] = {}
+        self._gadk_events_processed = 0
+        self._gadk_errors_count = 0
+        self._gadk_event_stats: Dict[str, Dict[str, int]] = {}
+        self._gadk_tool_instances: Dict[str, Any] = {}
+        self._gadk_last_state = 'unknown'
         
         logger.debug(f"Feature setup completed for {self.name}")
     
@@ -213,7 +213,7 @@ class BaseAgent(ABC):
             "name": self.name,
             "version": self.version,
             "memory_enabled": self.memory_enabled,
-            "agdk_enabled": self.agdk_enabled,
+            "gadk_enabled": self.gadk_enabled,
             "learning_enabled": self.learning_enabled,
             "confidence_threshold": self.confidence_threshold,
             "max_findings_per_file": self.max_findings_per_file,
@@ -238,52 +238,52 @@ class BaseAgent(ABC):
         # TODO: Initialize actual memory components when implemented
         logger.debug(f"Memory components initialized for {self.name}")
     
-    def _initialize_agdk_components(self):
-        """Initialize AGDK integration components with real Google Cloud services."""
+    def _initialize_gadk_components(self):
+        """Initialize GADK integration components with real Google Cloud services."""
         try:
-            # Import AGDK components
-            from ...integrations.agdk import (
-                AGDKRuntimeFactory,
-                AGDKCredentialManager,
+            # Import GADK components
+            from ...integrations.gadk import (
+                GADKRuntimeFactory,
+                GADKCredentialManager,
                 create_runtime_config_from_config_manager
             )
             from ...core.config.config_manager import ConfigManager
             
-            logger.info(f"Initializing AGDK components for {self.name}")
+            logger.info(f"Initializing GADK components for {self.name}")
             
             # Ensure configuration manager is available
             if not self.config_manager:
-                logger.error(f"No configuration manager available for AGDK initialization in {self.name}")
-                self.agdk_enabled = False
+                logger.error(f"No configuration manager available for GADK initialization in {self.name}")
+                self.gadk_enabled = False
                 return
             
             # Initialize credential manager
-            self._agdk_credential_manager = AGDKCredentialManager()
+            self._gadk_credential_manager = GADKCredentialManager()
             
             # Load and validate credentials
-            if not self._agdk_credential_manager.load_credentials():
-                logger.error(f"Failed to load AGDK credentials for {self.name}")
-                self.agdk_enabled = False
+            if not self._gadk_credential_manager.load_credentials():
+                logger.error(f"Failed to load GADK credentials for {self.name}")
+                self.gadk_enabled = False
                 return
             
-            if not self._agdk_credential_manager.validate_credentials():
-                logger.error(f"AGDK credentials validation failed for {self.name}")
-                self.agdk_enabled = False
+            if not self._gadk_credential_manager.validate_credentials():
+                logger.error(f"GADK credentials validation failed for {self.name}")
+                self.gadk_enabled = False
                 return
             
             # Initialize runtime factory
-            self._agdk_runtime_factory = AGDKRuntimeFactory(self.config_manager)
+            self._gadk_runtime_factory = GADKRuntimeFactory(self.config_manager)
             
             # Create runtime configuration
-            agdk_config = self.config.get('agdk', {})
-            if agdk_config.get('use_config_manager', True):
-                self._agdk_runtime_config = create_runtime_config_from_config_manager(self.config_manager)
+            gadk_config = self.config.get('gadk', {})
+            if gadk_config.get('use_config_manager', True):
+                self._gadk_runtime_config = create_runtime_config_from_config_manager(self.config_manager)
             else:
                 # Fallback to environment-based configuration
-                from ...integrations.agdk import create_runtime_config_from_env
-                self._agdk_runtime_config = create_runtime_config_from_env()
+                from ...integrations.gadk import create_runtime_config_from_env
+                self._gadk_runtime_config = create_runtime_config_from_env()
             
-            # Initialize the AGDK runtime
+            # Initialize the GADK runtime
             import asyncio
             try:
                 loop = asyncio.get_event_loop()
@@ -293,31 +293,31 @@ class BaseAgent(ABC):
             
             # Initialize runtime in async context
             initialization_successful = loop.run_until_complete(
-                self._agdk_runtime_factory.initialize_runtime(self._agdk_runtime_config)
+                self._gadk_runtime_factory.initialize_runtime(self._gadk_runtime_config)
             )
             
             if not initialization_successful:
-                logger.error(f"AGDK runtime initialization failed for {self.name}")
-                self.agdk_enabled = False
+                logger.error(f"GADK runtime initialization failed for {self.name}")
+                self.gadk_enabled = False
                 return
             
-            # Initialize agent-specific AGDK state
-            self._agdk_session_id = None
-            self._agdk_session = None
-            self._agdk_tools_registered = False
-            self._agdk_event_handlers = {}
+            # Initialize agent-specific GADK state
+            self._gadk_session_id = None
+            self._gadk_session = None
+            self._gadk_tools_registered = False
+            self._gadk_event_handlers = {}
             
             # Register default event handlers
-            self._register_agdk_event_handlers()
+            self._register_gadk_event_handlers()
             
-            logger.info(f"AGDK components successfully initialized for {self.name}")
+            logger.info(f"GADK components successfully initialized for {self.name}")
             
         except ImportError as e:
-            logger.error(f"AGDK integration dependencies not available for {self.name}: {e}")
-            self.agdk_enabled = False
+            logger.error(f"GADK integration dependencies not available for {self.name}: {e}")
+            self.gadk_enabled = False
         except Exception as e:
-            logger.error(f"Failed to initialize AGDK components for {self.name}: {e}")
-            self.agdk_enabled = False
+            logger.error(f"Failed to initialize GADK components for {self.name}: {e}")
+            self.gadk_enabled = False
     
     @abstractmethod
     def _define_capabilities(self) -> List[str]:
@@ -373,11 +373,11 @@ class BaseAgent(ABC):
         else:
             return self.analyze(context)
     
-    # AGDK Integration Methods
+    # GADK Integration Methods
     def on_session_started(self, session_data: Dict[str, Any]):
-        """Handle AGDK session start event with real session initialization."""
-        if not self.agdk_enabled:
-            logger.debug(f"AGDK not enabled for {self.name}, skipping session start")
+        """Handle GADK session start event with real session initialization."""
+        if not self.gadk_enabled:
+            logger.debug(f"GADK not enabled for {self.name}, skipping session start")
             return
         
         try:
@@ -386,9 +386,9 @@ class BaseAgent(ABC):
                 logger.error(f"No session_id provided in session_data for {self.name}")
                 return
             
-            logger.info(f"Starting AGDK session {session_id} for {self.name}")
+            logger.info(f"Starting GADK session {session_id} for {self.name}")
             
-            # Create AGDK session
+            # Create GADK session
             import asyncio
             try:
                 loop = asyncio.get_event_loop()
@@ -397,59 +397,59 @@ class BaseAgent(ABC):
                 asyncio.set_event_loop(loop)
             
             # Create session with runtime factory
-            self._agdk_session = loop.run_until_complete(
-                self._agdk_runtime_factory.create_session(session_id, self._agdk_runtime_config)
+            self._gadk_session = loop.run_until_complete(
+                self._gadk_runtime_factory.create_session(session_id, self._gadk_runtime_config)
             )
             
-            if not self._agdk_session:
-                logger.error(f"Failed to create AGDK session {session_id} for {self.name}")
+            if not self._gadk_session:
+                logger.error(f"Failed to create GADK session {session_id} for {self.name}")
                 return
             
-            self._agdk_session_id = session_id
+            self._gadk_session_id = session_id
             
             # Register agent-specific tools with the session
-            self._register_agdk_tools()
+            self._register_gadk_tools()
             
             # Set up session-specific configuration
-            self._configure_agdk_session(session_data)
+            self._configure_gadk_session(session_data)
             
             # Initialize session state
-            self._agdk_session_state = {
+            self._gadk_session_state = {
                 'started_at': self._get_timestamp(),
                 'analysis_count': 0,
-                'tools_registered': self._agdk_tools_registered,
+                'tools_registered': self._gadk_tools_registered,
                 'session_metadata': session_data.get('metadata', {})
             }
             
-            logger.info(f"AGDK session {session_id} successfully started for {self.name}")
+            logger.info(f"GADK session {session_id} successfully started for {self.name}")
             
         except Exception as e:
-            logger.error(f"Failed to start AGDK session for {self.name}: {e}")
-            self._agdk_session = None
-            self._agdk_session_id = None
+            logger.error(f"Failed to start GADK session for {self.name}: {e}")
+            self._gadk_session = None
+            self._gadk_session_id = None
     
     def on_session_finished(self, session_data: Dict[str, Any]):
-        """Handle AGDK session finish event with proper cleanup and resource management."""
-        if not self.agdk_enabled:
-            logger.debug(f"AGDK not enabled for {self.name}, skipping session finish")
+        """Handle GADK session finish event with proper cleanup and resource management."""
+        if not self.gadk_enabled:
+            logger.debug(f"GADK not enabled for {self.name}, skipping session finish")
             return
         
         try:
-            session_id = session_data.get('session_id', self._agdk_session_id)
+            session_id = session_data.get('session_id', self._gadk_session_id)
             if not session_id:
                 logger.warning(f"No session_id provided for session finish in {self.name}")
                 return
             
-            logger.info(f"Finishing AGDK session {session_id} for {self.name}")
+            logger.info(f"Finishing GADK session {session_id} for {self.name}")
             
             # Collect session statistics before cleanup
-            session_stats = self._collect_agdk_session_stats()
+            session_stats = self._collect_gadk_session_stats()
             
             # Perform cleanup operations
-            self._cleanup_agdk_session_resources()
+            self._cleanup_gadk_session_resources()
             
-            # Close the AGDK session
-            if self._agdk_session and self._agdk_runtime_factory:
+            # Close the GADK session
+            if self._gadk_session and self._gadk_runtime_factory:
                 import asyncio
                 try:
                     loop = asyncio.get_event_loop()
@@ -458,42 +458,42 @@ class BaseAgent(ABC):
                     asyncio.set_event_loop(loop)
                 
                 session_closed = loop.run_until_complete(
-                    self._agdk_runtime_factory.close_session(session_id)
+                    self._gadk_runtime_factory.close_session(session_id)
                 )
                 
                 if session_closed:
-                    logger.info(f"AGDK session {session_id} successfully closed for {self.name}")
+                    logger.info(f"GADK session {session_id} successfully closed for {self.name}")
                 else:
-                    logger.warning(f"Failed to properly close AGDK session {session_id} for {self.name}")
+                    logger.warning(f"Failed to properly close GADK session {session_id} for {self.name}")
             
             # Reset session state
-            self._agdk_session = None
-            self._agdk_session_id = None
-            self._agdk_tools_registered = False
-            self._agdk_session_state = {}
+            self._gadk_session = None
+            self._gadk_session_id = None
+            self._gadk_tools_registered = False
+            self._gadk_session_state = {}
             
             # Log session completion with statistics
-            logger.info(f"AGDK session {session_id} completed for {self.name}. Stats: {session_stats}")
+            logger.info(f"GADK session {session_id} completed for {self.name}. Stats: {session_stats}")
             
         except Exception as e:
-            logger.error(f"Error during AGDK session finish for {self.name}: {e}")
+            logger.error(f"Error during GADK session finish for {self.name}: {e}")
             # Force cleanup even if error occurred
             try:
-                self._force_cleanup_agdk_session()
+                self._force_cleanup_gadk_session()
             except Exception as cleanup_error:
                 logger.error(f"Force cleanup failed for {self.name}: {cleanup_error}")
     
-    def handle_agdk_event(self, event_type: str, event_data: Dict[str, Any]):
-        """Handle AGDK events with comprehensive event processing and tool coordination."""
-        if not self.agdk_enabled:
-            logger.debug(f"AGDK not enabled for {self.name}, ignoring event {event_type}")
+    def handle_gadk_event(self, event_type: str, event_data: Dict[str, Any]):
+        """Handle GADK events with comprehensive event processing and tool coordination."""
+        if not self.gadk_enabled:
+            logger.debug(f"GADK not enabled for {self.name}, ignoring event {event_type}")
             return
         
         try:
-            logger.debug(f"Handling AGDK event '{event_type}' for {self.name}")
+            logger.debug(f"Handling GADK event '{event_type}' for {self.name}")
             
             # Get event handler configuration
-            event_config = self.config.get('agdk', {}).get('events', {}).get(event_type, {})
+            event_config = self.config.get('gadk', {}).get('events', {}).get(event_type, {})
             
             # Check if this event type is enabled for this agent
             if not event_config.get('enabled', True):
@@ -501,7 +501,7 @@ class BaseAgent(ABC):
                 return
             
             # Validate event data
-            if not self._validate_agdk_event_data(event_type, event_data):
+            if not self._validate_gadk_event_data(event_type, event_data):
                 logger.warning(f"Invalid event data for '{event_type}' in {self.name}")
                 return
             
@@ -524,7 +524,7 @@ class BaseAgent(ABC):
                 event_result = self._handle_coordination_request_event(event_data)
             else:
                 # Handle custom or unknown events
-                event_result = self._handle_custom_agdk_event(event_type, event_data)
+                event_result = self._handle_custom_gadk_event(event_type, event_data)
             
             # Log event processing result
             if event_result:
@@ -533,22 +533,22 @@ class BaseAgent(ABC):
                 logger.debug(f"Event '{event_type}' processed for {self.name} (no result)")
             
             # Update event statistics
-            self._update_agdk_event_stats(event_type, event_result is not None)
+            self._update_gadk_event_stats(event_type, event_result is not None)
             
         except Exception as e:
-            logger.error(f"Error handling AGDK event '{event_type}' for {self.name}: {e}")
-            # Report error back to AGDK system if configured
-            self._report_agdk_event_error(event_type, event_data, e)
+            logger.error(f"Error handling GADK event '{event_type}' for {self.name}: {e}")
+            # Report error back to GADK system if configured
+            self._report_gadk_event_error(event_type, event_data, e)
     
-    def get_agdk_tools(self) -> List[str]:
-        """Get list of AGDK tools provided by this agent."""
+    def get_gadk_tools(self) -> List[str]:
+        """Get list of GADK tools provided by this agent."""
         # Base implementation - to be overridden by specific agents
         return ["base_quality_validator", "base_bias_checker", "base_evidence_validator"]
     
-    # AGDK Helper Methods
-    def _register_agdk_event_handlers(self):
-        """Register default AGDK event handlers."""
-        self._agdk_event_handlers = {
+    # GADK Helper Methods
+    def _register_gadk_event_handlers(self):
+        """Register default GADK event handlers."""
+        self._gadk_event_handlers = {
             "tool_execution_requested": self._handle_tool_execution_event,
             "analysis_started": self._handle_analysis_started_event,
             "analysis_completed": self._handle_analysis_completed_event,
@@ -557,17 +557,17 @@ class BaseAgent(ABC):
             "session_state_changed": self._handle_session_state_event,
             "coordination_request": self._handle_coordination_request_event
         }
-        logger.debug(f"Registered {len(self._agdk_event_handlers)} AGDK event handlers for {self.name}")
+        logger.debug(f"Registered {len(self._gadk_event_handlers)} GADK event handlers for {self.name}")
     
-    def _register_agdk_tools(self):
-        """Register agent-specific tools with the AGDK session."""
+    def _register_gadk_tools(self):
+        """Register agent-specific tools with the GADK session."""
         try:
-            if not self._agdk_session or not self._agdk_runtime_factory:
-                logger.warning(f"Cannot register tools - no active AGDK session for {self.name}")
+            if not self._gadk_session or not self._gadk_runtime_factory:
+                logger.warning(f"Cannot register tools - no active GADK session for {self.name}")
                 return
             
             # Get tools from agent implementation
-            agent_tools = self.get_agdk_tools()
+            agent_tools = self.get_gadk_tools()
             
             import asyncio
             try:
@@ -579,34 +579,34 @@ class BaseAgent(ABC):
             # Register each tool with the session
             registered_count = 0
             for tool_name in agent_tools:
-                if not self._agdk_session_id:
+                if not self._gadk_session_id:
                     logger.error(f"No session ID available for tool registration in {self.name}")
                     break
                     
-                tool_instance = self._create_agdk_tool_instance(tool_name)
+                tool_instance = self._create_gadk_tool_instance(tool_name)
                 if tool_instance:
                     success = loop.run_until_complete(
-                        self._agdk_runtime_factory.register_tool(
-                            self._agdk_session_id, tool_name, tool_instance
+                        self._gadk_runtime_factory.register_tool(
+                            self._gadk_session_id, tool_name, tool_instance
                         )
                     )
                     if success:
                         registered_count += 1
-                        logger.debug(f"Registered AGDK tool '{tool_name}' for {self.name}")
+                        logger.debug(f"Registered GADK tool '{tool_name}' for {self.name}")
                     else:
-                        logger.warning(f"Failed to register AGDK tool '{tool_name}' for {self.name}")
+                        logger.warning(f"Failed to register GADK tool '{tool_name}' for {self.name}")
                 else:
                     logger.warning(f"Could not create tool instance for '{tool_name}' in {self.name}")
             
-            self._agdk_tools_registered = registered_count > 0
-            logger.info(f"Registered {registered_count}/{len(agent_tools)} AGDK tools for {self.name}")
+            self._gadk_tools_registered = registered_count > 0
+            logger.info(f"Registered {registered_count}/{len(agent_tools)} GADK tools for {self.name}")
             
         except Exception as e:
-            logger.error(f"Error registering AGDK tools for {self.name}: {e}")
-            self._agdk_tools_registered = False
+            logger.error(f"Error registering GADK tools for {self.name}: {e}")
+            self._gadk_tools_registered = False
     
-    def _create_agdk_tool_instance(self, tool_name: str) -> Optional[Any]:
-        """Create an instance of the specified AGDK tool."""
+    def _create_gadk_tool_instance(self, tool_name: str) -> Optional[Any]:
+        """Create an instance of the specified GADK tool."""
         # Base implementation - to be extended by specific agents
         if tool_name == "base_quality_validator":
             return self._create_quality_validator_tool()
@@ -633,12 +633,12 @@ class BaseAgent(ABC):
         # Implementation will be added when tool framework is ready
         return {"name": "base_evidence_validator", "type": "validator", "agent": self.name}
     
-    def _configure_agdk_session(self, session_data: Dict[str, Any]):
-        """Configure AGDK session with agent-specific settings."""
+    def _configure_gadk_session(self, session_data: Dict[str, Any]):
+        """Configure GADK session with agent-specific settings."""
         try:
             # Apply agent-specific configuration from config
-            agdk_config = self.config.get('agdk', {})
-            session_config = agdk_config.get('session', {})
+            gadk_config = self.config.get('gadk', {})
+            session_config = gadk_config.get('session', {})
             
             # Configure session timeout
             session_timeout = session_config.get('timeout', 3600)
@@ -650,89 +650,89 @@ class BaseAgent(ABC):
             monitoring_config = session_config.get('monitoring', {})
             
             # Store configuration in session state
-            if hasattr(self, '_agdk_session_state'):
-                self._agdk_session_state.update({
+            if hasattr(self, '_gadk_session_state'):
+                self._gadk_session_state.update({
                     'session_timeout': session_timeout,
                     'tool_config': tool_config,
                     'monitoring_config': monitoring_config
                 })
             
-            logger.debug(f"AGDK session configured for {self.name}")
+            logger.debug(f"GADK session configured for {self.name}")
             
         except Exception as e:
-            logger.error(f"Error configuring AGDK session for {self.name}: {e}")
+            logger.error(f"Error configuring GADK session for {self.name}: {e}")
     
-    def _collect_agdk_session_stats(self) -> Dict[str, Any]:
-        """Collect statistics from the current AGDK session."""
+    def _collect_gadk_session_stats(self) -> Dict[str, Any]:
+        """Collect statistics from the current GADK session."""
         try:
-            if not hasattr(self, '_agdk_session_state'):
+            if not hasattr(self, '_gadk_session_state'):
                 return {}
             
-            session_state = getattr(self, '_agdk_session_state', {})
+            session_state = getattr(self, '_gadk_session_state', {})
             
             # Calculate session duration
             started_at = session_state.get('started_at', self._get_timestamp())
             current_time = self._get_timestamp()
             
             stats = {
-                'session_id': self._agdk_session_id,
+                'session_id': self._gadk_session_id,
                 'agent_name': self.name,
                 'started_at': started_at,
                 'finished_at': current_time,
                 'analysis_count': session_state.get('analysis_count', 0),
                 'tools_registered': session_state.get('tools_registered', False),
-                'events_processed': getattr(self, '_agdk_events_processed', 0),
-                'errors_encountered': getattr(self, '_agdk_errors_count', 0)
+                'events_processed': getattr(self, '_gadk_events_processed', 0),
+                'errors_encountered': getattr(self, '_gadk_errors_count', 0)
             }
             
             return stats
             
         except Exception as e:
-            logger.error(f"Error collecting AGDK session stats for {self.name}: {e}")
+            logger.error(f"Error collecting GADK session stats for {self.name}: {e}")
             return {'error': str(e)}
     
-    def _cleanup_agdk_session_resources(self):
-        """Clean up AGDK session resources."""
+    def _cleanup_gadk_session_resources(self):
+        """Clean up GADK session resources."""
         try:
             # Clear session-specific state
-            if hasattr(self, '_agdk_session_state'):
-                self._agdk_session_state.clear()
+            if hasattr(self, '_gadk_session_state'):
+                self._gadk_session_state.clear()
             
             # Reset counters
-            self._agdk_events_processed = 0
-            self._agdk_errors_count = 0
+            self._gadk_events_processed = 0
+            self._gadk_errors_count = 0
             
             # Clear tool instances
-            if hasattr(self, '_agdk_tool_instances'):
-                self._agdk_tool_instances.clear()
+            if hasattr(self, '_gadk_tool_instances'):
+                self._gadk_tool_instances.clear()
             
-            logger.debug(f"AGDK session resources cleaned up for {self.name}")
+            logger.debug(f"GADK session resources cleaned up for {self.name}")
             
         except Exception as e:
-            logger.error(f"Error cleaning up AGDK session resources for {self.name}: {e}")
+            logger.error(f"Error cleaning up GADK session resources for {self.name}: {e}")
     
-    def _force_cleanup_agdk_session(self):
-        """Force cleanup of AGDK session (emergency cleanup)."""
+    def _force_cleanup_gadk_session(self):
+        """Force cleanup of GADK session (emergency cleanup)."""
         try:
-            # Force reset all AGDK-related state
-            self._agdk_session = None
-            self._agdk_session_id = None
-            self._agdk_tools_registered = False
-            self._agdk_session_state = {}
-            self._agdk_events_processed = 0
-            self._agdk_errors_count = 0
+            # Force reset all GADK-related state
+            self._gadk_session = None
+            self._gadk_session_id = None
+            self._gadk_tools_registered = False
+            self._gadk_session_state = {}
+            self._gadk_events_processed = 0
+            self._gadk_errors_count = 0
             
-            if hasattr(self, '_agdk_tool_instances'):
-                self._agdk_tool_instances.clear()
+            if hasattr(self, '_gadk_tool_instances'):
+                self._gadk_tool_instances.clear()
             
-            logger.warning(f"Force cleanup completed for AGDK session in {self.name}")
+            logger.warning(f"Force cleanup completed for GADK session in {self.name}")
             
         except Exception as e:
             logger.error(f"Error during force cleanup for {self.name}: {e}")
     
-    # AGDK Event Handlers
-    def _validate_agdk_event_data(self, event_type: str, event_data: Dict[str, Any]) -> bool:
-        """Validate AGDK event data structure."""
+    # GADK Event Handlers
+    def _validate_gadk_event_data(self, event_type: str, event_data: Dict[str, Any]) -> bool:
+        """Validate GADK event data structure."""
         try:
             # Basic validation
             if not isinstance(event_data, dict):
@@ -777,8 +777,8 @@ class BaseAgent(ABC):
         }
         
         # Increment analysis count
-        if hasattr(self, '_agdk_session_state'):
-            self._agdk_session_state['analysis_count'] = self._agdk_session_state.get('analysis_count', 0) + 1
+        if hasattr(self, '_gadk_session_state'):
+            self._gadk_session_state['analysis_count'] = self._gadk_session_state.get('analysis_count', 0) + 1
         
         return result
     
@@ -832,16 +832,16 @@ class BaseAgent(ABC):
         error_type = event_data.get('error_type')
         message = event_data.get('message', '')
         
-        logger.warning(f"AGDK error event: {error_type} - {message} for {self.name}")
+        logger.warning(f"GADK error event: {error_type} - {message} for {self.name}")
         
         # Increment error count
-        self._agdk_errors_count = getattr(self, '_agdk_errors_count', 0) + 1
+        self._gadk_errors_count = getattr(self, '_gadk_errors_count', 0) + 1
         
         return {
             'error_type': error_type,
             'agent': self.name,
             'status': 'error_acknowledged',
-            'error_count': self._agdk_errors_count,
+            'error_count': self._gadk_errors_count,
             'timestamp': self._get_timestamp()
         }
     
@@ -852,7 +852,7 @@ class BaseAgent(ABC):
         logger.debug(f"Session state changed to: {new_state} for {self.name}")
         
         return {
-            'previous_state': getattr(self, '_agdk_last_state', 'unknown'),
+            'previous_state': getattr(self, '_gadk_last_state', 'unknown'),
             'new_state': new_state,
             'agent': self.name,
             'timestamp': self._get_timestamp()
@@ -871,9 +871,9 @@ class BaseAgent(ABC):
             'timestamp': self._get_timestamp()
         }
     
-    def _handle_custom_agdk_event(self, event_type: str, event_data: Dict[str, Any]) -> Dict[str, Any]:
-        """Handle custom or unknown AGDK events."""
-        logger.debug(f"Custom AGDK event: {event_type} for {self.name}")
+    def _handle_custom_gadk_event(self, event_type: str, event_data: Dict[str, Any]) -> Dict[str, Any]:
+        """Handle custom or unknown GADK events."""
+        logger.debug(f"Custom GADK event: {event_type} for {self.name}")
         
         return {
             'event_type': event_type,
@@ -882,31 +882,31 @@ class BaseAgent(ABC):
             'timestamp': self._get_timestamp()
         }
     
-    def _update_agdk_event_stats(self, event_type: str, success: bool):
-        """Update AGDK event processing statistics."""
+    def _update_gadk_event_stats(self, event_type: str, success: bool):
+        """Update GADK event processing statistics."""
         try:
-            if not hasattr(self, '_agdk_events_processed'):
-                self._agdk_events_processed = 0
+            if not hasattr(self, '_gadk_events_processed'):
+                self._gadk_events_processed = 0
             
-            self._agdk_events_processed += 1
+            self._gadk_events_processed += 1
             
-            if not hasattr(self, '_agdk_event_stats'):
-                self._agdk_event_stats = {}
+            if not hasattr(self, '_gadk_event_stats'):
+                self._gadk_event_stats = {}
             
-            if event_type not in self._agdk_event_stats:
-                self._agdk_event_stats[event_type] = {'total': 0, 'success': 0, 'failed': 0}
+            if event_type not in self._gadk_event_stats:
+                self._gadk_event_stats[event_type] = {'total': 0, 'success': 0, 'failed': 0}
             
-            self._agdk_event_stats[event_type]['total'] += 1
+            self._gadk_event_stats[event_type]['total'] += 1
             if success:
-                self._agdk_event_stats[event_type]['success'] += 1
+                self._gadk_event_stats[event_type]['success'] += 1
             else:
-                self._agdk_event_stats[event_type]['failed'] += 1
+                self._gadk_event_stats[event_type]['failed'] += 1
                 
         except Exception as e:
-            logger.error(f"Error updating AGDK event stats for {self.name}: {e}")
+            logger.error(f"Error updating GADK event stats for {self.name}: {e}")
     
-    def _report_agdk_event_error(self, event_type: str, event_data: Dict[str, Any], error: Exception):
-        """Report AGDK event processing error."""
+    def _report_gadk_event_error(self, event_type: str, event_data: Dict[str, Any], error: Exception):
+        """Report GADK event processing error."""
         try:
             error_report = {
                 'agent': self.name,
@@ -917,28 +917,28 @@ class BaseAgent(ABC):
                 'timestamp': self._get_timestamp()
             }
             
-            logger.error(f"AGDK event error report for {self.name}: {error_report}")
+            logger.error(f"GADK event error report for {self.name}: {error_report}")
             
             # Could send to monitoring system here
             
         except Exception as report_error:
-            logger.error(f"Failed to report AGDK event error for {self.name}: {report_error}")
+            logger.error(f"Failed to report GADK event error for {self.name}: {report_error}")
     
-    # AGDK Status and Information Methods
-    def get_agdk_session_info(self) -> Dict[str, Any]:
-        """Get current AGDK session information."""
-        if not self.agdk_enabled:
-            return {'agdk_enabled': False}
+    # GADK Status and Information Methods
+    def get_gadk_session_info(self) -> Dict[str, Any]:
+        """Get current GADK session information."""
+        if not self.gadk_enabled:
+            return {'gadk_enabled': False}
         
         return {
-            'agdk_enabled': True,
-            'session_id': self._agdk_session_id,
-            'session_active': self._agdk_session is not None,
-            'tools_registered': self._agdk_tools_registered,
-            'events_processed': getattr(self, '_agdk_events_processed', 0),
-            'errors_count': getattr(self, '_agdk_errors_count', 0),
-            'event_stats': getattr(self, '_agdk_event_stats', {}),
-            'session_state': getattr(self, '_agdk_session_state', {})
+            'gadk_enabled': True,
+            'session_id': self._gadk_session_id,
+            'session_active': self._gadk_session is not None,
+            'tools_registered': self._gadk_tools_registered,
+            'events_processed': getattr(self, '_gadk_events_processed', 0),
+            'errors_count': getattr(self, '_gadk_errors_count', 0),
+            'event_stats': getattr(self, '_gadk_event_stats', {}),
+            'session_state': getattr(self, '_gadk_session_state', {})
         }
     
     # Memory Enhancement Methods
@@ -1165,15 +1165,15 @@ class BaseAgent(ABC):
         """Check if memory features are enabled."""
         return self.memory_enabled
     
-    def is_agdk_enabled(self) -> bool:
-        """Check if AGDK features are enabled."""
-        return self.agdk_enabled
+    def is_gadk_enabled(self) -> bool:
+        """Check if GADK features are enabled."""
+        return self.gadk_enabled
     
     def get_feature_status(self) -> Dict[str, bool]:
         """Get status of all optional features."""
         return {
             "memory_enabled": self.memory_enabled,
-            "agdk_enabled": self.agdk_enabled,
+            "gadk_enabled": self.gadk_enabled,
             "learning_active": len(self._learned_patterns) > 0,
             "accuracy_tracking": len(self._historical_accuracy) > 0
         }
@@ -1299,8 +1299,8 @@ class BaseAgent(ABC):
         feature_status = []
         if self.memory_enabled:
             feature_status.append("Memory")
-        if self.agdk_enabled:
-            feature_status.append("AGDK")
+        if self.gadk_enabled:
+            feature_status.append("GADK")
         
         features = f" [{', '.join(feature_status)}]" if feature_status else ""
         return f"{self.name} v{self.version} ({len(self.capabilities)} capabilities){features}"
@@ -1309,4 +1309,4 @@ class BaseAgent(ABC):
         """Detailed representation of the agent."""
         return (f"BaseAgent(name='{self.name}', version='{self.version}', "
                 f"capabilities={self.capabilities}, memory_enabled={self.memory_enabled}, "
-                f"agdk_enabled={self.agdk_enabled})")
+                f"gadk_enabled={self.gadk_enabled})")

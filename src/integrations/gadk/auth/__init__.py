@@ -1,7 +1,7 @@
-"""AGDK Authentication and credential management components."""
+"""GADK Authentication and credential management components."""
 
 from .credentials import (
-    AGDKCredentialManager,
+    GADKCredentialManager,
     CredentialInfo,
     get_credentials_from_environment,
     validate_credentials_file,
@@ -10,7 +10,7 @@ from .credentials import (
 )
 
 __all__ = [
-    "AGDKCredentialManager",
+    "GADKCredentialManager",
     "CredentialInfo",
     "get_credentials_from_environment",
     "validate_credentials_file",

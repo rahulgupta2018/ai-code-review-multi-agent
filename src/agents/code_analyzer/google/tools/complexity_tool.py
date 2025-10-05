@@ -1,7 +1,7 @@
 """
 Complexity Analysis Tool
 
-AGDK tool for analyzing code complexity with memory integration.
+GADK tool for analyzing code complexity with memory integration.
 Provides cyclomatic complexity analysis with historical context.
 """
 from typing import Dict, Any, List, Optional

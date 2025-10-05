@@ -1,5 +1,5 @@
-# Multi-stage Dockerfile for AI Code Review Multi-Agent System with AGDK Integration
-# This Dockerfile creates a production-ready container with Google Cloud AGDK support
+# Multi-stage Dockerfile for AI Code Review Multi-Agent System with GADK Integration
+# This Dockerfile creates a production-ready container with Google Cloud GADK support
 
 # Base stage with Python 3.11 and system dependencies
 FROM python:3.11-slim as base
@@ -58,14 +58,14 @@ RUN apt-get update && apt-get install -y \
     jq \
     && rm -rf /var/lib/apt/lists/*
 
-# Install Google Cloud CLI
-RUN echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] https://packages.cloud.google.com/apt cloud-sdk main" | tee -a /etc/apt/sources.list.d/google-cloud-sdk.list && \
-    curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key --keyring /usr/share/keyrings/cloud.google.gpg add - && \
-    apt-get update && apt-get install -y google-cloud-cli && \
-    rm -rf /var/lib/apt/lists/*
-
-# Install Google Cloud Python client libraries (for AGDK)
-RUN pip install google-cloud-aiplatform google-cloud-discoveryengine google-cloud-dialogflow google-auth
+    # Install Google Cloud CLI
+    RUN curl -sSL https://packages.cloud.google.com/apt/doc/apt-key.gpg | gpg --dearmor -o /usr/share/keyrings/cloud.google.gpg && \
+        echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] https://packages.cloud.google.com/apt cloud-sdk main" | tee -a /etc/apt/sources.list.d/google-cloud-sdk.list && \
+        apt-get update && apt-get install -y google-cloud-cli && \
+        rm -rf /var/lib/apt/lists/*
+    
+    # Install Google Cloud Python client libraries (for GADK)
+    RUN pip install google-cloud-aiplatform google-cloud-discoveryengine google-cloud-dialogflow google-auth
 
 # Create application user
 RUN groupadd --gid 1000 appuser && \
@@ -77,10 +77,13 @@ WORKDIR /app
 # Copy dependency files
 COPY pyproject.toml poetry.lock* ./
 
-# Install Python dependencies
+# Install Python dependencies (only external dependencies without local package)
 RUN poetry config virtualenvs.create false && \
-    poetry install --no-dev && \
-    rm -rf $POETRY_CACHE_DIR
+    pip install fastapi uvicorn pydantic pyyaml tree-sitter redis sqlalchemy websockets httpx jinja2 reportlab click python-multipart aiofiles google-cloud-aiplatform google-cloud-discoveryengine google-cloud-dialogflow google-auth google-auth-oauthlib && \
+    rm -rf /tmp/pip_cache
+
+# Copy source code
+COPY src/ ./src/
 
 # Production stage
 FROM base as production
@@ -128,35 +131,35 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
 # Default command
 CMD ["python", "-m", "src.api.main"]
 
-# AGDK-specific stage for agent development
-FROM development as agdk
+# GADK-specific stage for agent development
+FROM development as gadk
 
-# Install additional AGDK development tools
-RUN pip install google-agdk jupyter lab
+# Install additional GADK development tools
+RUN pip install google-gadk
 
 # Install tree-sitter for multi-language parsing
 RUN pip install tree-sitter tree-sitter-python tree-sitter-javascript tree-sitter-typescript tree-sitter-java tree-sitter-go tree-sitter-rust
 
-# Create AGDK workspace
-RUN mkdir -p /app/agdk-workspace /app/dev-portal
+# Create GADK workspace
+RUN mkdir -p /app/gadk-workspace /app/dev-portal
 
-# Copy AGDK configuration
-COPY config/agdk/ ./config/agdk/
+# Copy GADK configuration
+COPY config/gadk/ ./config/gadk/
 
-# Set AGDK environment variables
-ENV AGDK_WORKSPACE=/app/agdk-workspace \
-    AGDK_DEV_PORTAL_PORT=8200 \
-    AGDK_LOG_LEVEL=INFO
+# Set GADK environment variables
+ENV GADK_WORKSPACE=/app/gadk-workspace \
+    GADK_DEV_PORTAL_PORT=8200 \
+    GADK_LOG_LEVEL=INFO
 
-# Expose AGDK dev portal port
+# Expose GADK dev portal port
 EXPOSE 8200
 
-# Start script for AGDK development
-COPY scripts/start-agdk-dev.sh /usr/local/bin/start-agdk-dev.sh
-RUN chmod +x /usr/local/bin/start-agdk-dev.sh
+# Start script for GADK development
+COPY scripts/start-gadk-dev.sh /usr/local/bin/start-gadk-dev.sh
+RUN chmod +x /usr/local/bin/start-gadk-dev.sh
 
-# Default command for AGDK development
-CMD ["/usr/local/bin/start-agdk-dev.sh"]
+# Default command for GADK development
+CMD ["/usr/local/bin/start-gadk-dev.sh"]
 
 # Testing stage
 FROM development as testing

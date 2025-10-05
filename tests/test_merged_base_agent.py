@@ -46,9 +46,9 @@ def test_merged_agent():
     print("🧪 Testing Merged BaseAgent")
     print("=" * 50)
     
-    # Test basic agent without memory/AGDK
-    print("\n1. Testing Basic Agent (no memory/AGDK):")
-    basic_config = {"memory": {"enabled": False}, "agdk": {"enabled": False}}
+    # Test basic agent without memory/GADK
+    print("\n1. Testing Basic Agent (no memory/GADK):")
+    basic_config = {"memory": {"enabled": False}, "gadk": {"enabled": False}}
     basic_agent = TestAgent("test_basic", basic_config)
     
     print(f"   Name: {basic_agent.get_name()}")
@@ -59,21 +59,21 @@ def test_merged_agent():
     
     # Test memory-enabled agent
     print("\n2. Testing Memory-Enabled Agent:")
-    memory_config = {"memory": {"enabled": True}, "agdk": {"enabled": False}}
+    memory_config = {"memory": {"enabled": True}, "gadk": {"enabled": False}}
     memory_agent = TestAgent("test_memory", memory_config)
     
     print(f"   Memory enabled: {memory_agent.is_memory_enabled()}")
-    print(f"   AGDK enabled: {memory_agent.is_agdk_enabled()}")
+    print(f"   GADK enabled: {memory_agent.is_gadk_enabled()}")
     print(f"   Features: {memory_agent.get_feature_status()}")
     print(f"   String: {memory_agent}")
     
     # Test full-featured agent
-    print("\n3. Testing Full-Featured Agent (Memory + AGDK):")
-    full_config = {"memory": {"enabled": True}, "agdk": {"enabled": True}}
-    full_agent = TestAgent("test_full", full_config)
+    print("\n3. Testing Full-Featured Agent (Memory + GADK):")
+    full_config = {"memory": {"enabled": True}, "gadk": {"enabled": True}}
+    full_agent = TestAgent(full_config)
     
     print(f"   Memory enabled: {full_agent.is_memory_enabled()}")
-    print(f"   AGDK enabled: {full_agent.is_agdk_enabled()}")
+    print(f"   GADK enabled: {full_agent.is_gadk_enabled()}")
     print(f"   Features: {full_agent.get_feature_status()}")
     print(f"   String: {full_agent}")
     

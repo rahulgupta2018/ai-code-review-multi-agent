@@ -1,8 +1,8 @@
 """
-AGDK Authentication and Credentials Management
+GADK Authentication and Credentials Management
 
 This module provides secure authentication and credential management for Google Cloud services
-used in the AGDK integration including Vertex AI, Discovery Engine, and Dialogflow.
+used in the GADK integration including Vertex AI, Discovery Engine, and Dialogflow.
 
 Features:
 - Service account authentication with JSON key files
@@ -49,9 +49,9 @@ class CredentialInfo:
     expires_at: Optional[str] = None
 
 
-class AGDKCredentialManager:
+class GADKCredentialManager:
     """
-    Manager for Google Cloud credentials used in AGDK integration.
+    Manager for Google Cloud credentials used in GADK integration.
     
     Provides secure credential loading, validation, and management for:
     - Service account JSON key files
@@ -308,7 +308,7 @@ def get_credentials_from_environment() -> Tuple[Optional[Any], Optional[str]]:
         logger.error("Google Auth libraries not available")
         return None, None
         
-    credential_manager = AGDKCredentialManager()
+    credential_manager = GADKCredentialManager()
     
     if credential_manager.load_credentials():
         if credential_manager.validate_credentials():
@@ -361,7 +361,7 @@ def validate_credentials_file(credentials_path: str) -> bool:
         return False
 
 
-def create_credential_manager_from_config(config: Dict[str, Any]) -> AGDKCredentialManager:
+def create_credential_manager_from_config(config: Dict[str, Any]) -> GADKCredentialManager:
     """
     Create a credential manager from configuration.
     
@@ -369,10 +369,10 @@ def create_credential_manager_from_config(config: Dict[str, Any]) -> AGDKCredent
         config: Configuration dictionary with credential settings
         
     Returns:
-        AGDKCredentialManager: Initialized credential manager
+        GADKCredentialManager: Initialized credential manager
     """
     credentials_path = config.get('credentials_path', os.getenv('GOOGLE_APPLICATION_CREDENTIALS'))
-    return AGDKCredentialManager(credentials_path=credentials_path)
+    return GADKCredentialManager(credentials_path=credentials_path)
 
 
 def ensure_credentials_available() -> bool:
@@ -382,7 +382,7 @@ def ensure_credentials_available() -> bool:
     Returns:
         bool: True if valid credentials are available, False otherwise
     """
-    credential_manager = AGDKCredentialManager()
+    credential_manager = GADKCredentialManager()
     
     if not credential_manager.load_credentials():
         logger.error("Failed to load Google Cloud credentials")

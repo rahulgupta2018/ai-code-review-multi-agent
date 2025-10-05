@@ -1,22 +1,22 @@
 """
-Code Analyzer AGDK Agent
+Code Analyzer GADK Agent
 
-Enhanced code analyzer with Google AGDK integration and memory awareness.
+Enhanced code analyzer with Google GADK integration and memory awareness.
 Performs complexity analysis, architecture diagnostics, and pattern detection.
 """
 from typing import Dict, List, Any, Optional
 import logging
-from ...base.memory_aware_agent import AGDKMemoryAwareAgent
+from ...base.memory_aware_agent import GADKMemoryAwareAgent
 from ...base.base_agent import AnalysisContext, AnalysisResult, Finding, FindingSeverity
 
 logger = logging.getLogger(__name__)
 
 
-class CodeAnalyzerGaAgent(AGDKMemoryAwareAgent):
-    """Code analyzer agent with AGDK integration and memory enhancement."""
+class CodeAnalyzerGaAgent(GADKMemoryAwareAgent):
+    """Code analyzer agent with GADK integration and memory enhancement."""
     
     def __init__(self, config: Optional[Dict[str, Any]] = None):
-        """Initialize the code analyzer AGDK agent."""
+        """Initialize the code analyzer GADK agent."""
         super().__init__("code_analyzer", config)
         
         # Initialize tools
@@ -71,7 +71,7 @@ class CodeAnalyzerGaAgent(AGDKMemoryAwareAgent):
                 metadata={
                     "session_id": context.session_id,
                     "files_analyzed": len(context.files),
-                    "agdk_enabled": self.agdk_enabled
+                    "gadk_enabled": self.gadk_enabled
                 }
             )
             
@@ -197,8 +197,8 @@ class CodeAnalyzerGaAgent(AGDKMemoryAwareAgent):
         import time
         return time.time()
     
-    def get_agdk_tools(self) -> List[str]:
-        """Get list of AGDK tools provided by this agent."""
+    def get_gadk_tools(self) -> List[str]:
+        """Get list of GADK tools provided by this agent."""
         return [
             "ComplexityAnalysisTool",
             "ArchitectureDiagnosticsTool", 
@@ -209,8 +209,8 @@ class CodeAnalyzerGaAgent(AGDKMemoryAwareAgent):
         ]
     
     def handle_analyze_code_event(self, event_data: Dict[str, Any]) -> Dict[str, Any]:
-        """Handle AGDK AnalyzeCodeEvent."""
-        # TODO: Implement AGDK event handling
+        """Handle GADK AnalyzeCodeEvent."""
+        # TODO: Implement GADK event handling
         logger.info("Handling AnalyzeCodeEvent")
         
         # Convert event data to AnalysisContext
@@ -224,7 +224,7 @@ class CodeAnalyzerGaAgent(AGDKMemoryAwareAgent):
         # Perform analysis
         result = self.analyze_with_memory(context)
         
-        # Convert result to AGDK format
+        # Convert result to GADK format
         return {
             "type": "AnalysisComplete",
             "agent": self.name,

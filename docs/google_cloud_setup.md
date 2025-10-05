@@ -177,7 +177,7 @@ echo ".env" >> .gitignore
 2. ✅ Vertex AI APIs Enabled  
 3. ✅ Service Account Configured
 4. ✅ Credentials Generated
-5. 🔄 Ready for AGDK Module Structure Implementation
+5. 🔄 Ready for GADK Module Structure Implementation
 
 ## Troubleshooting
 

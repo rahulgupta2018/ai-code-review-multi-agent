@@ -4,19 +4,19 @@ app:
   version: "1.0.0"
   environment: "${ENVIRONMENT:development}"
   
-# AGDK Configuration
-agdk:
-  enabled: "${AGDK_ENABLED:false}"
-  project_id: "${AGDK_PROJECT_ID}"
-  dev_portal_host: "${AGDK_DEV_PORTAL_HOST:localhost}"
-  dev_portal_port: "${AGDK_DEV_PORTAL_PORT:8200}"
+# GADK Configuration
+gadk:
+  enabled: "${GADK_ENABLED:false}"
+  project_id: "${GADK_PROJECT_ID}"
+  dev_portal_host: "${GADK_DEV_PORTAL_HOST:localhost}"
+  dev_portal_port: "${GADK_DEV_PORTAL_PORT:8200}"
   runtime_config:
     session_timeout: 3600
     max_concurrent_sessions: 10
 
 # Analysis Configuration
 analysis:
-  use_agdk: "${USE_AGDK:false}"
+  use_gadk: "${USE_GADK:false}"
   default_strategy: "smart"
   max_file_size: 1048576  # 1MB
   supported_languages:

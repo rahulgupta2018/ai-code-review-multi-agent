@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# AI Code Review Multi-Agent System with AGDK Integration
+# AI Code Review Multi-Agent System with GADK Integration
 # Development Environment Setup Script
 # This script sets up the complete development environment with Docker Compose
 
@@ -13,7 +13,7 @@ PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
 
 # Configuration
 DEFAULT_PROFILE="development"
-DEFAULT_SERVICES="redis ollama ai-code-review-agdk"
+DEFAULT_SERVICES="redis ai-code-review-gadk"
 COMPOSE_FILE="${PROJECT_ROOT}/docker-compose.yml"
 ENV_FILE="${PROJECT_ROOT}/.env"
 ENV_EXAMPLE="${PROJECT_ROOT}/.env.example"
@@ -55,13 +55,13 @@ COMMANDS:
     status             Show status of all services
     clean              Clean up containers, volumes, and networks
     reset              Reset everything (clean + rebuild)
-    shell [service]    Open shell in running service (default: ai-code-review-agdk)
+    shell [service]    Open shell in running service (default: ai-code-review-gadk)
     build              Build all images
     pull               Pull latest images
 
 PROFILES:
     development        Full development environment (default)
-    minimal           Redis + Ollama only
+    minimal           Redis only (uses native Ollama on host)
     production        Production-ready setup
     monitoring        With Prometheus + Grafana
     tools             Development tools (Redis Commander, File Browser)
@@ -71,12 +71,12 @@ OPTIONS:
     -v, --verbose      Enable verbose output
     -f, --force        Force operations without confirmation
     --no-build         Skip building images
-    --detach           Run in background (detached mode)
+    --foreground       Run in foreground (show logs), default is background
 
 EXAMPLES:
     $SCRIPT_NAME up                    # Start development environment
     $SCRIPT_NAME up production         # Start production environment
-    $SCRIPT_NAME logs ai-code-review-agdk  # Show app logs
+    $SCRIPT_NAME logs ai-code-review-gadk  # Show app logs
     $SCRIPT_NAME shell                 # Open shell in main container
     $SCRIPT_NAME clean                 # Clean up everything
 
@@ -136,7 +136,7 @@ validate_environment() {
     # Check required variables
     local required_vars=(
         "GOOGLE_CLOUD_PROJECT_ID"
-        "AGDK_ENABLED"
+        "GADK_ENABLED"
     )
     
     local missing_vars=()
@@ -160,18 +160,18 @@ validate_environment() {
 # Start services
 start_services() {
     local profile="${1:-$DEFAULT_PROFILE}"
-    local detach_flag=""
+    local detach_flag="-d"  # Run in background by default
     
-    if [[ "$DETACH" == "true" ]]; then
-        detach_flag="-d"
+    # Override if foreground mode is requested
+    if [[ "$FOREGROUND" == "true" ]]; then
+        detach_flag=""
     fi
     
     log_info "Starting services with profile: $profile"
     
     # Ensure volumes exist
     docker volume create ai-code-review-redis-data 2>/dev/null || true
-    docker volume create ai-code-review-ollama-data 2>/dev/null || true
-    docker volume create ai-code-review-agdk-workspace 2>/dev/null || true
+    docker volume create ai-code-review-gadk-workspace 2>/dev/null || true
     
     # Build if needed
     if [[ "$NO_BUILD" != "true" ]]; then
@@ -247,9 +247,8 @@ clean_up() {
     
     log_info "Removing project volumes..."
     docker volume rm ai-code-review-redis-data 2>/dev/null || true
-    docker volume rm ai-code-review-ollama-data 2>/dev/null || true
     docker volume rm ai-code-review-postgres-data 2>/dev/null || true
-    docker volume rm ai-code-review-agdk-workspace 2>/dev/null || true
+    docker volume rm ai-code-review-gadk-workspace 2>/dev/null || true
     docker volume rm ai-code-review-jupyter-data 2>/dev/null || true
     docker volume rm ai-code-review-pip-cache 2>/dev/null || true
     docker volume rm ai-code-review-poetry-cache 2>/dev/null || true
@@ -285,7 +284,7 @@ reset_environment() {
 
 # Open shell in service
 open_shell() {
-    local service="${1:-ai-code-review-agdk}"
+    local service="${1:-ai-code-review-gadk}"
     
     log_info "Opening shell in service: $service"
     
@@ -318,7 +317,7 @@ main() {
     VERBOSE=false
     FORCE=false
     NO_BUILD=false
-    DETACH=false
+    FOREGROUND=false
     
     # Parse options
     while [[ $# -gt 0 ]]; do
@@ -340,8 +339,8 @@ main() {
                 NO_BUILD=true
                 shift
                 ;;
-            --detach)
-                DETACH=true
+            --foreground)
+                FOREGROUND=true
                 shift
                 ;;
             up)
@@ -379,7 +378,7 @@ main() {
             shell)
                 COMMAND="shell"
                 shift
-                SERVICE="${1:-ai-code-review-agdk}"
+                SERVICE="${1:-ai-code-review-gadk}"
                 [[ $# -gt 0 ]] && shift
                 ;;
             build)

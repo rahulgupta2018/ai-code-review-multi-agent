@@ -29,9 +29,9 @@ scrape_configs:
     metrics_path: /metrics
 
   # AI Code Review Main Application
-  - job_name: 'ai-code-review-agdk'
+  - job_name: 'ai-code-review-gadk'
     static_configs:
-      - targets: ['ai-code-review-agdk:9090']
+      - targets: ['ai-code-review-gadk:9090']
     scrape_interval: 15s
     metrics_path: /metrics
     scrape_timeout: 10s
@@ -44,7 +44,7 @@ scrape_configs:
       - source_labels: [__param_target]
         target_label: instance
       - target_label: __address__
-        replacement: ai-code-review-agdk:9090
+        replacement: ai-code-review-gadk:9090
 
   # Redis Metrics
   - job_name: 'redis'

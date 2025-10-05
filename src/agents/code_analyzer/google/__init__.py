@@ -1,1 +1,1 @@
-"""Google AGDK integration for code analyzer agent."""
+"""Google GADK integration for code analyzer agent."""
