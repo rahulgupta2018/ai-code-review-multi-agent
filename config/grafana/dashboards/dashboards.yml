@@ -1,0 +1,29 @@
+# Grafana Dashboard Provisioning Configuration
+# Automatically loads dashboards for AI Code Review monitoring
+
+apiVersion: 1
+
+providers:
+  # AI Code Review dashboards
+  - name: 'ai-code-review-dashboards'
+    orgId: 1
+    folder: 'AI Code Review'
+    folderUid: 'ai-code-review'
+    type: file
+    disableDeletion: false
+    updateIntervalSeconds: 60
+    allowUiUpdates: true
+    options:
+      path: /etc/grafana/provisioning/dashboards/ai-code-review
+  
+  # System monitoring dashboards
+  - name: 'system-dashboards'
+    orgId: 1
+    folder: 'System Monitoring'
+    folderUid: 'system-monitoring'
+    type: file
+    disableDeletion: false
+    updateIntervalSeconds: 60
+    allowUiUpdates: true
+    options:
+      path: /etc/grafana/provisioning/dashboards/system

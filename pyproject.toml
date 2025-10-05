@@ -23,8 +23,13 @@ click = "^8.1.7"
 python-multipart = "^0.0.6"
 aiofiles = "^23.2.1"
 
-# Google AGDK (placeholder - actual package TBD)
-# google-agdk = "^1.0.0"
+# Google Cloud & AGDK Integration
+google-cloud-aiplatform = "^1.50.0"
+google-cloud-discoveryengine = "^0.11.0"
+google-cloud-dialogflow = "^2.23.0"
+google-auth = "^2.23.0"
+google-auth-oauthlib = "^1.0.0"
+google-auth-httplib2 = "^0.2.0"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^7.4.3"

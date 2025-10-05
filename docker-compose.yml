@@ -1,0 +1,362 @@
+# Docker Compose Configuration for AI Code Review Multi-Agent System with AGDK Integration
+# Production-ready multi-service orchestration
+
+version: '3.8'
+
+services:
+  # ============================================================================
+  # CORE APPLICATION SERVICES
+  # ============================================================================
+  
+  # Main Application Service
+  ai-code-review-agdk:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: development
+      args:
+        - BUILDKIT_INLINE_CACHE=1
+    container_name: ai-code-review-agdk
+    hostname: ai-code-review-agdk
+    restart: unless-stopped
+    environment:
+      # Core Environment
+      - ENVIRONMENT=development
+      - DEBUG=true
+      - DEV_MODE=true
+      
+      # Google Cloud & AGDK
+      - GOOGLE_CLOUD_PROJECT_ID=${GOOGLE_CLOUD_PROJECT_ID}
+      - GOOGLE_CLOUD_LOCATION=${GOOGLE_CLOUD_LOCATION:-us-central1}
+      - GOOGLE_APPLICATION_CREDENTIALS=/app/credentials/google-cloud-credentials.json
+      - AGDK_ENABLED=true
+      - USE_AGDK=true
+      - ANALYSIS_USE_AGDK=true
+      
+      # AGDK Configuration
+      - AGDK_PROJECT_ID=${GOOGLE_CLOUD_PROJECT_ID}
+      - AGDK_DEV_PORTAL_HOST=0.0.0.0
+      - AGDK_DEV_PORTAL_PORT=8200
+      - AGDK_WORKSPACE=/app/agdk-workspace
+      - AGDK_LOG_LEVEL=${AGDK_LOG_LEVEL:-INFO}
+      
+      # LLM Providers
+      - DEFAULT_LLM_PROVIDER=${DEFAULT_LLM_PROVIDER:-ollama}
+      - OLLAMA_BASE_URL=http://ollama:11434
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      
+      # Database & Cache
+      - DATABASE_URL=sqlite:///app/data/memory.db
+      - REDIS_URL=redis://redis:6379
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      
+      # API Configuration
+      - API_HOST=0.0.0.0
+      - API_PORT=8000
+      - CORS_ORIGINS=http://localhost:3000,http://localhost:8080,http://localhost:8200
+      
+      # Performance
+      - MAX_WORKERS=${MAX_WORKERS:-4}
+      - MAX_CONCURRENT_ANALYSES=${MAX_CONCURRENT_ANALYSES:-5}
+      
+      # Logging
+      - LOG_LEVEL=${LOG_LEVEL:-INFO}
+      - LOG_FILE=/app/logs/app.log
+    ports:
+      - "8000:8000"     # Main API
+      - "8200:8200"     # AGDK Dev Portal
+      - "8888:8888"     # Jupyter Lab
+    volumes:
+      # Source code for development
+      - .:/app
+      - ./data:/app/data
+      - ./logs:/app/logs
+      - ./outputs:/app/outputs
+      - ./credentials:/app/credentials
+      # AGDK workspace
+      - agdk-workspace:/app/agdk-workspace
+      # Cache volumes
+      - pip-cache:/root/.cache/pip
+      - poetry-cache:/root/.cache/pypoetry
+    depends_on:
+      - redis
+      - ollama
+    networks:
+      - ai-code-review-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    profiles:
+      - full
+      - development
+
+  # ============================================================================
+  # SUPPORTING SERVICES
+  # ============================================================================
+  
+  # Redis for caching and coordination
+  redis:
+    image: redis:7.2-alpine
+    container_name: ai-code-review-redis
+    hostname: redis
+    restart: unless-stopped
+    command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
+    environment:
+      - REDIS_REPLICATION_MODE=master
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+      - ./config/redis.conf:/usr/local/etc/redis/redis.conf:ro
+    networks:
+      - ai-code-review-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    profiles:
+      - full
+      - development
+      - minimal
+
+  # Ollama for local LLM inference
+  ollama:
+    image: ollama/ollama:latest
+    container_name: ai-code-review-ollama
+    hostname: ollama
+    restart: unless-stopped
+    environment:
+      - OLLAMA_HOST=0.0.0.0
+      - OLLAMA_ORIGINS=*
+      - OLLAMA_NUM_PARALLEL=2
+      - OLLAMA_MAX_LOADED_MODELS=2
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama-data:/root/.ollama
+    networks:
+      - ai-code-review-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:11434/api/version"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    profiles:
+      - full
+      - development
+      - ollama
+
+  # ============================================================================
+  # DEVELOPMENT SERVICES
+  # ============================================================================
+  
+  # Jupyter Lab for development and experimentation
+  jupyter:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: development
+    container_name: ai-code-review-jupyter
+    hostname: jupyter
+    restart: unless-stopped
+    command: >
+      sh -c "
+        jupyter lab --ip=0.0.0.0 --port=8888 --no-browser --allow-root 
+        --NotebookApp.token='' --NotebookApp.password='' 
+        --ServerApp.allow_origin='*' --ServerApp.allow_remote_access=True
+      "
+    environment:
+      - JUPYTER_ENABLE_LAB=yes
+      - JUPYTER_TOKEN=
+      - JUPYTER_PASSWORD=
+    ports:
+      - "8888:8888"
+    volumes:
+      - .:/app
+      - ./notebooks:/app/notebooks
+      - jupyter-data:/root/.jupyter
+    depends_on:
+      - redis
+    networks:
+      - ai-code-review-network
+    profiles:
+      - full
+      - development
+      - jupyter
+
+  # PostgreSQL for production deployments (alternative to SQLite)
+  postgres:
+    image: postgres:15-alpine
+    container_name: ai-code-review-postgres
+    hostname: postgres
+    restart: unless-stopped
+    environment:
+      - POSTGRES_DB=${POSTGRES_DB:-ai_code_review}
+      - POSTGRES_USER=${POSTGRES_USER:-postgres}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-postgres}
+      - POSTGRES_INITDB_ARGS=--auth-host=scram-sha-256
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./scripts/init-db.sql:/docker-entrypoint-initdb.d/init-db.sql:ro
+    networks:
+      - ai-code-review-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres}"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    profiles:
+      - production
+      - postgres
+
+  # ============================================================================
+  # MONITORING & OBSERVABILITY SERVICES
+  # ============================================================================
+  
+  # Prometheus for metrics collection
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: ai-code-review-prometheus
+    hostname: prometheus
+    restart: unless-stopped
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--web.enable-lifecycle'
+      - '--web.external-url=http://localhost:9090'
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./config/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus-data:/prometheus
+    networks:
+      - ai-code-review-network
+    profiles:
+      - monitoring
+      - production
+
+  # Grafana for metrics visualization
+  grafana:
+    image: grafana/grafana:latest
+    container_name: ai-code-review-grafana
+    hostname: grafana
+    restart: unless-stopped
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD:-admin}
+      - GF_USERS_ALLOW_SIGN_UP=false
+      - GF_INSTALL_PLUGINS=redis-datasource
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./config/grafana/dashboards:/etc/grafana/provisioning/dashboards:ro
+      - ./config/grafana/datasources:/etc/grafana/provisioning/datasources:ro
+    depends_on:
+      - prometheus
+    networks:
+      - ai-code-review-network
+    profiles:
+      - monitoring
+      - production
+
+  # ============================================================================
+  # UTILITY SERVICES
+  # ============================================================================
+  
+  # Redis Commander for Redis management
+  redis-commander:
+    image: rediscommander/redis-commander:latest
+    container_name: ai-code-review-redis-commander
+    hostname: redis-commander
+    restart: unless-stopped
+    environment:
+      - REDIS_HOSTS=local:redis:6379
+    ports:
+      - "8081:8081"
+    depends_on:
+      - redis
+    networks:
+      - ai-code-review-network
+    profiles:
+      - development
+      - tools
+
+  # File browser for managing outputs and data
+  filebrowser:
+    image: filebrowser/filebrowser:latest
+    container_name: ai-code-review-filebrowser
+    hostname: filebrowser
+    restart: unless-stopped
+    ports:
+      - "8082:80"
+    volumes:
+      - ./data:/srv/data
+      - ./outputs:/srv/outputs
+      - ./logs:/srv/logs
+      - filebrowser-data:/database
+      - filebrowser-config:/config
+    networks:
+      - ai-code-review-network
+    profiles:
+      - development
+      - tools
+
+# ============================================================================
+# NETWORKS
+# ============================================================================
+
+networks:
+  ai-code-review-network:
+    driver: bridge
+    name: ai-code-review-network
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
+
+# ============================================================================
+# VOLUMES
+# ============================================================================
+
+volumes:
+  # Application data
+  redis-data:
+    name: ai-code-review-redis-data
+  postgres-data:
+    name: ai-code-review-postgres-data
+  ollama-data:
+    name: ai-code-review-ollama-data
+  
+  # Development data
+  jupyter-data:
+    name: ai-code-review-jupyter-data
+  agdk-workspace:
+    name: ai-code-review-agdk-workspace
+  
+  # Cache volumes
+  pip-cache:
+    name: ai-code-review-pip-cache
+  poetry-cache:
+    name: ai-code-review-poetry-cache
+  
+  # Monitoring data
+  prometheus-data:
+    name: ai-code-review-prometheus-data
+  grafana-data:
+    name: ai-code-review-grafana-data
+  
+  # Utility data
+  filebrowser-data:
+    name: ai-code-review-filebrowser-data
+  filebrowser-config:
+    name: ai-code-review-filebrowser-config
