@@ -122,20 +122,66 @@ config/                         # Configuration files
    poetry run uvicorn src.api.main:app --reload --host 0.0.0.0 --port 8000
    ```
 
+### Google Cloud Project Setup
+
+The system includes automated scripts to set up Google Cloud projects with all required services:
+
+#### Quick Setup (Recommended)
+```bash
+# Create project with chilternwarriors.cc@gmail.com (default)
+./scripts/quick-gcp-setup.sh setup
+
+# Or create with your own email
+./scripts/quick-gcp-setup.sh setup-custom
+
+# Test what would be created (dry run)
+./scripts/quick-gcp-setup.sh test
+```
+
+#### Manual Configuration
+```bash
+# Update configuration file
+./scripts/quick-gcp-setup.sh config
+
+# Create project with custom settings
+./scripts/create-google-cloud-project.sh create -e your-email@gmail.com -r europe-west1
+
+# Verify setup
+./scripts/quick-gcp-setup.sh verify
+```
+
+The setup script automatically:
+- Creates a new Google Cloud project
+- Enables all required APIs (Vertex AI, Discovery Engine, Dialogflow, etc.)
+- Creates service accounts with proper permissions
+- Sets up storage buckets
+- Generates service account keys
+- Updates your `.env` file
+
+#### Configuration Management
+The setup is fully configurable via `config/google-cloud-setup.yaml`:
+```yaml
+account:
+  email: "chilternwarriors.cc@gmail.com"  # Change to your email
+project:
+  name_prefix: "ai-code-review-multi-agent"  # Customize project name
+location:
+  region: "us-central1"  # Change default region
+```
+
 ### Google GADK Setup
 
-1. **Enable GADK Preview** (if required)
-   - Configure Google Cloud console / Agent Builder program access
+After Google Cloud project setup:
 
-2. **Install GADK CLI and Dev Portal**
+1. **Install Google ADK**
    ```bash
-   pip install google-gadk
-   gadk components install dev-portal
+   docker exec ai-code-review-gadk pip install google-adk
    ```
 
-3. **Start Developer Portal**
+2. **Start Developer Portal** (automatically configured)
    ```bash
-   gadk dev-portal start --project $GADK_PROJECT_ID --port 8200 --bind 0.0.0.0
+   # Portal starts automatically with the container
+   # Access at: http://localhost:8200
    ```
 
 ## 🔧 Configuration
