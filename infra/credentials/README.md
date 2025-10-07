@@ -1,3 +1,21 @@
+## 🔒 SECURITY WARNING
+
+**🚨 CRITICAL**: This directory contains sensitive credentials that must NEVER be committed to version control!
+
+### Files in this directory:
+- `google-cloud-credentials.json` - **NEVER COMMIT** ❌
+- `*.key`, `*.pem` files - **NEVER COMMIT** ❌  
+- `README.md` - Safe to commit ✅
+- `.gitkeep` - Safe to commit ✅
+
+### Security Checklist:
+- [ ] Verify `.gitignore` excludes all credential files
+- [ ] Run `git status` to ensure no credential files are staged
+- [ ] Set restrictive file permissions: `chmod 600 *.json *.key *.pem`
+- [ ] Never share credential files via email, chat, or other channels
+
+---
+
 # Google Cloud Setup for Agentic Code Review
 
 This directory contains the setup and configuration for integrating with Google Cloud's Vertex AI Agent Builder (formerly GADK).
