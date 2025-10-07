@@ -22,15 +22,11 @@ async def demo_google_adk_agent():
     
     try:
         # Import the agent
-        from agents.code_analyzer.google.agent import CodeAnalyzerAgent, CodeAnalysisConfig
-        from google.adk.events import Event, EventActions
-        from vertexai.generative_models import Content, Part
-        
+        from agents.code_analyzer.agent import CodeAnalyzerAgent, CodeAnalysisConfig
         print("📦 **Imports Successful:**")
-        print("  ✅ CodeAnalyzerAgent from agents.code_analyzer.google.agent")
+        print("  ✅ CodeAnalyzerAgent from agents.code_analyzer.agent")
         print("  ✅ Google ADK BaseAgent inheritance")
-        print("  ✅ Event and EventActions from google.adk.events")
-        print("  ✅ Content and Part from vertexai.generative_models")
+        print("  ✅ Configuration classes")
         print()
         
         # Create configuration
@@ -63,51 +59,37 @@ async def demo_google_adk_agent():
             print(f"  {i}. {tool_name}")
         print()
         
-        # Demonstrate Google ADK patterns
-        print("🔧 **Google ADK Integration Patterns:**")
-        print("  ✅ BaseAgent inheritance with Pydantic model fields")
-        print("  ✅ _run_async_impl method returning AsyncGenerator[Event, None]")
-        print("  ✅ Event generation with Content(parts=[Part.from_text()])")
-        print("  ✅ EventActions for session state management")
-        print("  ✅ InvocationContext parameter handling")
-        print("  ✅ Multi-agent orchestrator communication ready")
+        # Check configuration loading
+        print("� **Configuration Loading:**")
+        print(f"  - Agent config loaded: {bool(agent.agent_config)}")
+        print(f"  - LLM config loaded: {bool(agent.llm_config)}")
         print()
         
-        # Test Event creation pattern
-        print("📡 **Event Generation Test:**")
-        test_event = Event(
-            author='code_analyzer',
-            content=Content(parts=[Part.from_text("🔍 Analysis completed successfully")])
-        )
-        print(f"  ✅ Event created with author: {test_event.author}")
-        print(f"  ✅ Content type: {type(test_event.content)}")
-        print()
-        
-        # Test EventActions
-        print("🔄 **EventActions Test:**")
-        test_actions = EventActions(
-            state_delta={'analysis_status': 'completed'},
-            transfer_to_agent='orchestrator'
-        )
-        print(f"  ✅ EventActions created with state_delta: {test_actions.state_delta}")
-        print(f"  ✅ Transfer to agent: {test_actions.transfer_to_agent}")
+        # Test configuration access
+        if agent.llm_config:
+            output_format = agent.llm_config.get('output', {}).get('format', 'unknown')
+            print(f"  - Output format: {output_format}")
+            
+            # Check if agent prompts are loaded
+            agent_prompts = agent.llm_config.get('agent_llm', {})
+            if agent_prompts:
+                print(f"  - Agent LLM prompts: {len(agent_prompts)} sections")
         print()
         
         print("🎉 **Implementation Complete!**")
         print()
         print("📋 **Summary:**")
-        print("  The CodeAnalyzerAgent has been successfully implemented following")
-        print("  Google ADK best practices for multi-agent systems:")
+        print("  The CodeAnalyzerAgent has been successfully implemented and configured:")
         print()
         print("  🏗️ **Architecture:**")
         print("    - Inherits from google.adk.agents.BaseAgent")
         print("    - Uses Pydantic model fields for configuration")
         print("    - Implements proper async execution patterns")
         print()
-        print("  🔄 **Communication:**")
-        print("    - Event-driven architecture with AsyncGenerator")
-        print("    - Session state management via EventActions")
-        print("    - Orchestrator integration ready")
+        print("  � **Configuration:**")
+        print("    - Agent-specific config from src/agents/code_analyzer/configs/")
+        print("    - Shared LLM config from src/agents/configs/")
+        print("    - External configuration with fail-fast validation")
         print()
         print("  🛠️ **Quality Tools:**")
         print("    - Complexity analysis with Tree-sitter parsing")

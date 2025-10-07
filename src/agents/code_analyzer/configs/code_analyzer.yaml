@@ -1,0 +1,366 @@
+# Google ADK Code Analyzer Agent Configuration
+# Comprehensive configuration for the CodeAnalyzerAgent with Google ADK patterns
+
+version: "1.0.0"
+
+# Agent definition
+agent:
+  id: "code_analyzer"
+  name: "Google ADK Code Analyzer Agent"
+  description: "Advanced code analysis with LLM enhancement for complexity, patterns, and architecture"
+  type: "GoogleADKAgent"
+  version: "1.0.0"
+  enabled: true
+  model: ${LLM_MODEL:-llama3.2:3b}
+  
+  # Agent instructions for Google ADK
+  instructions: |
+    You are an expert code analyzer leveraging Google ADK patterns for comprehensive code quality assessment.
+    Analyze code for complexity, patterns, maintainability, and architectural issues.
+    Generate detailed, actionable insights with LLM-enhanced recommendations.
+    
+  # Available tools (Google ADK FunctionTools)
+  tools:
+    - "enhanced_complexity_analysis"
+    - "enhanced_duplication_analysis"
+    - "enhanced_maintainability_analysis"
+  
+  # Output configuration
+  output_key: "code_analysis"
+  output_format: "json"
+
+# Analysis configuration
+analysis:
+  # Feature enablement
+  enabled_features:
+    - complexity_metrics
+    - pattern_detection
+    - architecture_analysis
+    - dependency_analysis
+    - antipattern_detection
+    - maintainability_assessment
+    - llm_enhancement
+  
+  # Enhanced analysis mode
+  enhanced_mode: true
+  parallel_analysis: true
+  
+  # Complexity thresholds by language
+  complexity_thresholds:
+    cyclomatic_complexity:
+      java: 12
+      typescript: 15
+      javascript: 15
+      swift: 10
+      kotlin: 12
+      python: 10
+      sql: 8
+      go: 10
+      rust: 12
+      csharp: 12
+      cpp: 12
+      default: 12
+    
+    cognitive_complexity:
+      java: 15
+      typescript: 18
+      javascript: 18
+      swift: 12
+      kotlin: 15
+      python: 12
+      sql: 10
+      go: 12
+      rust: 15
+      csharp: 15
+      cpp: 15
+      default: 15
+    
+    class_length:
+      java: 300
+      typescript: 250
+      javascript: 250
+      swift: 200
+      kotlin: 300
+      python: 200
+      sql: 150
+      go: 200
+      rust: 250
+      csharp: 300
+      cpp: 250
+      default: 250
+    
+    method_length:
+      java: 50
+      typescript: 40
+      javascript: 40
+      swift: 30
+      kotlin: 50
+      python: 30
+      sql: 25
+      go: 30
+      rust: 40
+      csharp: 50
+      cpp: 40
+      default: 40
+    
+    nesting_depth:
+      java: 4
+      typescript: 4
+      javascript: 4
+      swift: 3
+      kotlin: 4
+      python: 3
+      sql: 3
+      go: 3
+      rust: 4
+      csharp: 4
+      cpp: 4
+      default: 4
+
+  # Pattern detection configuration
+  patterns:
+    mvc_detection: true
+    microservices_detection: true
+    rest_api_detection: true
+    design_patterns: true
+    repository_pattern: true
+    factory_pattern: true
+    singleton_pattern: true
+    observer_pattern: true
+    command_pattern: true
+    strategy_pattern: true
+    
+  # Pattern confidence thresholds
+  pattern_confidence_threshold: 0.7
+  pattern_validation_enabled: true
+  
+  # Architecture analysis settings
+  architecture:
+    dependency_analysis: true
+    coupling_analysis: true
+    cohesion_analysis: true
+    layering_analysis: true
+    modularization_analysis: true
+    
+  # Anti-pattern detection
+  antipatterns:
+    god_object_threshold: 1000  # lines
+    spaghetti_code_complexity_threshold: 25
+    dead_code_detection: true
+    duplicate_code_detection: true
+    magic_number_detection: true
+    
+  # Analysis timeout
+  timeout: ${ANALYSIS_TIMEOUT:-300}
+
+# Google ADK Integration
+google_adk:
+  # Event generation patterns
+  events:
+    analysis_started: true
+    analysis_progress: true
+    analysis_completed: true
+    findings_generated: true
+    
+  # Session management
+  session:
+    track_state: true
+    persist_results: true
+    enable_caching: true
+    
+  # Orchestrator communication
+  orchestrator:
+    report_progress: true
+    send_events: true
+    batch_results: false
+
+# Quality control settings
+quality_control:
+  # Validation rules
+  validation_rules:
+    min_confidence_threshold: 0.6
+    require_evidence: true
+    cross_validate_high_severity: true
+    
+  # Bias prevention
+  bias_prevention:
+    language_bias_threshold: 0.8
+    severity_bias_threshold: 0.7
+    confirmation_bias_detection: true
+    
+  # Output filtering
+  output_filtering:
+    duplicate_finding_detection: true
+    low_confidence_filtering: true
+    noise_reduction: true
+    
+  # Legacy settings
+  confidence_threshold: 0.7
+  max_findings_per_file: 20
+  enable_severity_filtering: true
+
+# Reporting configuration
+reporting:
+  # Finding categories
+  categories:
+    - complexity
+    - patterns
+    - architecture
+    - antipatterns
+    - maintainability
+    - dependencies
+  
+  # Severity mapping
+  severity_mapping:
+    complexity:
+      high_threshold_multiplier: 1.5
+      critical_threshold_multiplier: 2.0
+    maintainability:
+      low_threshold: 20
+      critical_threshold: 10
+    file_size:
+      warning_threshold: 500
+      critical_threshold: 1000
+  
+  # Evidence requirements
+  evidence_requirements:
+    complexity_findings: 2
+    pattern_findings: 3
+    architecture_findings: 2
+    antipattern_findings: 3
+  
+  # Recommendation generation
+  recommendations:
+    max_recommendations: 10
+    priority_based_sorting: true
+    effort_estimation: true
+    impact_assessment: true
+
+# Performance settings
+performance:
+  # Analysis limits
+  max_files_per_analysis: 1000
+  max_file_size_kb: 1024
+  analysis_timeout_seconds: 300
+  
+  # Parallel processing
+  enable_parallel_analysis: true
+  max_concurrent_files: 10
+  
+  # Memory optimization
+  enable_result_caching: true
+  cache_ttl_minutes: 60
+  
+  # Progress tracking
+  enable_progress_reporting: true
+  progress_update_interval_seconds: 5
+
+# Language detection mapping from file extensions
+language_detection:
+  file_extensions:
+    '.py': 'python'
+    '.js': 'javascript'
+    '.ts': 'typescript'
+    '.jsx': 'javascript'
+    '.tsx': 'typescript'
+    '.java': 'java'
+    '.kt': 'kotlin'
+    '.swift': 'swift'
+    '.go': 'go'
+    '.rs': 'rust'
+    '.cs': 'csharp'
+    '.sql': 'sql'
+    '.cpp': 'cpp'
+    '.cc': 'cpp'
+    '.cxx': 'cpp'
+    '.c': 'cpp'
+  default_language: 'unknown'
+
+# Pattern detection rules for architectural patterns
+pattern_rules:
+  singleton:
+    indicators:
+      - 'private constructor'
+      - '__new__'
+      - 'getInstance'
+      - '_instance'
+    anti_indicators:
+      - 'multiple constructors'
+      - 'factory method'
+  
+  factory:
+    indicators:
+      - 'createInstance'
+      - 'factory'
+      - 'create'
+      - 'build'
+    anti_indicators:
+      - 'singleton'
+  
+  mvc:
+    indicators:
+      - 'Controller'
+      - 'Model'
+      - 'View'
+      - 'render'
+    components:
+      - 'controller'
+      - 'model'
+      - 'view'
+  
+  repository:
+    indicators:
+      - 'Repository'
+      - 'DAO'
+      - 'save'
+      - 'find'
+      - 'delete'
+    anti_indicators:
+      - 'Controller'
+      - 'View'
+
+# Integration settings
+integrations:
+  # Supported file types
+  supported_extensions:
+    - .java
+    - .ts
+    - .js
+    - .jsx
+    - .swift
+    - .kt
+    - .kts
+    - .py
+    - .sql
+    - .go
+    - .rs
+    - .cs
+    - .cpp
+    - .cc
+    - .cxx
+    - .c
+  
+  # External tools integration
+  external_tools:
+    enable_tree_sitter: true
+    enable_ast_analysis: true
+    enable_dependency_parser: true
+  
+  # CI/CD integration
+  cicd:
+    enable_pipeline_integration: true
+    generate_sarif_output: true
+    generate_junit_output: true
+    enable_pr_comments: true
+
+# Logging and debugging
+logging:
+  level: INFO
+  enable_detailed_metrics: true
+  log_llm_interactions: false  # Set to true for debugging
+  
+  # Performance logging
+  performance_logging:
+    log_execution_times: true
+    log_memory_usage: true
+    log_cache_statistics: true

@@ -1,6 +1,6 @@
 """
 LLM Provider Integration for Code Analysis Tools
-Supports both Ollama (development) and Gemini (production) providers
+Supports both Ollama (development) and Gemini (production) providers with environment-based switching.
 """
 
 import os
@@ -80,7 +80,8 @@ class LLMProviderManager:
     def _load_config(self, config_path: Optional[str] = None) -> Dict[str, Any]:
         """Load LLM configuration from YAML file"""
         if config_path is None:
-            config_file = Path(__file__).parent.parent.parent.parent / "config" / "adk" / "llm_config.yaml"
+            # Look in the correct location: /src/agents/configs/llm_config.yaml  
+            config_file = Path(__file__).parent.parent.parent / "configs" / "llm_config.yaml"
             config_path = str(config_file)
         
         try:
@@ -330,7 +331,7 @@ class LLMProviderManager:
     def _get_analysis_system_prompt(self, analysis_type: str, language: str) -> str:
         """Get system prompt for specific analysis type from config file"""
         # Load LLM integration config
-        llm_config_path = Path(__file__).parent.parent.parent.parent / "config" / "tools" / "llm_integration.yaml"
+        llm_config_path = Path(__file__).parent.parent / "configs" / "llm_integration.yaml"
         
         try:
             with open(llm_config_path, 'r', encoding='utf-8') as f:
@@ -354,7 +355,7 @@ class LLMProviderManager:
         """Extract key insights from LLM response using config keywords"""
         try:
             # Load LLM integration config
-            llm_config_path = Path(__file__).parent.parent.parent.parent / "config" / "tools" / "llm_integration.yaml"
+            llm_config_path = Path(__file__).parent.parent / "configs" / "llm_integration.yaml"
             with open(llm_config_path, 'r', encoding='utf-8') as f:
                 llm_config = yaml.safe_load(f)
             
@@ -379,7 +380,7 @@ class LLMProviderManager:
         """Extract recommendations from LLM response using config keywords"""
         try:
             # Load LLM integration config
-            llm_config_path = Path(__file__).parent.parent.parent.parent / "config" / "tools" / "llm_integration.yaml"
+            llm_config_path = Path(__file__).parent.parent / "configs" / "llm_integration.yaml"
             with open(llm_config_path, 'r', encoding='utf-8') as f:
                 llm_config = yaml.safe_load(f)
             

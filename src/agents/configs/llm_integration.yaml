@@ -1,0 +1,345 @@
+"""
+LLM Integration Configuration for Code Analysis Tools
+Prompts and settings for different analysis types
+"""
+
+# Agent-level response generation prompts
+agent_prompts:
+  # Response generation settings
+  response_generation:
+    enabled: true
+    model: "llama3.2:3b"
+    temperature: 0.2
+    max_tokens: 2048
+    system_prompt: |
+      You are an expert code analysis assistant. Generate clear, actionable insights from code analysis data.
+      Focus on practical recommendations and highlight the most important issues.
+      Use professional but accessible language. Format responses in a structured way.
+    prompt_template: |
+      Analyze the following code analysis results and generate a comprehensive summary:
+      
+      Analysis Results:
+      - Files analyzed: {files_analyzed}
+      - Total issues found: {issues_found}
+      - Analysis type: {analysis_type}
+      - Severity breakdown: {severity_breakdown}
+      
+      Provide:
+      1. Executive summary of code health
+      2. Key findings and patterns
+      3. Priority recommendations
+      4. Next steps for improvement
+      
+      Format the response as markdown with emojis for readability.
+  
+  # Analysis enhancement settings  
+  analysis_enhancement:
+    enabled: true
+    model: "llama3.2:3b"
+    temperature: 0.1
+    max_tokens: 1024
+    system_prompt: |
+      You are a senior software engineer analyzing code quality metrics.
+      Provide specific, actionable recommendations based on the analysis data.
+      Focus on maintainability, performance, and best practices.
+    
+  # Detailed findings generation
+  findings_enhancement:
+    enabled: true
+    model: "llama3.2:3b"
+    temperature: 0.1
+    max_tokens: 2048
+    system_prompt: |
+      You are a senior software engineer providing detailed code quality insights.
+      Generate actionable recommendations based on analysis findings.
+      Focus on practical solutions and prioritized improvements.
+    prompt_template: |
+      Based on the following code analysis findings, generate a detailed, actionable report:
+      
+      Findings Data:
+      {findings_data}
+      
+      Generate a well-structured report that includes:
+      1. Summary of key issues by category
+      2. Most critical problems requiring immediate attention
+      3. Specific recommendations for each major issue type
+      4. Prioritized action plan
+      
+      Format as markdown with clear sections and actionable language.
+
+# Analysis type configurations
+analysis_types:
+  complexity:
+    system_prompt_template: |
+      You are an expert {language} code complexity analyst. Analyze the provided code for:
+      
+      **Primary Focus Areas:**
+      - Cyclomatic complexity patterns and hotspots
+      - Cognitive complexity indicators
+      - Deep nesting levels and control flow issues
+      - Function/method length and responsibility violations
+      - Code readability and maintainability concerns
+      
+      **Analysis Guidelines:**
+      - Identify specific lines or functions with high complexity
+      - Suggest concrete refactoring techniques with examples
+      - Prioritize recommendations by impact and effort
+      - Consider language-specific best practices
+      - Focus on actionable, measurable improvements
+      
+      **Output Format:**
+      Provide specific, actionable insights with:
+      - Exact function/method names where applicable
+      - Suggested refactoring patterns (Extract Method, Guard Clauses, etc.)
+      - Complexity reduction estimates
+      - Code examples where helpful
+    
+    max_tokens: 2048
+    temperature: 0.1
+    confidence_weight: 0.9
+  
+  duplication:
+    system_prompt_template: |
+      You are an expert code duplication analyst specializing in {language}. Analyze the provided duplicate code blocks for:
+      
+      **Primary Focus Areas:**
+      - Root causes of the duplication (copy-paste, similar requirements, etc.)
+      - Opportunities for abstraction and refactoring
+      - Design patterns that could eliminate duplication
+      - Shared utility functions or modules needed
+      - Architecture improvements to prevent future duplication
+      
+      **Analysis Guidelines:**
+      - Identify the core functionality being duplicated
+      - Suggest specific abstraction strategies (functions, classes, mixins, etc.)
+      - Consider the trade-offs between DRY and readability
+      - Recommend testing strategies for refactored code
+      - Prioritize high-impact, low-risk refactoring opportunities
+      
+      **Output Format:**
+      Provide strategic recommendations with:
+      - Specific refactoring approach (Extract Function, Template Method, etc.)
+      - Proposed new abstractions with interface suggestions
+      - Migration strategy and testing considerations
+      - Risk assessment and mitigation strategies
+    
+    max_tokens: 2048
+    temperature: 0.1
+    confidence_weight: 0.85
+  
+  quality:
+    system_prompt_template: |
+      You are a senior {language} code quality expert and architect. Perform a holistic quality analysis focusing on:
+      
+      **Primary Focus Areas:**
+      - Code organization and structure
+      - Naming conventions and clarity
+      - Documentation quality and completeness
+      - Design patterns and architectural decisions
+      - Maintainability and extensibility concerns
+      - Technical debt identification
+      
+      **Analysis Guidelines:**
+      - Evaluate adherence to {language} best practices and idioms
+      - Identify areas where code quality impacts maintainability
+      - Suggest specific improvements with reasoning
+      - Consider team productivity and onboarding implications
+      - Balance perfectionism with pragmatic development needs
+      
+      **Strategic Considerations:**
+      - Long-term maintainability and scalability
+      - Code review efficiency and developer experience
+      - Testing strategies and test-driven development opportunities
+      - Refactoring priorities and technical debt management
+      
+      **Output Format:**
+      Provide comprehensive recommendations with:
+      - Priority-ranked improvement suggestions
+      - Specific code quality metrics to focus on
+      - Architectural patterns that could improve structure
+      - Documentation and testing enhancement strategies
+    
+    max_tokens: 3072
+    temperature: 0.1
+    confidence_weight: 0.8
+  
+  security:
+    system_prompt_template: |
+      You are a cybersecurity expert specializing in {language} application security. Analyze the provided code for:
+      
+      **Primary Focus Areas:**
+      - Common vulnerability patterns (OWASP Top 10)
+      - Input validation and sanitization issues
+      - Authentication and authorization flaws
+      - Data protection and privacy concerns
+      - Injection vulnerabilities and unsafe operations
+      
+      **Analysis Guidelines:**
+      - Identify specific security risks with CVSS scoring context
+      - Suggest immediate mitigation strategies
+      - Recommend secure coding practices for this context
+      - Consider both code-level and architectural security improvements
+      - Provide practical, implementable security enhancements
+      
+      **Output Format:**
+      Provide security-focused recommendations with:
+      - Risk severity levels (Critical, High, Medium, Low)
+      - Specific vulnerability types and CWE references where applicable
+      - Concrete remediation steps with code examples
+      - Security testing and validation strategies
+    
+    max_tokens: 2048
+    temperature: 0.05  # Lower temperature for security analysis
+    confidence_weight: 0.95
+
+# Language-specific configurations
+language_configs:
+  python:
+    complexity_focus:
+      - "Pythonic code patterns and idioms"
+      - "Generator expressions vs list comprehensions"
+      - "Context managers and resource handling"
+      - "Type hints and static analysis compatibility"
+    
+    quality_focus:
+      - "PEP 8 compliance and code style"
+      - "Docstring quality and completeness"
+      - "Import organization and module structure"
+      - "Exception handling patterns"
+    
+    security_focus:
+      - "SQL injection in database queries"
+      - "Pickle deserialization vulnerabilities"
+      - "Path traversal in file operations"
+      - "Command injection in subprocess calls"
+  
+  javascript:
+    complexity_focus:
+      - "Async/await vs Promise chains"
+      - "Functional programming patterns"
+      - "Event loop and callback complexity"
+      - "Module bundling and tree-shaking considerations"
+    
+    quality_focus:
+      - "ESLint rule compliance"
+      - "JSDoc documentation standards"
+      - "Modern ES6+ feature usage"
+      - "Performance optimization opportunities"
+    
+    security_focus:
+      - "XSS vulnerabilities in DOM manipulation"
+      - "Prototype pollution attacks"
+      - "Client-side authentication flaws"
+      - "Third-party dependency vulnerabilities"
+  
+  typescript:
+    complexity_focus:
+      - "Type system utilization for complexity reduction"
+      - "Generic type constraints and inference"
+      - "Union and intersection type complexity"
+      - "Conditional types and mapped types"
+    
+    quality_focus:
+      - "Type safety and strict mode compliance"
+      - "Interface design and composition"
+      - "Module organization and barrel exports"
+      - "Compiler configuration optimization"
+    
+    security_focus:
+      - "Type assertion safety"
+      - "Any type usage and security implications"
+      - "Runtime type validation needs"
+      - "Build-time security considerations"
+  
+  java:
+    complexity_focus:
+      - "Object-oriented design principles"
+      - "Stream API vs traditional loops"
+      - "Exception handling hierarchy"
+      - "Concurrency and thread safety"
+    
+    quality_focus:
+      - "Javadoc documentation standards"
+      - "Design pattern implementation"
+      - "Package organization and visibility"
+      - "Code organization and layer separation"
+    
+    security_focus:
+      - "Serialization vulnerabilities"
+      - "SQL injection in JDBC code"
+      - "Path traversal in file operations"
+      - "XML external entity (XXE) attacks"
+
+# Response processing configuration
+response_processing:
+  insight_extraction:
+    keywords:
+      - "insight:"
+      - "key finding:"
+      - "important:"
+      - "note:"
+      - "observation:"
+      - "analysis shows:"
+    
+    max_insights: 5
+    min_insight_length: 20
+  
+  recommendation_extraction:
+    keywords:
+      - "recommend:"
+      - "suggestion:"
+      - "consider:"
+      - "should:"
+      - "could:"
+      - "improve by:"
+      - "refactor to:"
+    
+    max_recommendations: 5
+    min_recommendation_length: 30
+  
+  confidence_scoring:
+    high_confidence_indicators:
+      - "specific function names mentioned"
+      - "concrete code examples provided"
+      - "quantifiable metrics included"
+      - "industry standard references"
+    
+    low_confidence_indicators:
+      - "vague or generic suggestions"
+      - "no specific code references"
+      - "contradictory recommendations"
+      - "overly broad generalizations"
+
+# Performance and reliability settings
+performance:
+  timeout_seconds: 120
+  max_retries: 3
+  concurrent_requests: 2
+  
+  rate_limiting:
+    requests_per_minute: 30
+    burst_allowance: 10
+  
+  caching:
+    enabled: true
+    ttl_seconds: 3600  # 1 hour
+    max_cache_size: 1000
+  
+  fallback:
+    enabled: true
+    fallback_confidence: 0.5
+    fallback_message: "LLM analysis temporarily unavailable. Using heuristic analysis."
+
+# Monitoring and logging
+monitoring:
+  log_requests: true
+  log_responses: false  # May contain sensitive code
+  track_performance: true
+  alert_on_failures: true
+  
+  metrics:
+    - "response_time"
+    - "token_usage"
+    - "confidence_scores"
+    - "error_rates"
+    - "cache_hit_rates"
