@@ -1,17 +1,21 @@
 """
 Maintainability Scorer Tool for Google ADK
-Holistic code quality scoring combining complexity, duplication, and other metrics
+Holistic code quality scoring combining complexity, duplication, and other metrics with LLM enhancement
 """
 
-from google.cloud.aiplatform.adk.tools import FunctionTool
+from google.adk.tools import FunctionTool
 from typing import Any, Dict, List, Optional, Union
 import logging
 import yaml
 import re
 import time
+import asyncio
 from pathlib import Path
 from .complexity_analyzer import ComplexityAnalyzer
 from .duplication_detector import DuplicationDetector
+
+# LLM provider integration
+from agents.base.tools.llm_provider import get_llm_provider, LLMRequest
 
 logger = logging.getLogger(__name__)
 
@@ -39,7 +43,10 @@ class MaintainabilityScorer:
         
     def _load_configuration(self):
         """Load maintainability scorer configuration from YAML file"""
-        config_path = Path(__file__).parent.parent.parent.parent / "config" / "tools" / "maintainability_scorer.yaml"
+        # Use environment-based path resolution for maximum reliability
+        import os
+        project_root = os.environ.get('PROJECT_ROOT', '/app')
+        config_path = Path(project_root) / "config" / "tools" / "maintainability_scorer.yaml"
         
         if not config_path.exists():
             raise FileNotFoundError(f"Configuration file not found: {config_path}")
@@ -643,9 +650,161 @@ def maintainability_scorer_tool(files: List[Dict[str, str]]) -> Dict[str, Any]:
     """Score code maintainability with holistic metrics combining complexity, duplication, and other factors"""
     return _maintainability_scorer.score_maintainability(files)
 
+async def enhanced_maintainability_analysis(files: List[Dict[str, str]], include_llm_insights: bool = True) -> Dict[str, Any]:
+    """
+    Enhanced maintainability analysis with LLM-powered insights
+    
+    Args:
+        files: List of file dictionaries with 'path' and 'content' keys
+        include_llm_insights: Whether to include LLM-generated insights
+        
+    Returns:
+        Enhanced analysis results with LLM recommendations
+    """
+    start_time = time.time()
+    
+    try:
+        # First, perform standard maintainability analysis
+        base_result = _maintainability_scorer.score_maintainability(files)
+        
+        if not include_llm_insights or not files:
+            return base_result
+        
+        # Get LLM provider for enhanced analysis
+        llm_provider = get_llm_provider()
+        
+        # Analyze files with low maintainability scores
+        file_scores = base_result.get("file_scores", {})
+        low_scoring_files = [
+            {"path": path, "score": score, "content": next((f["content"] for f in files if f["path"] == path), "")}
+            for path, score in file_scores.items() 
+            if score.get("overall_score", 100) < 70  # Focus on files scoring below 70%
+        ]
+        
+        llm_insights = []
+        llm_recommendations = []
+        strategic_recommendations = []
+        
+        # Analyze up to 3 lowest scoring files
+        for file_info in sorted(low_scoring_files, key=lambda x: x["score"].get("overall_score", 100))[:3]:
+            file_path = file_info["path"]
+            try:
+                # Determine language from file extension
+                language = _maintainability_scorer._detect_language(file_path) or "python"  # Default to python
+                
+                # Create analysis context
+                analysis_context = f"""
+File: {file_path}
+Language: {language}
+Overall Score: {file_info['score'].get('overall_score', 0):.1f}%
+Quality Level: {file_info['score'].get('quality_level', 'unknown')}
+
+Key Issues:
+- Complexity Score: {file_info['score'].get('complexity_score', 0):.1f}%
+- Documentation Score: {file_info['score'].get('documentation_score', 0):.1f}%
+- Naming Score: {file_info['score'].get('naming_score', 0):.1f}%
+- Structure Score: {file_info['score'].get('structure_score', 0):.1f}%
+
+Code Sample (first 1000 chars):
+```{language}
+{file_info['content'][:1000]}{'...' if len(file_info['content']) > 1000 else ''}
+```
+"""
+                
+                # Analyze with LLM
+                llm_analysis = await llm_provider.analyze_code_patterns(
+                    code=analysis_context,
+                    language=language,
+                    analysis_type="quality"
+                )
+                
+                if llm_analysis.get("insights"):
+                    for insight in llm_analysis["insights"]:
+                        llm_insights.append(f"📁 {file_path}: {insight}")
+                
+                if llm_analysis.get("recommendations"):
+                    for rec in llm_analysis["recommendations"]:
+                        llm_recommendations.append(f"🔧 {file_path}: {rec}")
+                        
+            except Exception as e:
+                logger.warning(f"LLM analysis failed for {file_path}: {e}")
+                continue
+        
+        # Generate strategic recommendations based on overall analysis
+        overall_score = base_result.get("overall_score", 0)
+        
+        if overall_score < 60:
+            strategic_recommendations.append("🚨 Critical: Immediate refactoring required across the codebase")
+        elif overall_score < 70:
+            strategic_recommendations.append("⚠️ Priority: Focus on improving code structure and documentation")
+        elif overall_score < 80:
+            strategic_recommendations.append("📈 Improvement: Good foundation, focus on specific quality metrics")
+        
+        # Add pattern-based strategic recommendations
+        file_count = len(files)
+        low_score_count = len(low_scoring_files)
+        
+        if low_score_count > file_count * 0.5:
+            strategic_recommendations.append("🔄 Consider establishing coding standards and review processes")
+        
+        if base_result.get("metrics", {}).get("average_complexity_score", 100) < 60:
+            strategic_recommendations.append("🎯 Focus on reducing complexity through refactoring and modularization")
+        
+        if base_result.get("metrics", {}).get("average_documentation_score", 100) < 50:
+            strategic_recommendations.append("📚 Implement documentation standards and automated documentation tools")
+        
+        # Enhance the result with LLM insights
+        enhanced_result = base_result.copy()
+        
+        # Add LLM analysis to metadata
+        enhanced_result["llm_analysis"] = {
+            "insights": llm_insights,
+            "recommendations": llm_recommendations,
+            "strategic_recommendations": strategic_recommendations,
+            "analyzed_files": len(low_scoring_files),
+            "total_files": len(files),
+            "processing_time": time.time() - start_time
+        }
+        
+        # Enhance recommendations
+        original_recommendations = enhanced_result.get("recommendations", [])
+        enhanced_recommendations = original_recommendations.copy()
+        
+        # Add strategic recommendations first
+        enhanced_recommendations.extend(strategic_recommendations)
+        
+        # Add LLM-generated recommendations
+        enhanced_recommendations.extend([f"🤖 AI: {rec}" for rec in llm_recommendations[:5]])  # Limit to top 5
+        
+        # Add general AI insights
+        if llm_insights:
+            enhanced_recommendations.append("💡 AI analysis suggests reviewing architectural patterns for better maintainability")
+        
+        enhanced_result["recommendations"] = enhanced_recommendations
+        
+        # Update confidence and metadata
+        enhanced_result["metadata"]["llm_enhanced"] = True
+        enhanced_result["metadata"]["llm_analysis_summary"] = {
+            "insights_count": len(llm_insights),
+            "recommendations_count": len(llm_recommendations),
+            "strategic_recommendations_count": len(strategic_recommendations)
+        }
+        
+        return enhanced_result
+        
+    except Exception as e:
+        logger.error(f"Enhanced maintainability analysis failed: {e}")
+        # Fallback to base analysis
+        base_result = _maintainability_scorer.score_maintainability(files)
+        base_result["llm_enhancement_failed"] = str(e)
+        return base_result
+
+def enhanced_maintainability_scorer_tool(files: List[Dict[str, str]], include_llm_insights: bool = True) -> Dict[str, Any]:
+    """Enhanced maintainability scorer with LLM integration"""
+    return asyncio.run(enhanced_maintainability_analysis(files, include_llm_insights))
+
 # ADK FunctionTool for maintainability scoring
-MaintainabilityScorerTool = FunctionTool(
-    name="maintainability_scorer",
-    description="Score code maintainability with holistic metrics combining complexity, duplication, documentation, naming, structure, and test coverage",
-    function=maintainability_scorer_tool
-)
+MaintainabilityScorerTool = FunctionTool(maintainability_scorer_tool)
+
+# Enhanced ADK FunctionTool with LLM integration
+EnhancedMaintainabilityScorerTool = FunctionTool(enhanced_maintainability_scorer_tool)

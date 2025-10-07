@@ -1,9 +1,9 @@
 """
 Duplication Detection Tool for Google ADK
-Real AST-based code duplication detection across files using Tree-sitter parsing
+Real AST-based code duplication detection across files using Tree-sitter parsing with LLM enhancement
 """
 
-from google.cloud.aiplatform.adk.tools import FunctionTool
+from google.adk.tools import FunctionTool
 from typing import Any, Dict, List, Optional, Tuple
 import hashlib
 import logging
@@ -11,9 +11,13 @@ import os
 import yaml
 from pathlib import Path
 import time
+import asyncio
 
 # Tree-sitter imports
 import tree_sitter
+
+# LLM provider integration
+from agents.base.tools.llm_provider import get_llm_provider, LLMRequest
 import tree_sitter_python as tsp
 import tree_sitter_javascript as tsjs
 import tree_sitter_typescript as tsts
@@ -106,7 +110,10 @@ class DuplicationDetector:
     
     def _load_configuration(self):
         """Load duplication detection configuration from YAML file"""
-        config_path = Path(__file__).parent.parent.parent.parent / "config" / "tools" / "duplication_detector.yaml"
+        # Use environment-based path resolution for maximum reliability
+        import os
+        project_root = os.environ.get('PROJECT_ROOT', '/app')
+        config_path = Path(project_root) / "config" / "tools" / "duplication_detector.yaml"
         
         if not config_path.exists():
             raise FileNotFoundError(f"Configuration file not found: {config_path}")
@@ -503,9 +510,124 @@ def duplication_detector_tool(files: List[Dict[str, str]]) -> Dict[str, Any]:
     """Detect code duplication across multiple files using AST analysis"""
     return _duplication_detector.detect_duplications(files)
 
+async def enhanced_duplication_analysis(files: List[Dict[str, str]], include_llm_insights: bool = True) -> Dict[str, Any]:
+    """
+    Enhanced duplication analysis with LLM-powered insights
+    
+    Args:
+        files: List of file dictionaries with 'path' and 'content' keys
+        include_llm_insights: Whether to include LLM-generated insights
+        
+    Returns:
+        Enhanced analysis results with LLM recommendations
+    """
+    start_time = time.time()
+    
+    try:
+        # First, perform standard Tree-sitter analysis
+        base_result = _duplication_detector.detect_duplications(files)
+        
+        if not include_llm_insights or not files:
+            return base_result
+        
+        # Get LLM provider for enhanced analysis
+        llm_provider = get_llm_provider()
+        
+        # Analyze the most significant duplications with LLM
+        duplications = base_result.get("duplications", [])
+        high_severity_dups = [dup for dup in duplications if dup.get("severity") in ["high", "critical"]]
+        
+        llm_insights = []
+        llm_recommendations = []
+        
+        # Analyze up to 3 most critical duplications
+        for dup in high_severity_dups[:3]:
+            try:
+                # Get code snippets for analysis
+                block1_code = dup["block1"]["code"]
+                block2_code = dup["block2"]["code"]
+                
+                # Create analysis context
+                analysis_context = f"""
+Duplicate Code Block 1 (from {dup["block1"]["file"]}):
+```
+{block1_code}
+```
+
+Duplicate Code Block 2 (from {dup["block2"]["file"]}):
+```
+{block2_code}
+```
+
+Similarity: {dup["similarity"]:.2%}
+Clone Type: {dup["clone_type"]}
+"""
+                
+                # Analyze with LLM
+                llm_analysis = await llm_provider.analyze_code_patterns(
+                    code=analysis_context,
+                    language="multi",  # Mixed language analysis
+                    analysis_type="duplication"
+                )
+                
+                if llm_analysis.get("insights"):
+                    llm_insights.extend(llm_analysis["insights"])
+                
+                if llm_analysis.get("recommendations"):
+                    llm_recommendations.extend(llm_analysis["recommendations"])
+                    
+            except Exception as e:
+                logger.warning(f"LLM analysis failed for duplication: {e}")
+                continue
+        
+        # Enhance the result with LLM insights
+        enhanced_result = base_result.copy()
+        
+        # Add LLM insights to metadata
+        enhanced_result["llm_analysis"] = {
+            "insights": llm_insights,
+            "recommendations": llm_recommendations,
+            "analyzed_duplications": min(len(high_severity_dups), 3),
+            "total_duplications": len(duplications),
+            "processing_time": time.time() - start_time
+        }
+        
+        # Enhance recommendations
+        original_recommendations = enhanced_result.get("recommendations", [])
+        enhanced_recommendations = original_recommendations.copy()
+        
+        # Add LLM-generated recommendations
+        for rec in llm_recommendations:
+            enhanced_recommendations.append(f"🤖 AI Insight: {rec}")
+        
+        # Add strategic insights
+        if llm_insights:
+            enhanced_recommendations.append("💡 AI Analysis suggests reviewing code architecture for better abstraction")
+            if len(duplications) > 5:
+                enhanced_recommendations.append("🔄 Consider implementing shared utility functions or design patterns")
+        
+        enhanced_result["recommendations"] = enhanced_recommendations
+        
+        # Update confidence score
+        if "confidence" in enhanced_result:
+            llm_confidence_boost = 0.1 if llm_insights else 0.0
+            enhanced_result["confidence"] = min(enhanced_result["confidence"] + llm_confidence_boost, 1.0)
+        
+        return enhanced_result
+        
+    except Exception as e:
+        logger.error(f"Enhanced duplication analysis failed: {e}")
+        # Fallback to base analysis
+        base_result = _duplication_detector.detect_duplications(files)
+        base_result["llm_enhancement_failed"] = str(e)
+        return base_result
+
+def enhanced_duplication_detector_tool(files: List[Dict[str, str]], include_llm_insights: bool = True) -> Dict[str, Any]:
+    """Enhanced duplication detector with LLM integration"""
+    return asyncio.run(enhanced_duplication_analysis(files, include_llm_insights))
+
 # ADK FunctionTool for duplication detection
-DuplicationDetectorTool = FunctionTool(
-    name="duplication_detector",
-    description="Detect code duplication across files using AST-based analysis with Tree-sitter parsing",
-    function=duplication_detector_tool
-)
+DuplicationDetectorTool = FunctionTool(duplication_detector_tool)
+
+# Enhanced ADK FunctionTool with LLM integration
+EnhancedDuplicationDetectorTool = FunctionTool(enhanced_duplication_detector_tool)

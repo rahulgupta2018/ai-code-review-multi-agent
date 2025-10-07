@@ -9,21 +9,22 @@ packages = [{include = "src"}]
 [tool.poetry.dependencies]
 python = "^3.11"
 fastapi = "^0.115.0"  # Updated to match Google Cloud AI Platform requirements
-uvicorn = "^0.24.0"
+uvicorn = "^0.34.0"  # Updated to be compatible with google-adk
 pydantic = "^2.5.0"
 pyyaml = "^6.0.1"
 tree-sitter = "^0.25.2"  # Updated to latest version
 redis = "^5.0.1"
 sqlalchemy = "^2.0.23"
-websockets = "^13.0"  # Updated to match Google Cloud AI Platform requirements
-httpx = "^0.25.2"
+websockets = "^15.0"  # Updated to match google-adk requirements
+httpx = "^0.28.0"  # Updated to match google-adk requirements
 jinja2 = "^3.1.2"
 reportlab = "^4.0.7"
 click = "^8.1.7"
-python-multipart = "^0.0.6"
+python-multipart = "^0.0.20"  # Updated to match google-adk requirements
 aiofiles = "^23.2.1"
 
 # Google Cloud & Agent Development Kit Integration
+google-adk = "^1.15.0"  # Google Agent Development Kit
 google-cloud-aiplatform = "^1.100.0"  # Slightly older version to avoid conflicts
 google-cloud-discoveryengine = "^0.11.1" 
 google-cloud-dialogflow = "^2.24.1"
@@ -45,8 +46,12 @@ tree-sitter-cpp = "^0.23.4"
 tree-sitter-c-sharp = "^0.23.1"
 
 # LLM Providers
-ollama = "^0.1.7"  # For development
+ollama = "^0.2.0"  # Updated for compatibility with httpx ^0.28.0
 google-generativeai = "^0.8.3"  # Older version to avoid conflicts
+
+# Dependency constraints to avoid conflicts
+jsonschema = "^4.17.0,<4.18.0"  # Constrained for Poetry compatibility
+platformdirs = "^3.0.0,<4.0.0"  # Constrained for Poetry compatibility
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^7.4.3"

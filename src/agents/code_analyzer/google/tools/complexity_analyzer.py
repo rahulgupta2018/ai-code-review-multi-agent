@@ -1,16 +1,18 @@
 """
 Complexity Analyzer FunctionTool
-Analyzes code complexity using Tree-sitter AST parsing
+Analyzes code complexity using Tree-sitter AST parsing with LLM enhancement
 """
 
 from tree_sitter import Parser, Query, Language
 from typing import Dict, List, Any, Optional, Callable
-from ..base.tool_schemas import CodeFileInput, AnalysisOutput, QualityMetric
+from agents.base.tools.tool_schemas import CodeFileInput, AnalysisOutput, QualityMetric
+from agents.base.tools.llm_provider import get_llm_provider, LLMRequest
 import logging
 import os
 import time
 import yaml
 import importlib
+import asyncio
 from pathlib import Path
 
 logger = logging.getLogger(__name__)
@@ -18,7 +20,10 @@ logger = logging.getLogger(__name__)
 
 def load_language_config() -> Dict[str, Any]:
     """Load language configuration from YAML file"""
-    config_path = Path(__file__).parent.parent.parent.parent / "config" / "tools" / "complexity_analyzer.yaml"
+    # Use environment-based path resolution for maximum reliability
+    import os
+    project_root = os.environ.get('PROJECT_ROOT', '/app')
+    config_path = Path(project_root) / "config" / "tools" / "complexity_analyzer.yaml"
     
     try:
         with open(config_path, 'r', encoding='utf-8') as f:
@@ -492,7 +497,7 @@ def ComplexityAnalyzerTool(file_path: str, content: Optional[str] = None) -> Dic
         Analysis results dictionary
     """
     # Import here to avoid circular imports
-    from ..base.tool_schemas import CodeFileInput, AnalysisLanguage
+    from agents.base.tools.tool_schemas import CodeFileInput, AnalysisLanguage
     
     # Use configuration-based extension to language mapping
     ext = analyzer.get_file_extension(file_path)
@@ -503,6 +508,151 @@ def ComplexityAnalyzerTool(file_path: str, content: Optional[str] = None) -> Dic
     
     file_input = CodeFileInput(file_path=file_path, content=content or "", language=language)
     result = complexity_analyzer_tool(file_input)
+    
+    return {
+        "file_path": result.file_path,
+        "findings": result.findings,
+        "metrics": result.metrics,
+        "confidence": result.confidence,
+        "processing_time": result.processing_time,
+        "metadata": result.metadata
+    }
+
+
+async def enhanced_complexity_analysis(file_input: CodeFileInput, include_llm_insights: bool = True) -> AnalysisOutput:
+    """
+    Enhanced complexity analysis with LLM-powered insights
+    
+    Args:
+        file_input: Input file information
+        include_llm_insights: Whether to include LLM-generated insights
+        
+    Returns:
+        Enhanced analysis results with LLM recommendations
+    """
+    start_time = time.time()
+    
+    try:
+        # First, perform standard Tree-sitter analysis
+        base_result = complexity_analyzer_tool(file_input)
+        
+        if not include_llm_insights or not file_input.content:
+            return base_result
+        
+        # Get LLM provider for enhanced analysis
+        llm_provider = get_llm_provider()
+        
+        # Create context from base analysis
+        analysis_context = {
+            "metrics": base_result.metrics,
+            "high_complexity_functions": [
+                finding for finding in base_result.findings 
+                if finding.get('severity') in ['high', 'critical']
+            ],
+            "language": file_input.language.value,
+            "file_path": file_input.file_path
+        }
+        
+        # Generate LLM insights
+        llm_analysis = await llm_provider.analyze_code_patterns(
+            code=file_input.content,
+            language=file_input.language.value,
+            analysis_type="complexity"
+        )
+        
+        # Enhance findings with LLM insights
+        enhanced_findings = base_result.findings.copy()
+        
+        # Add LLM-generated insights as findings
+        if llm_analysis.get("insights"):
+            for insight in llm_analysis["insights"]:
+                enhanced_findings.append({
+                    'type': 'llm_insight',
+                    'message': insight,
+                    'line': 1,  # General insight
+                    'severity': 'info',
+                    'source': 'llm',
+                    'confidence': llm_analysis.get("confidence", 0.8)
+                })
+        
+        # Add LLM recommendations
+        if llm_analysis.get("recommendations"):
+            for recommendation in llm_analysis["recommendations"]:
+                enhanced_findings.append({
+                    'type': 'llm_recommendation',
+                    'message': recommendation,
+                    'line': 1,  # General recommendation
+                    'severity': 'suggestion',
+                    'source': 'llm',
+                    'confidence': llm_analysis.get("confidence", 0.8)
+                })
+        
+        # Enhanced metrics
+        enhanced_metrics = base_result.metrics.copy()
+        enhanced_metrics.update({
+            "llm_analysis_confidence": llm_analysis.get("confidence", 0.0),
+            "llm_provider": llm_analysis.get("provider", "unknown"),
+            "llm_insights_count": len(llm_analysis.get("insights", [])),
+            "llm_recommendations_count": len(llm_analysis.get("recommendations", []))
+        })
+        
+        # Enhanced metadata
+        enhanced_metadata = base_result.metadata.copy() if base_result.metadata else {}
+        enhanced_metadata.update({
+            "llm_enhanced": True,
+            "llm_analysis": {
+                "provider": llm_analysis.get("provider"),
+                "confidence": llm_analysis.get("confidence"),
+                "analysis_type": "complexity"
+            }
+        })
+        
+        processing_time = time.time() - start_time
+        
+        return AnalysisOutput(
+            file_path=file_input.file_path,
+            findings=enhanced_findings,
+            metrics=enhanced_metrics,
+            confidence=min(base_result.confidence + (llm_analysis.get("confidence", 0.0) * 0.2), 1.0),
+            processing_time=processing_time,
+            metadata=enhanced_metadata
+        )
+        
+    except Exception as e:
+        logger.error(f"Enhanced complexity analysis failed: {e}")
+        # Fallback to base analysis
+        base_result = complexity_analyzer_tool(file_input)
+        base_result.metadata = base_result.metadata or {}
+        base_result.metadata["llm_enhancement_failed"] = str(e)
+        return base_result
+
+
+def EnhancedComplexityAnalyzerTool(file_path: str, content: Optional[str] = None, include_llm_insights: bool = True) -> Dict[str, Any]:
+    """
+    Enhanced complexity analyzer tool interface with LLM integration
+    
+    Args:
+        file_path: Path to the file to analyze
+        content: Optional file content (if not provided, will read from file_path)
+        include_llm_insights: Whether to include LLM-generated insights
+        
+    Returns:
+        Enhanced analysis results dictionary
+    """
+    # Import here to avoid circular imports
+    from agents.base.tools.tool_schemas import CodeFileInput, AnalysisLanguage
+    
+    # Use configuration-based extension to language mapping
+    ext = analyzer.get_file_extension(file_path)
+    language_name = EXTENSION_TO_LANGUAGE.get(ext, 'PYTHON')  # Default to Python
+    
+    # Get the AnalysisLanguage enum value
+    language = getattr(AnalysisLanguage, language_name, AnalysisLanguage.PYTHON)
+    
+    file_input = CodeFileInput(file_path=file_path, content=content or "", language=language)
+    
+    # Run async analysis
+    result = asyncio.run(enhanced_complexity_analysis(file_input, include_llm_insights))
     
     return {
         "file_path": result.file_path,

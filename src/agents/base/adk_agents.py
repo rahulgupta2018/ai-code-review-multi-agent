@@ -3,10 +3,11 @@ Native Google ADK Agent Implementations
 Using LlmAgent and official ADK patterns as specified in implementation plan
 """
 
-from google.cloud.aiplatform.adk import LlmAgent, SequentialAgent, ParallelAgent, LoopAgent
-from google.cloud.aiplatform.adk import MemoryService, SessionService
-from google.cloud.aiplatform.adk.toolsets import BaseToolset
-from google.cloud.aiplatform.adk.tools import FunctionTool
+from google.adk.agents import LlmAgent, SequentialAgent, ParallelAgent, LoopAgent
+from google.adk.memory import BaseMemoryService
+from google.adk.sessions import BaseSessionService
+from google.adk.tools.base_toolset import BaseToolset
+from google.adk.tools import FunctionTool
 
 from typing import Any, Dict, List, Optional
 import json
@@ -18,7 +19,7 @@ logger = logging.getLogger(__name__)
 class ADKAgentRegistry:
     """Registry for managing all ADK agents in the code review system"""
     
-    def __init__(self, memory_service: MemoryService, session_service: SessionService):
+    def __init__(self, memory_service: BaseMemoryService, session_service: BaseSessionService):
         self.memory_service = memory_service
         self.session_service = session_service
         self.agents = {}
@@ -37,10 +38,10 @@ class ADKAgentRegistry:
     def _create_code_analyzer_agent(self) -> LlmAgent:
         """Create Code Analyzer Agent - General code quality and structure analysis"""
         
-        from ..tools.quality.complexity_analyzer import ComplexityAnalyzerTool
-        from ..tools.quality.duplication_detector import DuplicationDetectorTool
-        from ..tools.quality.maintainability_scorer import MaintainabilityScorerTool
-        from ..tools.code_analysis.code_analysis import CodeAnalysisToolset
+        from ...tools.quality.complexity_analyzer import ComplexityAnalyzerTool
+        from ...tools.quality.duplication_detector import DuplicationDetectorTool
+        from ...tools.quality.maintainability_scorer import MaintainabilityScorerTool
+        from ...tools.code_analysis.code_analysis import CodeAnalysisToolset
         
         return LlmAgent(
             name="code_analyzer",
@@ -56,9 +57,9 @@ class ADKAgentRegistry:
     def _create_security_standards_agent(self) -> LlmAgent:
         """Create Security Standards Agent - Security vulnerabilities and compliance"""
         
-        from ..tools.security.vulnerability_scanner import VulnerabilityScannerTool
-        from ..tools.security.auth_analyzer import AuthAnalyzerTool
-        from ..tools.security.crypto_checker import CryptoCheckerTool
+        from ...tools.security.vulnerability_scanner import VulnerabilityScannerTool
+        from ...tools.security.auth_analyzer import AuthAnalyzerTool
+        from ...tools.security.crypto_checker import CryptoCheckerTool
         
         return LlmAgent(
             name="security_standards", 
@@ -204,7 +205,7 @@ class ADKWorkflowManager:
 
 
 # Factory function for easy agent creation as specified in plan
-def create_adk_system(memory_service: MemoryService, session_service: SessionService) -> tuple[ADKAgentRegistry, ADKWorkflowManager]:
+def create_adk_system(memory_service: BaseMemoryService, session_service: BaseSessionService) -> tuple[ADKAgentRegistry, ADKWorkflowManager]:
     """
     Factory function to create the complete ADK-based code review system
     
