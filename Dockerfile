@@ -58,14 +58,11 @@ RUN apt-get update && apt-get install -y \
     jq \
     && rm -rf /var/lib/apt/lists/*
 
-    # Install Google Cloud CLI
-    RUN curl -sSL https://packages.cloud.google.com/apt/doc/apt-key.gpg | gpg --dearmor -o /usr/share/keyrings/cloud.google.gpg && \
-        echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] https://packages.cloud.google.com/apt cloud-sdk main" | tee -a /etc/apt/sources.list.d/google-cloud-sdk.list && \
-        apt-get update && apt-get install -y google-cloud-cli && \
-        rm -rf /var/lib/apt/lists/*
-    
-    # Install Google Cloud Python client libraries (for ADK)
-    RUN pip install google-cloud-aiplatform google-cloud-discoveryengine google-cloud-dialogflow google-auth
+# Install Google Cloud CLI
+RUN curl -sSL https://packages.cloud.google.com/apt/doc/apt-key.gpg | gpg --dearmor -o /usr/share/keyrings/cloud.google.gpg && \
+    echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] https://packages.cloud.google.com/apt cloud-sdk main" | tee -a /etc/apt/sources.list.d/google-cloud-sdk.list && \
+    apt-get update && apt-get install -y google-cloud-cli && \
+    rm -rf /var/lib/apt/lists/*
 
 # Create application user
 RUN groupadd --gid 1000 appuser && \
@@ -75,15 +72,21 @@ RUN groupadd --gid 1000 appuser && \
 WORKDIR /app
 
 # Copy dependency files
-COPY pyproject.toml poetry.lock* ./
+COPY pyproject.toml poetry.lock* README.md ./
 
-# Install Python dependencies (only external dependencies without local package)
+# Create src directory temporarily for Poetry installation
+RUN mkdir -p src
+
+# Install Python dependencies using Poetry (includes all deps from pyproject.toml)
 RUN poetry config virtualenvs.create false && \
-    pip install fastapi uvicorn pydantic pyyaml tree-sitter redis sqlalchemy websockets httpx jinja2 reportlab click python-multipart aiofiles google-cloud-aiplatform google-cloud-discoveryengine google-cloud-dialogflow google-auth google-auth-oauthlib && \
-    rm -rf /tmp/pip_cache
+    poetry install --with=dev --no-root && \
+    rm -rf $POETRY_CACHE_DIR
 
 # Copy source code
 COPY src/ ./src/
+
+# Install the local package now that source is available
+RUN poetry install --only-root
 
 # Copy scripts for development
 COPY scripts/ ./scripts/
@@ -108,15 +111,21 @@ RUN groupadd --gid 1000 appuser && \
 WORKDIR /app
 
 # Copy dependency files
-COPY pyproject.toml poetry.lock* ./
+COPY pyproject.toml poetry.lock* README.md ./
+
+# Create src directory temporarily for Poetry installation
+RUN mkdir -p src
 
 # Install Python dependencies (production only)
 RUN poetry config virtualenvs.create false && \
-    poetry install --only=main && \
+    poetry install --only=main --no-root && \
     rm -rf $POETRY_CACHE_DIR
 
 # Copy application code
 COPY src/ ./src/
+
+# Install the local package now that source is available
+RUN poetry install --only-root
 COPY config/ ./config/
 COPY scripts/ ./scripts/
 
@@ -140,17 +149,14 @@ CMD ["python", "-m", "src.api.main"]
 # ADK-specific stage for agent development
 FROM development as adk
 
-# Install additional ADK development tools
-RUN pip install google-cloud-adk google-cloud-discoveryengine google-cloud-dialogflow
-
-# Install tree-sitter for multi-language parsing
-RUN pip install tree-sitter tree-sitter-python tree-sitter-javascript tree-sitter-typescript tree-sitter-java tree-sitter-go tree-sitter-rust tree-sitter-cpp tree-sitter-c-sharp
+# Install additional development tools if needed
+# All dependencies including Google ADK and Tree-sitter parsers are already installed via Poetry
 
 # Create ADK workspace
 RUN mkdir -p /app/adk-workspace /app/dev-portal
 
 # Copy ADK configuration
-COPY config/adk/ ./config/adk/
+COPY config/adk/ ./config/adk/ 2>/dev/null || mkdir -p ./config/adk
 
 # Set ADK environment variables
 ENV ADK_WORKSPACE=/app/adk-workspace \
