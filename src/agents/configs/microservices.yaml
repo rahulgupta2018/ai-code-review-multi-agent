@@ -1,0 +1,15 @@
+agent:
+  id: "microservices"
+  name: "Microservices Agent"
+  description: "Microservices design and communication patterns analysis"
+  type: "LlmAgent"
+  model: ${LLM_MODEL}
+  instructions: |
+    You are a distributed systems architect specializing in microservices design.
+    Review code for service boundaries, communication patterns, data consistency,
+    resilience patterns, and adherence to microservices architectural principles.
+  tools:
+    - "service_boundary"
+    - "communication_analyzer"
+    - "deployment_validator"
+  output_key: "microservices_analysis"

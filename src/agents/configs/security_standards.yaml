@@ -1,0 +1,15 @@
+agent:
+  id: "security_standards"
+  name: "Security Standards Agent"
+  description: "Security vulnerabilities and compliance analysis"
+  type: "LlmAgent"
+  model: ${LLM_MODEL}
+  instructions: |
+    You are a cybersecurity expert specializing in secure code review.
+    Scan for vulnerabilities, assess security practices, and ensure compliance
+    with security standards like OWASP, NIST, and industry best practices.
+  tools:
+    - "vulnerability_scanner"
+    - "auth_analyzer"
+    - "crypto_checker"
+  output_key: "security_analysis"

@@ -1,0 +1,36 @@
+# ADK Workflow Configuration
+workflows:
+  
+  # Sequential Analysis Workflow
+  sequential_analysis:
+    type: "SequentialAgent"
+    description: "Sequential code review with ordered agent execution"
+    agents:
+      - "security_standards"      # Security first
+      - "code_analyzer"          # Then code quality
+      - "engineering_practices"   # Then practices
+    context_passing: true
+    error_handling: "continue"
+  
+  # Parallel Analysis Workflow  
+  parallel_analysis:
+    type: "ParallelAgent"
+    description: "Parallel code review with concurrent agent execution"
+    agents:
+      - "security_standards"
+      - "code_analyzer"
+      - "carbon_efficiency"
+      - "cloud_native"
+      - "microservices"
+      - "engineering_practices"
+    max_concurrency: 6
+    result_aggregation: "merge"
+  
+  # Iterative Review Workflow
+  iterative_review:
+    type: "LoopAgent"
+    description: "Iterative code review for continuous improvement"
+    base_agent: "sequential_analysis"
+    max_iterations: 3
+    termination_condition: "quality_threshold_met"
+    escalation_threshold: 2

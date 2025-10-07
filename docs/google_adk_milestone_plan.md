@@ -35,6 +35,12 @@ We have a complete foundation and will now create sophisticated AI-powered code 
 3. **Custom Tools**: Implements tool adapters instead of ADK's `FunctionTool` patterns
 4. **Custom Memory**: Custom memory system instead of ADK's `MemoryService`
 5. **Mock Implementations**: Most analysis logic is TODO/mock instead of real
+6. **🚨 ORCHESTRATOR DUPLICATION**: Custom SmartMasterOrchestrator duplicates ADK workflow capabilities
+
+#### **Orchestrator vs ADK Workflows Conflict**:
+- **Current Issue**: Both custom orchestrator (`config/orchestrator/smart_orchestrator.yaml`) and ADK workflows (`src/agents/adk_agents.py`) exist
+- **ADK Best Practice**: Use native `SequentialAgent`, `ParallelAgent`, `LoopAgent` exclusively
+- **Resolution Required**: Eliminate custom orchestrator in favor of ADK patterns
 
 #### **What Needs to be Rebuilt**:
 - [ ] **Replace custom GADK with native ADK** patterns throughout codebase
@@ -42,6 +48,40 @@ We have a complete foundation and will now create sophisticated AI-powered code 
 - [ ] **Replace tool adapters** with ADK's `FunctionTool` and `BaseToolset`
 - [ ] **Implement ADK memory patterns** instead of custom memory system
 - [ ] **Build actual analysis tools** instead of mock implementations
+- [ ] **🚨 ELIMINATE custom orchestrator** and use ADK workflow agents exclusively
+
+---
+
+## **🎯 ORCHESTRATOR vs WORKFLOWS RESOLUTION SUMMARY**
+
+### **✅ FINAL APPROACH (Google ADK Best Practice):**
+
+1. **USE**: `src/agents/adk_agents.py` ADKWorkflowManager exclusively
+   - `create_sequential_review_workflow()` → SequentialAgent
+   - `create_parallel_review_workflow()` → ParallelAgent  
+   - `create_iterative_review_workflow()` → LoopAgent
+
+2. **DELETE**: Custom orchestrator entirely
+   - ❌ Remove `config/orchestrator/smart_orchestrator.yaml` (700+ lines)
+   - ❌ Remove `src/core/orchestrator/smart_master_orchestrator.py`
+   - ❌ Remove empty `config/workflows/` files
+
+3. **INTEGRATE**: Quality rules into ADK agent instructions
+   - `config/rules/bias_prevention.yaml` → Agent instruction templates
+   - `config/rules/hallucination_prevention.yaml` → LLM output validation
+   - `config/rules/quality_control.yaml` → Analysis validation patterns
+
+4. **CONFIGURE**: All workflow behavior via ADK configuration
+   - `config/adk/workflow_config.yaml` → Workflow definitions
+   - Agent YAML configs in `src/agents/configs/` → Agent capabilities
+   - `config/adk/llm_config.yaml` → Dual LLM provider setup
+
+### **🚨 IMMEDIATE ACTION REQUIRED:**
+This duplication violates Google ADK principles. The custom orchestrator should be completely removed in favor of native ADK workflow patterns to ensure:
+- ✅ Compliance with Google ADK architecture
+- ✅ Maintainability and future ADK compatibility  
+- ✅ Simplified codebase without duplicate capabilities
+- ✅ Native ADK session and memory integration
 
 ---
 
@@ -68,6 +108,8 @@ We have a complete foundation and will now create sophisticated AI-powered code 
     ├── base/
     │   ├── analysis_toolset.py    # BaseToolset implementation
     │   └── tool_schemas.py        # Input/output schemas
+    ├── code_analysis/
+    │   └── code_analysis.py       # Comprehensive code analysis toolset
     ├── security/
     │   ├── vulnerability_scanner.py    # FunctionTool
     │   ├── auth_analyzer.py           # FunctionTool
@@ -100,7 +142,7 @@ We have a complete foundation and will now create sophisticated AI-powered code 
 
 - [ ] **Restructure Agent Directory**
   - [ ] ✅ Create `src/agents/configs/` for ADK agent YAML configurations
-  - [ ] ✅ Create `src/agents/workflows/` for ADK workflow agents
+  - [ ] ✅ **ADK WORKFLOW AGENTS**: Use `src/agents/adk_agents.py` ADKWorkflowManager exclusively
     ```
     src/agents/
     ├── configs/               # ADK agent YAML configs
@@ -110,12 +152,10 @@ We have a complete foundation and will now create sophisticated AI-powered code 
     │   ├── cloud_native.yaml
     │   ├── microservices.yaml
     │   └── engineering_practices.yaml
-    ├── workflows/             # ADK workflow agents
-    │   ├── sequential_analysis.py  # SequentialAgent
-    │   ├── parallel_analysis.py    # ParallelAgent
-    │   └── iterative_review.py     # LoopAgent
+    ├── adk_agents.py          # Native ADK agents and ADKWorkflowManager
     └── __init__.py
     ```
+  - [ ] ❌ **REMOVE**: Delete `config/workflows/` empty files (replaced by ADKWorkflowManager)
 
 - [ ] **Create ADK Configuration Structure**
   - [ ] ✅ Create `config/adk/` directory for ADK-specific configurations
@@ -126,6 +166,15 @@ We have a complete foundation and will now create sophisticated AI-powered code 
     ├── llm_config.yaml        # LLM provider configs (Ollama + Gemini)
     └── workflow_config.yaml   # Workflow agent configs
     ```
+  - [ ] ✅ Create `config/rules/` directory for quality control and bias prevention
+    ```
+    config/rules/
+    ├── bias_prevention.yaml        # Cognitive and technical bias mitigation
+    ├── hallucination_prevention.yaml  # LLM output validation rules
+    └── quality_control.yaml        # Analysis quality requirements
+    ```
+  - [ ] ❌ **DEPRECATE**: Remove `config/orchestrator/` custom orchestration in favor of ADK workflow agents
+  - [ ] ✅ **ADK WORKFLOWS**: Use `src/agents/adk_agents.py` ADKWorkflowManager exclusively
 
 - [ ] **LLM Provider Configuration**
   - [ ] ✅ Configure Ollama for development: `http://host.docker.internal:11434`
@@ -575,11 +624,44 @@ We have a complete foundation and will now create sophisticated AI-powered code 
 ### **Phase 4: ADK Multi-Agent Coordination** (Weeks 9-10)
 *Priority: MEDIUM - Implements ADK-native agent orchestration*
 
+#### **🚨 GOOGLE ADK APPROACH: Native Workflows vs Custom Orchestrator**
+
+**IMPORTANT**: We have identified **duplicate orchestration capabilities** that violate ADK best practices:
+
+1. **❌ CURRENT PROBLEM**: 
+   - Custom `SmartMasterOrchestrator` (700+ lines in `config/orchestrator/smart_orchestrator.yaml`)
+   - ADK `SequentialAgent`, `ParallelAgent`, `LoopAgent` implementations in `src/agents/adk_agents.py`
+   - Empty workflow files in `config/workflows/`
+
+2. **✅ ADK BEST PRACTICE**:
+   - Use **ONLY** ADK's native workflow agents: `SequentialAgent`, `ParallelAgent`, `LoopAgent`
+   - Agent hierarchy and delegation via ADK's built-in patterns
+   - State-based communication through ADK session management
+
+3. **🎯 RESOLUTION**:
+   - **DELETE** `config/orchestrator/` custom orchestration entirely
+   - **DELETE** empty `config/workflows/` files
+   - **USE** `src/agents/adk_agents.py` ADKWorkflowManager exclusively
+   - **INTEGRATE** quality rules (`config/rules/`) into ADK agent instructions
+
 #### **Milestone 4.1: ADK Agent Hierarchy & Communication** (Week 9)
-**Goal**: Implement multi-agent coordination using ADK's native patterns
+**Goal**: Implement multi-agent coordination using ADK's native patterns ONLY
 
 **ADK Agent Coordination Tasks**:
-- [ ] **Agent Hierarchy Implementation**
+- [ ] **Delete Custom Orchestrator**
+  - [ ] ❌ Remove `config/orchestrator/smart_orchestrator.yaml` (700+ lines of custom logic)
+  - [ ] ❌ Remove `src/core/orchestrator/smart_master_orchestrator.py` 
+  - [ ] ❌ Remove all custom orchestration tests and documentation
+  - [ ] ❌ Delete empty `config/workflows/` files (sequential_analysis.py, parallel_analysis.py, iterative_review.py)
+
+- [ ] **Use ADK Native Workflow Patterns**
+  - [ ] ✅ Use `ADKWorkflowManager` from `src/agents/adk_agents.py` exclusively
+  - [ ] ✅ Implement workflow creation via `create_sequential_review_workflow()`
+  - [ ] ✅ Implement parallel execution via `create_parallel_review_workflow()`
+  - [ ] ✅ Implement iterative refinement via `create_iterative_review_workflow()`
+  - [ ] ✅ Configure workflows via `config/adk/workflow_config.yaml`
+
+- [ ] **ADK Agent Hierarchy Implementation**
   - [ ] ✅ Define parent-child relationships using `sub_agents` parameter
   - [ ] ✅ Implement proper agent tree structure with single parent rule
   - [ ] ✅ Add agent discovery using `agent.find_agent(name)` navigation
@@ -597,68 +679,92 @@ We have a complete foundation and will now create sophisticated AI-powered code 
   - [ ] ✅ Add state interpolation in agent instructions
   - [ ] ✅ Create state change tracking and auditing
 
+- [ ] **Quality Rules Integration**
+  - [ ] ✅ Integrate `config/rules/bias_prevention.yaml` into agent instructions
+  - [ ] ✅ Integrate `config/rules/hallucination_prevention.yaml` into LLM validation
+  - [ ] ✅ Integrate `config/rules/quality_control.yaml` into analysis validation
+  - [ ] ✅ Remove quality logic from custom orchestrator (now handled by ADK agents)
+
 **Current State**:
-- ❌ **Single agent implementation only**
-- ❌ **No agent hierarchy or delegation**
-- ❌ **No inter-agent communication patterns**
+- ❌ **Custom orchestrator framework implemented instead of ADK workflows**
+- ❌ **All workflow coordination uses custom classes, not ADK patterns**
+- ❌ **Quality control embedded in orchestrator instead of agent instructions**
+- ❌ **No LLM provider abstraction or dual environment support**
 
 **Acceptance Criteria**:
-- ✅ **NATIVE ADK**: Uses ADK's multi-agent patterns exclusively
-- ✅ **INTELLIGENT ROUTING**: LLM-driven task delegation works effectively
-- ✅ **STATE COMMUNICATION**: Agents communicate via session state
-- Multiple agents collaborate effectively on complex analysis tasks
-- Agent hierarchy enables appropriate task decomposition
+- ✅ **NATIVE ADK**: Uses ADK's agent hierarchy and delegation patterns exclusively
+- ✅ **NO CUSTOM ORCHESTRATOR**: All custom orchestration code removed and replaced with ADK workflows
+- ✅ **QUALITY INTEGRATION**: Rules from `config/rules/` integrated into ADK agent instructions and validation
+- ✅ **ADK LIFECYCLE**: Agents follow ADK initialization and execution patterns exclusively
+- All existing orchestrator functionality preserved but using ADK workflow patterns
+- Quality control rules properly integrated into ADK agent instruction templates
+- Agent hierarchy supports complex multi-level coordination without custom logic
+
+**Dependencies**: None - this is the foundation that replaces custom orchestration
 
 **Dependencies**: Phase 2 session state implementation, ADK multi-agent setup
 
 #### **Milestone 4.2: Workflow Agents & Orchestration** (Week 10)
-**Goal**: Implement ADK workflow agents for complex analysis processes
+**Goal**: Implement ADK workflow agents for complex analysis processes (replacing custom orchestrator)
 
-**Workflow Agent Implementation**:
+**ADK Workflow Agent Implementation**:
 - [ ] **SequentialAgent Setup**
   - [ ] ✅ Implement sequential analysis workflows using ADK's `SequentialAgent`
   - [ ] ✅ Add proper step ordering for security → quality → architecture analysis
   - [ ] ✅ Create sequential result aggregation and summarization
   - [ ] ✅ Build error handling and recovery in sequential workflows
+  - [ ] ✅ Configure via `config/adk/workflow_config.yaml` sequential_analysis section
 
 - [ ] **ParallelAgent Setup**
   - [ ] ✅ Implement parallel analysis using ADK's `ParallelAgent`
   - [ ] ✅ Add concurrent execution of independent analysis tasks
   - [ ] ✅ Create parallel result collection and merging
   - [ ] ✅ Build resource management for concurrent agent execution
+  - [ ] ✅ Configure via `config/adk/workflow_config.yaml` parallel_analysis section
 
 - [ ] **LoopAgent for Iterative Analysis**
   - [ ] ✅ Implement iterative refinement using ADK's `LoopAgent`
   - [ ] ✅ Add convergence criteria for analysis quality
   - [ ] ✅ Create feedback loops for continuous improvement
-- [ ] ✅ Build adaptive analysis depth based on findings
+  - [ ] ✅ Build adaptive analysis depth based on findings
+  - [ ] ✅ Configure via `config/adk/workflow_config.yaml` iterative_review section
 
-**Advanced Orchestration**:
-- [ ] **Custom Workflow Patterns**
-  - [ ] ✅ Create domain-specific workflow agents for code review
-  - [ ] ✅ Implement conditional branching based on analysis results
-  - [ ] ✅ Add dynamic workflow adaptation using LLM decisions
+**Advanced ADK Orchestration** (Replacing Custom Logic):
+- [ ] **Quality Rules Integration**
+  - [ ] ✅ Integrate `config/rules/bias_prevention.yaml` into agent instruction templates
+  - [ ] ✅ Integrate `config/rules/hallucination_prevention.yaml` into LLM output validation
+  - [ ] ✅ Integrate `config/rules/quality_control.yaml` into analysis validation patterns
+  - [ ] ✅ Remove quality control logic from custom orchestrator entirely
+
+- [ ] **Dynamic Workflow Selection** (ADK-Native)
+  - [ ] ✅ Create LLM-driven workflow selection using agent capability descriptions
+  - [ ] ✅ Implement context-based workflow adaptation using session state
+  - [ ] ✅ Add dynamic workflow composition based on code complexity
   - [ ] ✅ Build workflow templates for different project types
 
-- [ ] **Agent Performance Optimization**
-  - [ ] ✅ Implement agent performance monitoring and metrics
-  - [ ] ✅ Add agent load balancing and resource management
-  - [ ] ✅ Create agent caching and result optimization
-  - [ ] ✅ Build agent health checks and automatic recovery
+- [ ] **Agent Performance Optimization** (ADK-Native)
+  - [ ] ✅ Implement agent performance monitoring using ADK session metrics
+  - [ ] ✅ Add agent load balancing via ADK workflow resource management
+  - [ ] ✅ Create agent caching using ADK memory patterns
+  - [ ] ✅ Build agent health checks using ADK status reporting
 
 **Current State**:
 - ❌ **No workflow agent implementations**
 - ❌ **No parallel or sequential coordination**
 - ❌ **No adaptive analysis workflows**
+- ❌ **Empty workflow files in `config/workflows/` should be deleted**
+- ✅ **ADKWorkflowManager implemented in `src/agents/adk_agents.py` - USE THIS**
 
 **Acceptance Criteria**:
-- ✅ **WORKFLOW AGENTS**: Uses SequentialAgent, ParallelAgent, LoopAgent appropriately
-- ✅ **ADAPTIVE**: Workflows adapt based on analysis findings
-- ✅ **OPTIMIZED**: Performance optimizations for agent coordination
-- Complex analysis tasks are decomposed effectively across agents
-- Workflow patterns are reusable and configurable
+- ✅ **WORKFLOW AGENTS**: Uses SequentialAgent, ParallelAgent, LoopAgent appropriately via ADKWorkflowManager
+- ✅ **ADAPTIVE**: Workflows adapt based on analysis findings using ADK session state
+- ✅ **OPTIMIZED**: Performance optimizations for agent coordination using ADK native patterns
+- ✅ **CONFIGURATION-DRIVEN**: All workflow behavior configured via `config/adk/workflow_config.yaml`
+- Complex analysis tasks are decomposed effectively across agents using ADK workflow patterns
+- Workflow patterns are reusable and configurable through ADK configuration
+- Quality rules properly integrated into workflow decision-making
 
-**Dependencies**: Milestone 4.1, ADK workflow agent understanding
+**Dependencies**: Milestone 4.1, ADK workflow agent understanding, deletion of custom orchestrator
 
 ### **Phase 5: Production Integration & Testing** (Weeks 11-12)
 *Priority: HIGH - Required for production deployment*

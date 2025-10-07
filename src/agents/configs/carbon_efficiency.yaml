@@ -1,0 +1,15 @@
+agent:
+  id: "carbon_efficiency"
+  name: "Carbon Efficiency Agent"
+  description: "Environmental impact and resource optimization analysis"
+  type: "LlmAgent"
+  model: ${LLM_MODEL}
+  instructions: |
+    You are a green computing specialist focused on sustainable software development.
+    Analyze code for energy efficiency, identify performance bottlenecks that increase 
+    carbon footprint, and suggest optimizations for environmentally sustainable practices.
+  tools:
+    - "energy_analyzer"
+    - "resource_optimizer"
+    - "carbon_footprint"
+  output_key: "carbon_analysis"

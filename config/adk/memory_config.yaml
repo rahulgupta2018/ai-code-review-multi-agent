@@ -1,0 +1,23 @@
+# ADK MemoryService Configuration
+# Will be enhanced with Neo4j in Milestone 2.2
+memory:
+  provider: "basic"  # Will be "neo4j" in Milestone 2.2
+  
+  # Basic memory configuration for Milestone 0.1
+  basic:
+    max_memories: 1000
+    retention_days: 30
+    auto_summarize_threshold: 500
+  
+  # Neo4j configuration (for Milestone 2.2)
+  neo4j:
+    uri: "${NEO4J_URI:bolt://localhost:7687}"
+    username: "${NEO4J_USERNAME:neo4j}"
+    password: "${NEO4J_PASSWORD:password}"
+    database: "${NEO4J_DATABASE:agentic_review}"
+    
+    # Knowledge graph settings
+    graph:
+      max_relationships: 10000
+      pattern_similarity_threshold: 0.8
+      learning_confidence_threshold: 0.9

@@ -1,1 +1,0 @@
-# Real-time state coordination with Redis integration

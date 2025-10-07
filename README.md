@@ -49,8 +49,7 @@ src/
 ├── core/                       # Core infrastructure
 │   ├── config/                # Configuration management
 │   ├── input/                 # Multi-source input processing
-│   ├── output/                # Output generation and formatting
-│   └── orchestrator/          # Smart agent orchestration
+│   └── output/                # Output generation and formatting
 ├── agents/                     # Analysis agents
 │   ├── base/                  # Base agent classes
 │   ├── code_analyzer/         # Code analysis agent
@@ -79,7 +78,7 @@ outputs/                        # Agent-specific outputs
 config/                         # Configuration files
 ├── agents/                    # Agent-specific configurations
 ├── llm/                       # LLM provider settings
-├── orchestrator/              # Orchestration strategies
+├── adk/                       # Google ADK configuration
 ├── rules/                     # Quality control rules
 └── environments/              # Environment-specific configs
 ```

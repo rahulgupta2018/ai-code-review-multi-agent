@@ -1,0 +1,139 @@
+"""
+Dual LLM Provider Configuration for ADK
+Supports both Ollama (development) and Gemini (production) providers
+"""
+
+# Development Environment (Local Ollama)
+ollama_config:
+  provider: "ollama"
+  endpoint: "http://host.docker.internal:11434"
+  model: "codellama:13b"
+  temperature: 0.1
+  max_tokens: 4096
+  timeout: 60
+  retry_attempts: 3
+  
+  # Model-specific configurations
+  models:
+    code_analysis: "codellama:13b"
+    security_review: "llama2:13b"
+    general_chat: "llama2:7b"
+  
+  # Performance tuning
+  batch_size: 1
+  concurrent_requests: 2
+  
+  # Development features
+  debug_mode: true
+  log_requests: true
+  cache_responses: true
+
+# Production Environment (Google Gemini)
+gemini_config:
+  provider: "gemini"
+  project_id: "${GOOGLE_CLOUD_PROJECT}"
+  location: "us-central1"
+  model: "gemini-1.5-pro"
+  temperature: 0.1
+  max_tokens: 8192
+  timeout: 120
+  retry_attempts: 5
+  
+  # Model-specific configurations
+  models:
+    code_analysis: "gemini-1.5-pro"
+    security_review: "gemini-1.5-pro"
+    general_chat: "gemini-1.5-flash"
+  
+  # Performance tuning
+  batch_size: 5
+  concurrent_requests: 10
+  
+  # Production features
+  debug_mode: false
+  log_requests: false
+  cache_responses: true
+  
+  # Security and compliance
+  safety_settings:
+    HATE: "BLOCK_MEDIUM_AND_ABOVE"
+    DANGEROUS_CONTENT: "BLOCK_MEDIUM_AND_ABOVE"
+    HARASSMENT: "BLOCK_MEDIUM_AND_ABOVE"
+    SEXUALLY_EXPLICIT: "BLOCK_MEDIUM_AND_ABOVE"
+
+# Environment-based selection
+active_environment: "${LLM_ENVIRONMENT:development}"  # development or production
+
+# ADK-specific configurations
+adk_config:
+  memory_service:
+    provider: "neo4j"
+    connection_string: "${NEO4J_URI:bolt://localhost:7687}"
+    username: "${NEO4J_USERNAME:neo4j}"
+    password: "${NEO4J_PASSWORD:password}"
+    database: "${NEO4J_DATABASE:agentic_review}"
+    
+    # Memory management
+    max_session_history: 1000
+    memory_retention_days: 30
+    auto_summarize_threshold: 500
+    
+  session_service:
+    session_timeout: 3600  # 1 hour
+    max_active_sessions: 100
+    session_cleanup_interval: 300  # 5 minutes
+    
+  # Tool execution
+  tool_execution:
+    timeout: 300  # 5 minutes
+    max_retries: 3
+    parallel_execution: true
+    max_parallel_tools: 5
+
+# Fallback and redundancy
+fallback_config:
+  enable_fallback: true
+  primary_provider: "gemini"
+  fallback_provider: "ollama"
+  fallback_threshold: 3  # Switch after 3 consecutive failures
+  
+  # Health checking
+  health_check_interval: 60  # seconds
+  health_check_timeout: 10   # seconds
+
+# Performance monitoring
+monitoring:
+  enable_metrics: true
+  metrics_endpoint: "http://prometheus:9090"
+  
+  # Performance thresholds
+  response_time_threshold: 30  # seconds
+  error_rate_threshold: 0.05   # 5%
+  
+  # Alerts
+  alert_on_high_latency: true
+  alert_on_high_error_rate: true
+  alert_webhook: "${ALERT_WEBHOOK_URL}"
+
+# Logging configuration
+logging:
+  level: "${LOG_LEVEL:INFO}"
+  format: "json"
+  
+  # Log destinations
+  handlers:
+    - type: "console"
+      level: "INFO"
+    - type: "file"
+      level: "DEBUG"
+      filename: "/app/logs/llm_provider.log"
+      max_size: "100MB"
+      backup_count: 5
+    
+  # Sensitive data handling
+  mask_sensitive_data: true
+  sensitive_fields:
+    - "api_key"
+    - "password"
+    - "token"
+    - "authorization"

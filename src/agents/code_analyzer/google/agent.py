@@ -1,31 +1,35 @@
 """
-Code Analyzer GADK Agent
+Code Analyzer ADK Agent
 
-Enhanced code analyzer with Google GADK integration and memory awareness.
+Enhanced code analyzer with Google ADK integration and knowledge graph memory.
 Performs complexity analysis, architecture diagnostics, and pattern detection.
 """
 from typing import Dict, List, Any, Optional
 import logging
-from ...base.memory_aware_agent import GADKMemoryAwareAgent
-from ...base.base_agent import AnalysisContext, AnalysisResult, Finding, FindingSeverity
+
+# Phase 0: Use temporary base classes during migration
+from ...base import AnalysisContext, AnalysisResult, Finding, FindingSeverity
+
+# Phase 0: Import ADK agents from our registry
+from ...adk_agents import ADKAgentRegistry, create_adk_system
+from ....tools.code_analysis.code_analysis import CodeAnalysisToolset
 
 logger = logging.getLogger(__name__)
 
 
-class CodeAnalyzerGaAgent(GADKMemoryAwareAgent):
-    """Code analyzer agent with GADK integration and memory enhancement."""
+class CodeAnalyzerADKAgent:
+    """Code analyzer agent with ADK integration and Neo4j knowledge graph memory."""
     
     def __init__(self, config: Optional[Dict[str, Any]] = None):
-        """Initialize the code analyzer GADK agent."""
-        super().__init__("code_analyzer", config)
+        """Initialize the code analyzer ADK agent."""
+        self.name = "code_analyzer"
+        self.config = config or {}
+        self._findings = []
         
-        # Initialize tools
-        self._complexity_tool = None
-        self._architecture_tool = None
-        self._pattern_tool = None
-        self._llm_insight_tool = None
-        self._quality_control_tool = None
-        self._memory_tool = None
+        # Initialize tools (will be properly integrated in later phases)
+        self.toolset = CodeAnalysisToolset()
+        
+        logger.info(f"Initialized {self.name} agent with ADK patterns")
         
     def _define_capabilities(self) -> List[str]:
         """Define code analyzer capabilities."""
@@ -37,6 +41,60 @@ class CodeAnalyzerGaAgent(GADKMemoryAwareAgent):
             "anti_pattern_detection",
             "maintainability_assessment"
         ]
+    
+    def validate_context(self, context: AnalysisContext) -> bool:
+        """Validate analysis context."""
+        return (context is not None and 
+                hasattr(context, 'files') and 
+                isinstance(context.files, list))
+    
+    def create_finding(self, 
+                      title: str,
+                      description: str, 
+                      severity: FindingSeverity,
+                      category: str,
+                      file_path: Optional[str] = None,
+                      recommendation: Optional[str] = None,
+                      line_number: Optional[int] = None,
+                      confidence: float = 1.0,
+                      metadata: Optional[Dict[str, Any]] = None) -> Finding:
+        """Create a new finding."""
+        return Finding(
+            title=title,
+            description=description,
+            severity=severity,
+            category=category,
+            file_path=file_path,
+            recommendation=recommendation,
+            line_number=line_number,
+            confidence=confidence,
+            metadata=metadata or {}
+        )
+    
+    def add_finding(self, finding: Finding):
+        """Add a finding to the results."""
+        self._findings.append(finding)
+    
+    def get_findings(self) -> List[Finding]:
+        """Get all findings."""
+        return self._findings.copy()
+    
+    def get_metrics(self) -> Dict[str, Any]:
+        """Get analysis metrics."""
+        return {
+            "findings_count": len(self._findings),
+            "severity_distribution": self._get_severity_distribution(),
+            "categories": list(set(f.category for f in self._findings)),
+            "confidence_scores": [f.confidence for f in self._findings]
+        }
+    
+    def _get_severity_distribution(self) -> Dict[str, int]:
+        """Get distribution of finding severities."""
+        distribution = {}
+        for finding in self._findings:
+            severity = finding.severity.value
+            distribution[severity] = distribution.get(severity, 0) + 1
+        return distribution
     
     def analyze(self, context: AnalysisContext) -> AnalysisResult:
         """Perform code analysis with memory enhancement."""
@@ -71,7 +129,8 @@ class CodeAnalyzerGaAgent(GADKMemoryAwareAgent):
                 metadata={
                     "session_id": context.session_id,
                     "files_analyzed": len(context.files),
-                    "gadk_enabled": self.gadk_enabled
+                    "adk_enabled": True,  # Phase 0: ADK migration in progress
+                    "agent_version": "phase0"
                 }
             )
             
@@ -222,7 +281,7 @@ class CodeAnalyzerGaAgent(GADKMemoryAwareAgent):
         )
         
         # Perform analysis
-        result = self.analyze_with_memory(context)
+        result = self.analyze(context)
         
         # Convert result to GADK format
         return {

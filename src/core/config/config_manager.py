@@ -49,7 +49,7 @@ class ConfigManager:
     
     def get_app_config(self) -> Dict[str, Any]:
         """Get main application configuration."""
-        return self.load_config("app")
+        return self.load_config("adk/app")
     
     def get_agent_config(self, agent_name: str) -> Dict[str, Any]:
         """Get configuration for a specific agent."""
@@ -59,9 +59,9 @@ class ConfigManager:
         """Get LLM provider configuration."""
         return self.load_config("llm/providers")
     
-    def get_orchestrator_config(self) -> Dict[str, Any]:
-        """Get orchestrator configuration."""
-        return self.load_config("orchestrator/smart_orchestrator")
+    def get_adk_workflow_config(self) -> Dict[str, Any]:
+        """Get ADK workflow configuration (replacing custom orchestrator)."""
+        return self.load_config("adk/workflow_config")
     
     def get_quality_rules(self) -> Dict[str, Any]:
         """Get quality control rules."""
