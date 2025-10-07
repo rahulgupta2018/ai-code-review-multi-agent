@@ -132,6 +132,13 @@ dmypy.json
 credentials/*.json
 credentials/*.key
 credentials/*.pem
+infra/credentials/*.json
+infra/credentials/*.key
+infra/credentials/*.pem
+infra/credentials/google-cloud-credentials.json
+**/credentials/**
+!**/credentials/README.md
+!**/credentials/.gitkeep
 
 # Environment files
 .env*
