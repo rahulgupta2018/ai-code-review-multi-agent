@@ -1,4 +1,4 @@
-# Docker Compose Configuration for AI Code Review Multi-Agent System with GADK Integration
+# Docker Compose Configuration for AI Code Review Multi-Agent System with Google ADK Integration
 # Production-ready multi-service orchestration
 
 services:
@@ -7,43 +7,37 @@ services:
   # ============================================================================
   
   # Main Application Service
-  ai-code-review-gadk:
+  ai-code-review-adk:
     build:
       context: .
       dockerfile: Dockerfile
       target: development
       args:
         - BUILDKIT_INLINE_CACHE=1
-    container_name: ai-code-review-gadk
-    hostname: ai-code-review-gadk
+    container_name: ai-code-review-adk
+    hostname: ai-code-review-adk
     restart: unless-stopped
-    command: >
-      sh -c "
-        echo 'Starting AI Code Review GADK Development Environment...';
-        python -c 'import sys; print(f\"Python {sys.version}\")';
-        echo 'Environment ready. Keeping container alive...';
-        tail -f /dev/null
-      "
+    command: ["/usr/local/bin/start-adk-dev.sh"]
     environment:
       # Core Environment
       - ENVIRONMENT=development
       - DEBUG=true
       - DEV_MODE=true
       
-      # Google Cloud & GADK
+      # Google Cloud & ADK
       - GOOGLE_CLOUD_PROJECT_ID=${GOOGLE_CLOUD_PROJECT_ID}
       - GOOGLE_CLOUD_LOCATION=${GOOGLE_CLOUD_LOCATION:-us-central1}
       - GOOGLE_APPLICATION_CREDENTIALS=/app/credentials/google-cloud-credentials.json
-      - GADK_ENABLED=true
-      - USE_GADK=true
-      - ANALYSIS_USE_GADK=true
+      - ADK_ENABLED=true
+      - USE_ADK=true
+      - ANALYSIS_USE_ADK=true
       
-      # GADK Configuration
-      - GADK_PROJECT_ID=${GOOGLE_CLOUD_PROJECT_ID}
-      - GADK_DEV_PORTAL_HOST=0.0.0.0
-      - GADK_DEV_PORTAL_PORT=8200
-      - GADK_WORKSPACE=/app/gadk-workspace
-      - GADK_LOG_LEVEL=${GADK_LOG_LEVEL:-INFO}
+      # ADK Configuration
+      - ADK_PROJECT_ID=${GOOGLE_CLOUD_PROJECT_ID}
+      - ADK_DEV_PORTAL_HOST=0.0.0.0
+      - ADK_DEV_PORTAL_PORT=8200
+      - ADK_WORKSPACE=/app/adk-workspace
+      - ADK_LOG_LEVEL=${ADK_LOG_LEVEL:-INFO}
       
       # LLM Providers
       - DEFAULT_LLM_PROVIDER=${DEFAULT_LLM_PROVIDER:-ollama}
@@ -71,7 +65,7 @@ services:
       - LOG_FILE=/app/logs/app.log
     ports:
       - "8000:8000"     # Main API
-      - "8200:8200"     # GADK Dev Portal
+      - "8200:8200"     # ADK Dev Portal
     volumes:
       # Source code for development
       - .:/app
@@ -79,8 +73,8 @@ services:
       - ./logs:/app/logs
       - ./outputs:/app/outputs
       - ./credentials:/app/credentials
-      # GADK workspace
-      - gadk-workspace:/app/gadk-workspace
+      # ADK workspace
+      - adk-workspace:/app/adk-workspace
       # Cache volumes
       - pip-cache:/root/.cache/pip
       - poetry-cache:/root/.cache/pypoetry
@@ -308,8 +302,8 @@ volumes:
   #   name: ai-code-review-ollama-data
   
   # Development data
-  gadk-workspace:
-    name: ai-code-review-gadk-workspace
+  adk-workspace:
+    name: ai-code-review-adk-workspace
   
   # Cache volumes
   pip-cache:

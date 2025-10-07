@@ -1,5 +1,5 @@
-# Multi-stage Dockerfile for AI Code Review Multi-Agent System with GADK Integration
-# This Dockerfile creates a production-ready container with Google Cloud GADK support
+# Multi-stage Dockerfile for AI Code Review Multi-Agent System with Google ADK Integration
+# This Dockerfile creates a production-ready container with Google Cloud ADK support
 
 # Base stage with Python 3.11 and system dependencies
 FROM python:3.11-slim as base
@@ -64,7 +64,7 @@ RUN apt-get update && apt-get install -y \
         apt-get update && apt-get install -y google-cloud-cli && \
         rm -rf /var/lib/apt/lists/*
     
-    # Install Google Cloud Python client libraries (for GADK)
+    # Install Google Cloud Python client libraries (for ADK)
     RUN pip install google-cloud-aiplatform google-cloud-discoveryengine google-cloud-dialogflow google-auth
 
 # Create application user
@@ -84,6 +84,12 @@ RUN poetry config virtualenvs.create false && \
 
 # Copy source code
 COPY src/ ./src/
+
+# Copy scripts for development
+COPY scripts/ ./scripts/
+COPY scripts/start-adk-dev.sh /usr/local/bin/start-adk-dev.sh
+RUN chmod +x /usr/local/bin/start-adk-dev.sh && \
+    chmod +x ./scripts/adk-dev-portal.py
 
 # Production stage
 FROM base as production
@@ -131,35 +137,35 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
 # Default command
 CMD ["python", "-m", "src.api.main"]
 
-# GADK-specific stage for agent development
-FROM development as gadk
+# ADK-specific stage for agent development
+FROM development as adk
 
-# Install additional GADK development tools
-RUN pip install google-gadk
+# Install additional ADK development tools
+RUN pip install google-cloud-adk google-cloud-discoveryengine google-cloud-dialogflow
 
 # Install tree-sitter for multi-language parsing
-RUN pip install tree-sitter tree-sitter-python tree-sitter-javascript tree-sitter-typescript tree-sitter-java tree-sitter-go tree-sitter-rust
+RUN pip install tree-sitter tree-sitter-python tree-sitter-javascript tree-sitter-typescript tree-sitter-java tree-sitter-go tree-sitter-rust tree-sitter-cpp tree-sitter-c-sharp
 
-# Create GADK workspace
-RUN mkdir -p /app/gadk-workspace /app/dev-portal
+# Create ADK workspace
+RUN mkdir -p /app/adk-workspace /app/dev-portal
 
-# Copy GADK configuration
-COPY config/gadk/ ./config/gadk/
+# Copy ADK configuration
+COPY config/adk/ ./config/adk/
 
-# Set GADK environment variables
-ENV GADK_WORKSPACE=/app/gadk-workspace \
-    GADK_DEV_PORTAL_PORT=8200 \
-    GADK_LOG_LEVEL=INFO
+# Set ADK environment variables
+ENV ADK_WORKSPACE=/app/adk-workspace \
+    ADK_DEV_PORTAL_PORT=8200 \
+    ADK_LOG_LEVEL=INFO
 
-# Expose GADK dev portal port
+# Expose ADK dev portal port
 EXPOSE 8200
 
-# Start script for GADK development
-COPY scripts/start-gadk-dev.sh /usr/local/bin/start-gadk-dev.sh
-RUN chmod +x /usr/local/bin/start-gadk-dev.sh
+# Start script for ADK development
+COPY scripts/start-adk-dev.sh /usr/local/bin/start-adk-dev.sh
+RUN chmod +x /usr/local/bin/start-adk-dev.sh
 
-# Default command for GADK development
-CMD ["/usr/local/bin/start-gadk-dev.sh"]
+# Default command for ADK development
+CMD ["/usr/local/bin/start-adk-dev.sh"]
 
 # Testing stage
 FROM development as testing

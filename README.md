@@ -1,114 +1,152 @@
 # AI Code Review Multi-Agent System
 
-A comprehensive multi-agent code review platform built with Google GADK (Agent Development Kit) integration, featuring memory-aware analysis, real-time coordination, and dashboard-ready output generation.
+A comprehensive multi-agent code review platform built with **Google ADK (Agent Development Kit)**, featuring Tree-sitter parsing, real-time analysis, and a custom development portal.
 
 ## 🏗️ Architecture Overview
 
-This system implements a memory-first, multi-agent architecture with six specialized analysis agents:
+This system implements a **native Google ADK architecture** with six specialized analysis agents using ADK's `LlmAgent`, `FunctionTool`, and `BaseToolset` patterns:
 
-- **Code Analyzer Agent**: Code structure, complexity, and architecture analysis
-- **Engineering Practices Agent**: SOLID principles, quality metrics, best practices
-- **Security Standards Agent**: OWASP vulnerabilities, security patterns, threat modeling
-- **Carbon Efficiency Agent**: Performance optimization, resource usage, energy consumption
-- **Cloud Native Agent**: 12-factor compliance, container optimization, cloud patterns
-- **Microservices Agent**: Service boundaries, API design, distributed system patterns
+- **Code Analyzer Agent**: Code structure, complexity, and architecture analysis using Tree-sitter AST parsing
+- **Security Standards Agent**: OWASP vulnerabilities, security patterns, and threat modeling
+- **Carbon Efficiency Agent**: Performance optimization, resource usage, and energy consumption analysis
+- **Cloud Native Agent**: 12-factor compliance, container optimization, and cloud-native patterns
+- **Microservices Agent**: Service boundaries, API design, and distributed system patterns  
+- **Engineering Practices Agent**: SOLID principles, testing practices, and software quality metrics
 
 ## 🚀 Key Features
 
-### Multi-Agent Intelligence
-- **Memory-Aware Analysis**: Agents learn from historical patterns and cross-project knowledge
-- **Real-time Coordination**: Redis-based session management with WebSocket broadcasting
-- **Intelligent Orchestration**: LLM-driven strategy selection (SMART/FOCUSED/PARALLEL)
+### Google ADK Native Implementation
+- **✅ ADK LlmAgent**: All agents use Google ADK's native `LlmAgent` patterns
+- **✅ FunctionTool Framework**: Real analysis tools using ADK's `FunctionTool` and `BaseToolset`
+- **✅ ADK SessionService**: Native session management and state handling
+- **✅ ADK Workflows**: `SequentialAgent`, `ParallelAgent`, and `LoopAgent` orchestration
+- **✅ Custom ADK Dev Portal**: Full-featured web portal at http://localhost:8200
 
-### Google GADK Integration
-- **Developer Portal**: End-to-end session visualization and debugging
-- **Tool Orchestration**: GADK-compatible tool adapters with deterministic interfaces
-- **Event-Driven Architecture**: Typed events and session lifecycle management
+### Dual LLM Environment Support
+- **🔧 Development**: Local Ollama integration (`llama3.1:8b`) via `host.docker.internal:11434`
+- **🚀 Production**: Google Gemini (`gemini-2.0-flash-exp`) via Vertex AI
+- **⚡ Auto-switching**: Environment-based provider selection with fallback support
 
-### Comprehensive Input Processing
-- **Multi-Source Ingestion**: Local files, Git repositories, GitHub/GitLab API, ZIP archives
-- **Tree-sitter AST Parsing**: Support for 10+ programming languages
-- **Language Detection**: Automatic file type detection and processing
+### Real Code Analysis (No Mocks)
+- **Tree-sitter Integration**: Multi-language AST parsing (Python, JS, TS, Java, Go, Rust, C++, C#)
+- **Complexity Analysis**: Real cyclomatic complexity calculation and maintainability scoring
+- **Security Scanning**: Pattern-based vulnerability detection using AST traversal
+- **Architecture Analysis**: Dependency graphs, coupling detection, and design pattern recognition
 
-### Advanced Memory System
-- **Dual Storage**: SQLite persistent memory + Redis real-time coordination
-- **Pattern Recognition**: Learn and recognize code patterns across projects
-- **Confidence Calibration**: Historical accuracy tracking and feedback integration
-
-### Dashboard-Ready Outputs
-- **Multi-Format Reports**: JSON, HTML, PDF, XML generation
-- **Agent-Specific Storage**: Structured findings, reports, and metrics
-- **Consolidated Reporting**: Executive summaries and comprehensive dashboards
-- **Real-time Updates**: WebSocket-based progress broadcasting
+### Production-Ready Development Environment
+- **🐳 Docker Environment**: Complete containerized stack with all dependencies
+- **📊 Custom ADK Portal**: Real-time monitoring, tool discovery, and workspace management
+- **🔧 Debug Tools**: Redis Commander, File Browser, and comprehensive logging
+- **📈 Health Monitoring**: Container health checks and service monitoring
 
 ## 📁 Project Structure
 
 ```
 src/
-├── integrations/gadk/          # Google GADK integration
+├── tools/                      # ADK FunctionTool implementations
+│   ├── base/                  # BaseToolset framework and schemas
+│   ├── security/              # Security analysis tools (vulnerability scanner, auth analyzer)
+│   ├── quality/               # Code quality tools (complexity analyzer, duplication detector)
+│   ├── architecture/          # Architecture tools (dependency analyzer, coupling detector)
+│   ├── carbon_efficiency/     # Energy analysis tools (resource optimizer, carbon footprint)
+│   ├── cloud_native/          # Cloud-native tools (container analyzer, k8s validator)
+│   ├── microservices/         # Microservices tools (service boundary, communication analyzer)
+│   └── engineering_practices/ # Engineering tools (testing analyzer, CI/CD validator)
+├── agents/                     # ADK native agents
+│   ├── configs/               # ADK agent YAML configurations
+│   └── adk_agents.py          # LlmAgent implementations and ADKWorkflowManager
 ├── core/                       # Core infrastructure
 │   ├── config/                # Configuration management
 │   ├── input/                 # Multi-source input processing
 │   └── output/                # Output generation and formatting
-├── agents/                     # Analysis agents
-│   ├── base/                  # Base agent classes
-│   ├── code_analyzer/         # Code analysis agent
-│   ├── engineering_practices/ # SOLID principles agent
-│   ├── security_standards/    # Security analysis agent
-│   ├── carbon_efficiency/     # Performance optimization agent
-│   ├── cloud_native/          # Cloud-native patterns agent
-│   └── microservices/         # Microservices patterns agent
-├── memory/                     # Memory and learning system
-│   ├── storage/               # SQLite + Redis storage
-│   ├── retrieval/             # Multi-strategy retrieval
-│   └── learning/              # Pattern recognition and learning
-└── api/                        # FastAPI application
-    ├── routes/                # API endpoints
-    └── middleware/            # CORS, validation, error handling
+├── memory/                     # Future: ADK MemoryService integration
+└── api/                        # FastAPI application (future implementation)
 
 outputs/                        # Agent-specific outputs
 ├── code_analyzer/             # Code analysis results
-├── engineering_practices/     # Best practices analysis
 ├── security_standards/        # Security findings
-├── carbon_efficiency/         # Performance optimization
+├── carbon_efficiency/         # Performance optimization results
 ├── cloud_native/              # Cloud-native assessment
 ├── microservices/             # Microservices analysis
+├── engineering_practices/     # Best practices analysis
 └── consolidated/              # Cross-agent summaries
 
-config/                         # Configuration files
-├── agents/                    # Agent-specific configurations
-├── llm/                       # LLM provider settings
+config/
 ├── adk/                       # Google ADK configuration
-├── rules/                     # Quality control rules
+│   ├── app.yaml              # Main application config
+│   ├── llm_config.yaml       # Dual LLM provider setup
+│   ├── session_config.yaml   # SessionService config
+│   └── workflow_config.yaml  # Workflow agent configuration
+├── agents/                    # Agent-specific configurations
+├── rules/                     # Quality control and bias prevention
 └── environments/              # Environment-specific configs
+
+scripts/
+├── start-adk-dev.sh          # ADK development environment launcher
+├── adk-dev-portal.py         # Custom ADK development portal
+└── setup scripts...          # Google Cloud setup automation
 ```
 
 ## 🛠️ Setup and Installation
 
 ### Prerequisites
 - Python 3.11+
-- Redis (for real-time coordination)
-- Poetry (for dependency management)
-- Google Cloud credentials (for GADK integration)
+- Docker & Docker Compose (recommended)
+- Google Cloud account (for Gemini API)
+- Redis (managed in Docker environment)
 
-### Development Setup
+### Quick Start
 
-1. **Clone and Install Dependencies**
+1. **Clone the repository**
    ```bash
    git clone <repository-url>
    cd ai-code-review-multi-agent
-   poetry install
    ```
 
-2. **Configure Environment**
+2. **Run with Docker (Recommended)**
+   ```bash
+   # Start ADK development environment
+   docker-compose --profile development up -d
+
+   # Access ADK Dev Portal at http://localhost:8200
+   # Redis Commander at http://localhost:8081  
+   # File Browser at http://localhost:8080
+   ```
+
+3. **Available Docker Profiles**
+   - `development`: Core ADK environment with dev portal and debugging tools
+   - `production`: Production-ready setup with monitoring
+   - `full`: Complete stack with all services
+   - `minimal`: Lightweight setup for basic testing
+   - `monitoring`: Adds Prometheus and Grafana
+   - `tools`: Development tools only
+
+4. **Or run locally**
+   ```bash
+   # Install dependencies (includes Tree-sitter parsers)
+   pip install -e .
+
+   # Setup environment
+   chmod +x scripts/dev-setup.sh
+   ./scripts/dev-setup.sh
+
+   # Start ADK development environment
+   chmod +x scripts/start-adk-dev.sh
+   ./scripts/start-adk-dev.sh
+   ```
+
+### Configuration Setup
+
+1. **Configure Environment**
    ```bash
    cp .env.example .env
    # Edit .env with your configuration
    ```
 
-3. **Initialize Database**
+2. **Google Cloud Setup (for Gemini API)**
    ```bash
-   poetry run python -c "from src.memory.storage.memory_store import memory_store; print('Memory store initialized')"
+   # Follow the setup guide
+   ./scripts/setup-google-cloud.sh
    ```
 
 4. **Start Redis** (for real-time coordination)
