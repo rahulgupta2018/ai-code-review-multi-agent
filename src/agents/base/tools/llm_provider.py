@@ -330,8 +330,8 @@ class LLMProviderManager:
     
     def _get_analysis_system_prompt(self, analysis_type: str, language: str) -> str:
         """Get system prompt for specific analysis type from config file"""
-        # Load LLM integration config
-        llm_config_path = Path(__file__).parent.parent / "configs" / "llm_integration.yaml"
+        # Load LLM integration config from common agents configs
+        llm_config_path = Path(__file__).parent.parent.parent / "configs" / "llm_integration.yaml"
         
         try:
             with open(llm_config_path, 'r', encoding='utf-8') as f:
@@ -354,8 +354,8 @@ class LLMProviderManager:
     def _extract_insights(self, content: str) -> List[str]:
         """Extract key insights from LLM response using config keywords"""
         try:
-            # Load LLM integration config
-            llm_config_path = Path(__file__).parent.parent / "configs" / "llm_integration.yaml"
+            # Load LLM integration config from common agents configs
+            llm_config_path = Path(__file__).parent.parent.parent / "configs" / "llm_integration.yaml"
             with open(llm_config_path, 'r', encoding='utf-8') as f:
                 llm_config = yaml.safe_load(f)
             
@@ -379,8 +379,8 @@ class LLMProviderManager:
     def _extract_recommendations(self, content: str) -> List[str]:
         """Extract recommendations from LLM response using config keywords"""
         try:
-            # Load LLM integration config
-            llm_config_path = Path(__file__).parent.parent / "configs" / "llm_integration.yaml"
+            # Load LLM integration config from common agents configs
+            llm_config_path = Path(__file__).parent.parent.parent / "configs" / "llm_integration.yaml"
             with open(llm_config_path, 'r', encoding='utf-8') as f:
                 llm_config = yaml.safe_load(f)
             

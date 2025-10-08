@@ -13,7 +13,7 @@ llm:
   ollama:
     provider: "ollama"
     base_url: "http://host.docker.internal:11434"
-    model: "llama3.2:3b"
+    model: "llama3.1:8b"
     timeout: 300
     retry_attempts: 3
     temperature: 0.1
@@ -21,9 +21,9 @@ llm:
     
     # Model-specific configurations
     models:
-      code_analysis: "llama3.2:3b"
-      security_review: "llama3.2:3b"
-      general_chat: "llama3.2:3b"
+      code_analysis: "llama3.1:8b"
+      security_review: "llama3.1:8b"
+      general_chat: "llama3.1:8b"
     
     # Performance tuning
     batch_size: 1
@@ -140,7 +140,7 @@ agent_llm:
   tool_config_path: "src/agents/configs/llm_integration.yaml"
   
   # Default model settings (can be overridden by tool config)
-  default_model: "llama3.2:3b"
+  default_model: "llama3.1:8b"
   default_temperature: 0.1
   default_max_tokens: 2048
 

@@ -1,14 +1,12 @@
-"""
-LLM Integration Configuration for Code Analysis Tools
-Prompts and settings for different analysis types
-"""
+# LLM Integration Configuration for Code Analysis Tools
+# Prompts and settings for different analysis types
 
 # Agent-level response generation prompts
 agent_prompts:
   # Response generation settings
   response_generation:
     enabled: true
-    model: "llama3.2:3b"
+    model: "llama3.1:8b"
     temperature: 0.2
     max_tokens: 2048
     system_prompt: |
@@ -35,7 +33,7 @@ agent_prompts:
   # Analysis enhancement settings  
   analysis_enhancement:
     enabled: true
-    model: "llama3.2:3b"
+    model: "llama3.1:8b"
     temperature: 0.1
     max_tokens: 1024
     system_prompt: |
@@ -46,7 +44,7 @@ agent_prompts:
   # Detailed findings generation
   findings_enhancement:
     enabled: true
-    model: "llama3.2:3b"
+    model: "llama3.1:8b"
     temperature: 0.1
     max_tokens: 2048
     system_prompt: |

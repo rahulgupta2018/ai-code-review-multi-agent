@@ -258,7 +258,25 @@ class CodeAnalyzerAgent(BaseAgent):
                 complexity_result = complexity_analyzer_tool(file_input)
             
             # Process complexity results
-            if isinstance(complexity_result, dict) and 'findings' in complexity_result:
+            if hasattr(complexity_result, 'findings') and complexity_result.findings:
+                for finding_data in complexity_result.findings:
+                    # Handle both dict and AnalysisOutput object findings
+                    if isinstance(finding_data, dict):
+                        finding = Finding(
+                            title=finding_data.get('title', 'Complexity issue detected'),
+                            description=finding_data.get('message', 'High complexity detected in code'),
+                            severity=FindingSeverity.MEDIUM,
+                            category='complexity',
+                            file_path=file_path,
+                            line_number=finding_data.get('line_number') or finding_data.get('line', 1),
+                            recommendation=finding_data.get('suggestion', 'Consider refactoring to reduce complexity')
+                        )
+                        findings.append(finding)
+                # Store metrics from AnalysisOutput object
+                if hasattr(complexity_result, 'metrics'):
+                    metrics['complexity'] = complexity_result.metrics
+            elif isinstance(complexity_result, dict) and 'findings' in complexity_result:
+                # Fallback for dict-style results
                 for finding_data in complexity_result['findings']:
                     finding = Finding(
                         title=finding_data.get('title', 'Complexity issue detected'),
@@ -280,19 +298,43 @@ class CodeAnalyzerAgent(BaseAgent):
                 duplication_result = duplication_detector_tool(files_dict)
             
             # Process duplication results
-            if isinstance(duplication_result, dict) and 'findings' in duplication_result:
-                for finding_data in duplication_result['findings']:
-                    finding = Finding(
-                        title=finding_data.get('title', 'Code duplication detected'),
-                        description=finding_data.get('message', 'Duplicate code patterns found'),
-                        severity=FindingSeverity.MEDIUM,
-                        category='duplication',
-                        file_path=file_path,
-                        line_number=finding_data.get('line_number', 1),
-                        recommendation=finding_data.get('suggestion', 'Consider refactoring duplicate code')
-                    )
-                    findings.append(finding)
-                metrics['duplication'] = duplication_result.get('metrics', {})
+            if isinstance(duplication_result, dict):
+                # Handle duplications key instead of findings
+                duplications = duplication_result.get('duplications', [])
+                if duplications:
+                    for dup_data in duplications:
+                        finding = Finding(
+                            title='Code duplication detected',
+                            description=f"Duplicate code found: {dup_data.get('clone_type', 'Unknown type')} with {dup_data.get('similarity_score', 0):.2%} similarity",
+                            severity=FindingSeverity.MEDIUM,
+                            category='duplication',
+                            file_path=file_path,
+                            line_number=dup_data.get('block1', {}).get('start_line', 1),
+                            recommendation='Consider refactoring duplicate code into shared functions'
+                        )
+                        findings.append(finding)
+                
+                # Also check for findings key (fallback)
+                if 'findings' in duplication_result:
+                    for finding_data in duplication_result['findings']:
+                        finding = Finding(
+                            title=finding_data.get('title', 'Code duplication detected'),
+                            description=finding_data.get('message', 'Duplicate code patterns found'),
+                            severity=FindingSeverity.MEDIUM,
+                            category='duplication',
+                            file_path=file_path,
+                            line_number=finding_data.get('line_number', 1),
+                            recommendation=finding_data.get('suggestion', 'Consider refactoring duplicate code')
+                        )
+                        findings.append(finding)
+                
+                # Store metrics
+                metrics['duplication'] = {
+                    'total_duplications': duplication_result.get('total_duplications', 0),
+                    'duplication_percentage': duplication_result.get('duplication_percentage', 0),
+                    'clone_type_distribution': duplication_result.get('clone_type_distribution', {}),
+                    'processing_time': duplication_result.get('processing_time', 0)
+                }
             
             # Run maintainability analysis - intelligent routing
             if mode == 'enhanced':
@@ -308,24 +350,101 @@ class CodeAnalyzerAgent(BaseAgent):
                 maintainability_result = maintainability_scorer_tool(files_dict)
             
             # Process maintainability results
-            if isinstance(maintainability_result, dict) and 'findings' in maintainability_result:
-                for finding_data in maintainability_result['findings']:
-                    finding = Finding(
-                        title=finding_data.get('title', 'Maintainability issue detected'),
-                        description=finding_data.get('message', 'Code maintainability could be improved'),
-                        severity=FindingSeverity.LOW,
-                        category='maintainability',
-                        file_path=file_path,
-                        line_number=finding_data.get('line_number', 1),
-                        recommendation=finding_data.get('suggestion', 'Review and refactor for better maintainability')
-                    )
-                    findings.append(finding)
-                metrics['maintainability'] = maintainability_result.get('metrics', {})
+            if isinstance(maintainability_result, dict):
+                # Handle maintainability_assessment results (single file detailed analysis)
+                if 'maintainability_score' in maintainability_result:
+                    # This is from maintainability_assessment function
+                    metrics_data = maintainability_result.get('metrics', {})
+                    metrics['maintainability'] = {
+                        'score': maintainability_result.get('maintainability_score', 0) * 100,  # Convert to 0-100 scale
+                        'quality_level': self._score_to_quality_level(maintainability_result.get('maintainability_score', 0)),
+                        'complexity_score': metrics_data.get('complexity_score', 0),
+                        'duplication_score': metrics_data.get('duplication_score', 0),
+                        'documentation_score': metrics_data.get('documentation_score', 0),
+                        'naming_score': metrics_data.get('naming_score', 0),
+                        'structure_score': metrics_data.get('structure_score', 0),
+                        'test_coverage_score': metrics_data.get('test_coverage_score', 0),
+                        'processing_time': metrics_data.get('processing_time', 0)
+                    }
+                # Handle maintainability_scorer results (multi-file scoring)
+                elif 'maintainability_index' in maintainability_result:
+                    # This is from maintainability_scorer_tool function
+                    metrics['maintainability'] = {
+                        'score': maintainability_result.get('maintainability_index', 0),
+                        'quality_level': maintainability_result.get('quality_level', 'Unknown'),
+                        'complexity_score': maintainability_result.get('scores', {}).get('complexity_score', 0),
+                        'duplication_score': maintainability_result.get('scores', {}).get('duplication_score', 0),
+                        'documentation_score': maintainability_result.get('scores', {}).get('documentation_score', 0),
+                        'naming_score': maintainability_result.get('scores', {}).get('naming_score', 0),
+                        'structure_score': maintainability_result.get('scores', {}).get('structure_score', 0),
+                        'test_coverage_score': maintainability_result.get('scores', {}).get('test_coverage_score', 0),
+                        'processing_time': maintainability_result.get('processing_time', 0)
+                    }
+                
+                # Check for findings key
+                if 'findings' in maintainability_result:
+                    for finding_data in maintainability_result['findings']:
+                        finding = Finding(
+                            title=finding_data.get('title', 'Maintainability issue detected'),
+                            description=finding_data.get('message', 'Code maintainability could be improved'),
+                            severity=FindingSeverity.LOW,
+                            category='maintainability',
+                            file_path=file_path,
+                            line_number=finding_data.get('line_number', 1),
+                            recommendation=finding_data.get('suggestion', 'Review and refactor for better maintainability')
+                        )
+                        findings.append(finding)
+                
+                # Check for recommendations that could be converted to findings
+                recommendations = maintainability_result.get('recommendations', [])
+                if recommendations and not maintainability_result.get('findings'):
+                    # Convert recommendations to findings if no explicit findings
+                    for i, rec in enumerate(recommendations[:3]):  # Limit to first 3
+                        if isinstance(rec, str) and len(rec.strip()) > 10:
+                            finding = Finding(
+                                title='Maintainability improvement suggested',
+                                description=rec.strip(),
+                                severity=FindingSeverity.LOW,
+                                category='maintainability',
+                                file_path=file_path,
+                                line_number=1,
+                                recommendation=rec.strip()
+                            )
+                            findings.append(finding)
+            elif hasattr(maintainability_result, 'findings') and maintainability_result.findings:
+                # Handle AnalysisOutput object
+                for finding_data in maintainability_result.findings:
+                    if isinstance(finding_data, dict):
+                        finding = Finding(
+                            title=finding_data.get('title', 'Maintainability issue detected'),
+                            description=finding_data.get('message', 'Code maintainability could be improved'),
+                            severity=FindingSeverity.LOW,
+                            category='maintainability',
+                            file_path=file_path,
+                            line_number=finding_data.get('line_number') or finding_data.get('line', 1),
+                            recommendation=finding_data.get('suggestion', 'Review and refactor for better maintainability')
+                        )
+                        findings.append(finding)
+                if hasattr(maintainability_result, 'metrics'):
+                    metrics['maintainability'] = maintainability_result.metrics
             
         except Exception as e:
             logger.error(f"Error analyzing file {file_path}: {e}")
         
         return findings, metrics
+    
+    def _score_to_quality_level(self, score: float) -> str:
+        """Convert maintainability score (0.0-1.0) to quality level"""
+        if score >= 0.8:
+            return "Excellent"
+        elif score >= 0.6:
+            return "Good"
+        elif score >= 0.4:
+            return "Fair"
+        elif score >= 0.2:
+            return "Poor"
+        else:
+            return "Critical"
     
     def _should_use_detailed_assessment(self, files_dict: List[Dict[str, str]]) -> bool:
         """

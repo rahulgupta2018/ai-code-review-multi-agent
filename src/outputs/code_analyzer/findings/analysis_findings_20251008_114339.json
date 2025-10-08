@@ -1,0 +1,114 @@
+{
+  "timestamp": "20251008_114339",
+  "agent": "code_analyzer",
+  "findings": [
+    {
+      "file": "/app/tests/test_files/poor_quality.py",
+      "line": 1,
+      "severity": "FindingSeverity.MEDIUM",
+      "category": "complexity",
+      "title": "Complexity issue detected",
+      "description": "High cognitive complexity: 55 (threshold: 15)",
+      "recommendation": "Reduce nesting and simplify control flow"
+    },
+    {
+      "file": "/app/tests/test_files/poor_quality.py",
+      "line": 1,
+      "severity": "FindingSeverity.MEDIUM",
+      "category": "complexity",
+      "title": "Complexity issue detected",
+      "description": "Deep nesting detected: 11 levels (threshold: 4)",
+      "recommendation": "Extract nested logic into separate functions"
+    },
+    {
+      "file": "/app/tests/test_files/poor_quality.py",
+      "line": 1,
+      "severity": "FindingSeverity.LOW",
+      "category": "maintainability",
+      "title": "Maintainability improvement suggested",
+      "description": "Standardize indentation (use 4 spaces consistently)",
+      "recommendation": "Standardize indentation (use 4 spaces consistently)"
+    },
+    {
+      "file": "/app/tests/test_files/poor_quality.py",
+      "line": 1,
+      "severity": "FindingSeverity.LOW",
+      "category": "maintainability",
+      "title": "Maintainability improvement suggested",
+      "description": "Reduce nesting complexity by extracting methods or using early returns",
+      "recommendation": "Reduce nesting complexity by extracting methods or using early returns"
+    },
+    {
+      "file": "/app/tests/test_files/poor_quality.py",
+      "line": 1,
+      "severity": "FindingSeverity.LOW",
+      "category": "maintainability",
+      "title": "Maintainability improvement suggested",
+      "description": "Add docstrings to functions and classes",
+      "recommendation": "Add docstrings to functions and classes"
+    },
+    {
+      "file": "/app/tests/test_files/good_quality.py",
+      "line": 1,
+      "severity": "FindingSeverity.LOW",
+      "category": "maintainability",
+      "title": "Maintainability improvement suggested",
+      "description": "Reduce nesting complexity by extracting methods or using early returns",
+      "recommendation": "Reduce nesting complexity by extracting methods or using early returns"
+    },
+    {
+      "file": "/app/tests/test_files/good_quality.py",
+      "line": 1,
+      "severity": "FindingSeverity.LOW",
+      "category": "maintainability",
+      "title": "Maintainability improvement suggested",
+      "description": "Add more inline comments to explain complex logic",
+      "recommendation": "Add more inline comments to explain complex logic"
+    },
+    {
+      "file": "/app/tests/test_files/mixed_quality.js",
+      "line": 1,
+      "severity": "FindingSeverity.MEDIUM",
+      "category": "complexity",
+      "title": "Complexity issue detected",
+      "description": "High cognitive complexity: 37 (threshold: 15)",
+      "recommendation": "Reduce nesting and simplify control flow"
+    },
+    {
+      "file": "/app/tests/test_files/mixed_quality.js",
+      "line": 1,
+      "severity": "FindingSeverity.MEDIUM",
+      "category": "complexity",
+      "title": "Complexity issue detected",
+      "description": "Deep nesting detected: 8 levels (threshold: 4)",
+      "recommendation": "Extract nested logic into separate functions"
+    },
+    {
+      "file": "/app/tests/test_files/mixed_quality.js",
+      "line": 1,
+      "severity": "FindingSeverity.LOW",
+      "category": "maintainability",
+      "title": "Maintainability improvement suggested",
+      "description": "Standardize indentation (use 4 spaces consistently)",
+      "recommendation": "Standardize indentation (use 4 spaces consistently)"
+    },
+    {
+      "file": "/app/tests/test_files/mixed_quality.js",
+      "line": 1,
+      "severity": "FindingSeverity.LOW",
+      "category": "maintainability",
+      "title": "Maintainability improvement suggested",
+      "description": "Reduce nesting complexity by extracting methods or using early returns",
+      "recommendation": "Reduce nesting complexity by extracting methods or using early returns"
+    },
+    {
+      "file": "/app/tests/test_files/mixed_quality.js",
+      "line": 1,
+      "severity": "FindingSeverity.LOW",
+      "category": "maintainability",
+      "title": "Maintainability improvement suggested",
+      "description": "Add docstrings to functions and classes",
+      "recommendation": "Add docstrings to functions and classes"
+    }
+  ]
+}

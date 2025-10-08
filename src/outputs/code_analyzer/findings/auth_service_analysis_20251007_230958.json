@@ -1,9 +1,0 @@
-{
-  "timestamp": "20251007_230958",
-  "agent": "code_analyzer",
-  "file_analyzed": "/app/tests/input_files/AuthenticationAppService.ts",
-  "findings_count": 0,
-  "findings": [],
-  "execution_time": 0.12854218482971191,
-  "test_method": "direct_tools_test"
-}

@@ -322,6 +322,14 @@ class MaintainabilityScorer:
             }
         }
     
+    def _get_file_path(self, file_info: Dict[str, Any]) -> str:
+        """Safely get file path from file info dict, handling both 'path' and 'file_path' keys"""
+        return file_info.get("path") or file_info.get("file_path", "")
+    
+    def _get_file_content(self, file_info: Dict[str, Any]) -> str:
+        """Safely get file content from file info dict"""
+        return file_info.get("content", "")
+
     def _score_test_coverage(self, files: List[Dict[str, str]]) -> Dict[str, Any]:
         """Estimate test coverage based on heuristics"""
         test_config = self.config.get("test_coverage_scoring", {})
@@ -332,7 +340,11 @@ class MaintainabilityScorer:
         total_files = len(files)
         
         for file_info in files:
-            file_path = file_info["path"]
+            # Handle both 'path' and 'file_path' keys for flexibility
+            file_path = file_info.get("path") or file_info.get("file_path")
+            if not file_path:
+                logger.warning(f"File info missing path/file_path key: {file_info.keys()}")
+                continue
             file_name = Path(file_path).name
             
             if any(self._matches_pattern(file_name, pattern) for pattern in test_patterns):
@@ -561,9 +573,13 @@ class MaintainabilityScorer:
                 return {"error": "No files provided for analysis", "analysis_type": "maintainability"}
             
             # Analyze complexity across all files
+            primary_file = files[0]
+            primary_file_path = self._get_file_path(primary_file)
+            primary_file_content = self._get_file_content(primary_file)
+            
             complexity_result = self.complexity_analyzer.analyze_complexity(
-                files[0]["content"], 
-                self._detect_language(files[0]["path"]) or "python"
+                primary_file_content, 
+                self._detect_language(primary_file_path) or "python"
             )
             
             # Analyze duplication across all files
@@ -574,15 +590,14 @@ class MaintainabilityScorer:
             duplication_scores = self._score_duplication(duplication_result)
             
             # For multi-file analysis, we'll analyze the first file for other metrics
-            primary_file = files[0]
-            language = self._detect_language(primary_file["path"])
+            language = self._detect_language(primary_file_path)
             
             if not language:
-                return {"error": f"Unsupported file type: {primary_file['path']}", "analysis_type": "maintainability"}
+                return {"error": f"Unsupported file type: {primary_file_path}", "analysis_type": "maintainability"}
             
-            documentation_scores = self._score_documentation(primary_file["content"], language)
-            naming_scores = self._score_naming(primary_file["content"], language)
-            structure_scores = self._score_structure(primary_file["content"], primary_file["path"], language)
+            documentation_scores = self._score_documentation(primary_file_content, language)
+            naming_scores = self._score_naming(primary_file_content, language)
+            structure_scores = self._score_structure(primary_file_content, primary_file_path, language)
             test_coverage_scores = self._score_test_coverage(files)
             
             # Combine all scores
@@ -692,7 +707,8 @@ async def maintainability_scoring(files: List[Dict[str, str]], include_llm_insig
         }
         
         # Generate LLM insights
-        language = _maintainability_scorer._detect_language(files[0]["path"]) or "python"  # Default to python
+        primary_file_path = _maintainability_scorer._get_file_path(files[0])
+        language = _maintainability_scorer._detect_language(primary_file_path) or "python"  # Default to python
         
         prompt = f"""
 Analyze this code maintainability scoring result and provide insights:

@@ -344,7 +344,7 @@ class DuplicationDetector:
         Detect code duplications across multiple files
         
         Args:
-            files: List of dictionaries with 'path' and 'content' keys
+            files: List of dictionaries with 'path'/'file_path' and 'content' keys
             
         Returns:
             Dictionary containing duplication analysis results
@@ -357,8 +357,16 @@ class DuplicationDetector:
             
             # Parse all files and extract code blocks
             for file_info in files:
-                file_path = file_info["path"]
-                content = file_info["content"]
+                # Handle both 'path' and 'file_path' keys for flexibility
+                file_path = file_info.get("path") or file_info.get("file_path")
+                if not file_path:
+                    logger.warning(f"File info missing path/file_path key: {file_info.keys()}")
+                    continue
+                    
+                content = file_info.get("content", "")
+                if not content:
+                    logger.warning(f"File {file_path} has no content")
+                    continue
                 
                 tree = self._parse_file(file_path, content)
                 if not tree:
@@ -538,7 +546,7 @@ async def enhanced_duplication_analysis(files: List[Dict[str, str]], include_llm
     Enhanced duplication analysis with LLM-powered insights
     
     Args:
-        files: List of file dictionaries with 'path' and 'content' keys
+        files: List of file dictionaries with 'path'/'file_path' and 'content' keys
         include_llm_insights: Whether to include LLM-generated insights
         
     Returns:
@@ -651,7 +659,7 @@ def detect_duplication(files: List[Dict[str, str]], include_llm_insights: bool =
     Enhanced duplication detector with LLM integration
     
     Args:
-        files: List of file dictionaries with 'path' and 'content' keys
+        files: List of file dictionaries with 'path'/'file_path' and 'content' keys
         include_llm_insights: Whether to include LLM-generated insights
         
     Returns:
