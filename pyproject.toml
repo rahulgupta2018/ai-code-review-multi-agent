@@ -16,7 +16,7 @@ tree-sitter = "^0.25.2"  # Updated to latest version
 redis = "^5.0.1"
 sqlalchemy = "^2.0.23"
 websockets = "^15.0"  # Updated to match google-adk requirements
-httpx = "^0.28.0"  # Updated to match google-adk requirements
+httpx = "^0.28.1"  # Updated to be compatible with google-adk and google-genai
 jinja2 = "^3.1.2"
 reportlab = "^4.0.7"
 click = "^8.1.7"
@@ -46,7 +46,7 @@ tree-sitter-cpp = "^0.23.4"
 tree-sitter-c-sharp = "^0.23.1"
 
 # LLM Providers
-ollama = "^0.2.0"  # Updated for compatibility with httpx ^0.28.0
+# ollama = "^0.2.0"  # Removed due to httpx version conflict with google-adk - using native Ollama via HTTP API
 google-generativeai = "^0.8.3"  # Older version to avoid conflicts
 
 # Dependency constraints to avoid conflicts
@@ -65,7 +65,7 @@ pre-commit = "^3.5.0"
 
 [tool.poetry.group.test.dependencies]
 pytest-mock = "^3.12.0"
-httpx = "^0.25.2"
+httpx = "^0.28.1"  # Updated to match main dependency
 pytest-xdist = "^3.4.0"
 
 [build-system]

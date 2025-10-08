@@ -9,45 +9,14 @@ from typing import List, Dict, Any, Optional, Callable
 from abc import abstractmethod
 import logging
 
-try:
-    from google.cloud.aiplatform.adk.toolsets import BaseToolset
-    from google.cloud.aiplatform.adk.tools import FunctionTool
-    from google.cloud.aiplatform.adk.common import ToolContext
-    ADK_AVAILABLE = True
-except ImportError:
-    # Mock ADK imports for development without full ADK installation
-    logging.warning("ADK not available, using mock implementations")
-    ADK_AVAILABLE = False
-    
-    class BaseToolset:
-        def __init__(self, name: str):
-            self.name = name
-            self._tools: List[Any] = []
-        
-        def add_tool(self, tool: Any) -> None:
-            self._tools.append(tool)
-        
-        def get_tools(self) -> List[Any]:
-            return self._tools
-        
-        def close(self) -> None:
-            pass
-    
-    class FunctionTool:
-        def __init__(self, name: str, description: str, function: Callable[..., Any], **kwargs: Any):
-            self.name = name
-            self.description = description
-            self.function = function
-    
-    class ToolContext:
-        def __init__(self):
-            self.state: Dict[str, Any] = {}
+from google.adk.tools import BaseTool, FunctionTool, ToolContext
+ADK_AVAILABLE = True
 
 
 logger = logging.getLogger(__name__)
 
 
-class AnalysisToolset(BaseToolset):
+class AnalysisToolset:
     """
     Base toolset for all code analysis tools following ADK patterns.
     
@@ -60,27 +29,24 @@ class AnalysisToolset(BaseToolset):
     
     def __init__(self, name: str = "analysis_toolset"):
         """Initialize the analysis toolset with ADK patterns."""
-        super().__init__(name=name)
+        self.name = name
+        self._tools: List[Any] = []
         self._registered_tools: Dict[str, Any] = {}
         self._tool_context: Optional[ToolContext] = None
         self._setup_core_tools()
         logger.info(f"Initialized {name} with {len(self.get_tools())} tools")
     
+    def add_tool(self, tool: Any) -> None:
+        """Add a tool to this toolset."""
+        self._tools.append(tool)
+    
     def _setup_core_tools(self) -> None:
         """Setup core analysis tools that are always available."""
         # Language detection tool
-        self.add_tool(FunctionTool(
-            name="detect_language",
-            description="Detect the programming language of source code",
-            function=self._detect_language
-        ))
+        self.add_tool(FunctionTool(self._detect_language))
         
         # File analysis tool
-        self.add_tool(FunctionTool(
-            name="analyze_file_structure", 
-            description="Analyze file and directory structure for code organization",
-            function=self._analyze_file_structure
-        ))
+        self.add_tool(FunctionTool(self._analyze_file_structure))
     
     def register_analysis_tool(self, tool_name: str, tool_function: Callable[..., Any], 
                              description: str) -> None:
@@ -92,11 +58,7 @@ class AnalysisToolset(BaseToolset):
             tool_function: Function that performs the analysis
             description: Description for LLM understanding
         """
-        tool = FunctionTool(
-            name=tool_name,
-            description=description, 
-            function=tool_function
-        )
+        tool = FunctionTool(tool_function)
         
         self.add_tool(tool)
         self._registered_tools[tool_name] = tool
@@ -108,13 +70,14 @@ class AnalysisToolset(BaseToolset):
     
     def list_available_tools(self) -> List[Dict[str, str]]:
         """List all available tools with descriptions."""
-        return [
-            {
-                "name": tool.name,
-                "description": tool.description
+        result = []
+        for tool in self.get_tools():
+            tool_info = {
+                "name": getattr(tool, 'name', str(tool)),
+                "description": getattr(tool, 'description', f"Tool: {type(tool).__name__}")
             }
-            for tool in self.get_tools()
-        ]
+            result.append(tool_info)
+        return result
     
     def set_context(self, context: ToolContext) -> None:
         """Set the tool context for state management."""
@@ -246,4 +209,3 @@ class AnalysisToolset(BaseToolset):
         logger.info(f"Closing toolset: {self.name}")
         self._registered_tools.clear()
         self._tool_context = None
-        super().close()

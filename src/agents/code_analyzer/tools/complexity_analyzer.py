@@ -678,8 +678,9 @@ async def enhanced_complexity_analysis(file_input: CodeFileInput, include_llm_in
         return base_result
 
 
-def EnhancedComplexityAnalyzerTool(file_path: str, content: Optional[str] = None, include_llm_insights: bool = True) -> Dict[str, Any]:
+def analyze_complexity(file_path: str, content: Optional[str] = None, include_llm_insights: bool = True) -> Dict[str, Any]:
     """
+    Main entry point for complexity analysis - expected by test files
     Enhanced complexity analyzer tool interface with LLM integration
     
     Args:
@@ -713,3 +714,7 @@ def EnhancedComplexityAnalyzerTool(file_path: str, content: Optional[str] = None
         "processing_time": result.processing_time,
         "metadata": result.metadata
     }
+
+
+# Keep the old name for backward compatibility
+EnhancedComplexityAnalyzerTool = analyze_complexity

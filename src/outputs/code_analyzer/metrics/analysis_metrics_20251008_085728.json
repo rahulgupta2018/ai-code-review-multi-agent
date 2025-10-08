@@ -1,0 +1,14 @@
+{
+  "timestamp": "20251008_085728",
+  "execution_time": 7.5,
+  "files_analyzed": 3,
+  "metrics": {
+    "/app/tests/test_files/poor_quality.py": {},
+    "/app/tests/test_files/good_quality.py": {},
+    "/app/tests/test_files/mixed_quality.js": {}
+  },
+  "summary": {
+    "total_findings": 0,
+    "success": true
+  }
+}

@@ -18,51 +18,18 @@ services:
     hostname: ai-code-review-adk
     restart: unless-stopped
     command: ["/usr/local/bin/start-adk-dev.sh"]
+    env_file:
+      - .env
     environment:
-      # Core Environment
-      - ENVIRONMENT=development
-      - DEBUG=true
-      - DEV_MODE=true
-      
-      # Google Cloud & ADK
-      - GOOGLE_CLOUD_PROJECT_ID=${GOOGLE_CLOUD_PROJECT_ID}
-      - GOOGLE_CLOUD_LOCATION=${GOOGLE_CLOUD_LOCATION:-us-central1}
-      - GOOGLE_APPLICATION_CREDENTIALS=/app/credentials/google-cloud-credentials.json
-      - ADK_ENABLED=true
-      - USE_ADK=true
-      - ANALYSIS_USE_ADK=true
-      
-      # ADK Configuration
-      - ADK_PROJECT_ID=${GOOGLE_CLOUD_PROJECT_ID}
+      # Critical ADK variables needed by startup script
+      - ADK_WORKSPACE=/app/adk-workspace
       - ADK_DEV_PORTAL_HOST=0.0.0.0
       - ADK_DEV_PORTAL_PORT=8200
-      - ADK_WORKSPACE=/app/adk-workspace
-      - ADK_LOG_LEVEL=${ADK_LOG_LEVEL:-INFO}
-      
-      # LLM Providers
-      - DEFAULT_LLM_PROVIDER=${DEFAULT_LLM_PROVIDER:-ollama}
-      - OLLAMA_BASE_URL=http://host.docker.internal:11434
-      - OPENAI_API_KEY=${OPENAI_API_KEY}
-      - GEMINI_API_KEY=${GEMINI_API_KEY}
-      
-      # Database & Cache
-      - DATABASE_URL=sqlite:///app/data/memory.db
-      - REDIS_URL=redis://redis:6379
-      - REDIS_HOST=redis
-      - REDIS_PORT=6379
-      
-      # API Configuration
-      - API_HOST=0.0.0.0
-      - API_PORT=8000
-      - CORS_ORIGINS=http://localhost:3000,http://localhost:8080,http://localhost:8200
-      
-      # Performance
-      - MAX_WORKERS=${MAX_WORKERS:-4}
-      - MAX_CONCURRENT_ANALYSES=${MAX_CONCURRENT_ANALYSES:-5}
-      
-      # Logging
-      - LOG_LEVEL=${LOG_LEVEL:-INFO}
-      - LOG_FILE=/app/logs/app.log
+      - ADK_LOG_LEVEL=INFO
+      - GADK_LOG_LEVEL=INFO
+      - ENVIRONMENT=development
+      - DEBUG=true
+      - GOOGLE_APPLICATION_CREDENTIALS=/app/credentials/google-cloud-credentials.json
     ports:
       - "8000:8000"     # Main API
       - "8200:8200"     # ADK Dev Portal

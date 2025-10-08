@@ -89,8 +89,8 @@ COPY src/ ./src/
 RUN poetry install --only-root
 
 # Copy scripts for development
-COPY scripts/ ./scripts/
-COPY scripts/start-adk-dev.sh /usr/local/bin/start-adk-dev.sh
+COPY infra/scripts/ ./scripts/
+COPY infra/scripts/start-adk-dev.sh /usr/local/bin/start-adk-dev.sh
 RUN chmod +x /usr/local/bin/start-adk-dev.sh && \
     chmod +x ./scripts/adk-dev-portal.py
 
@@ -127,7 +127,7 @@ COPY src/ ./src/
 # Install the local package now that source is available
 RUN poetry install --only-root
 COPY config/ ./config/
-COPY scripts/ ./scripts/
+COPY infra/scripts/ ./scripts/
 
 # Create required directories
 RUN mkdir -p /app/logs /app/outputs /app/data /app/credentials && \
@@ -167,7 +167,7 @@ ENV ADK_WORKSPACE=/app/adk-workspace \
 EXPOSE 8200
 
 # Start script for ADK development
-COPY scripts/start-adk-dev.sh /usr/local/bin/start-adk-dev.sh
+COPY infra/scripts/start-adk-dev.sh /usr/local/bin/start-adk-dev.sh
 RUN chmod +x /usr/local/bin/start-adk-dev.sh
 
 # Default command for ADK development

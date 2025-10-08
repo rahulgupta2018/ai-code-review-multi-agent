@@ -645,12 +645,26 @@ Clone Type: {dup["clone_type"]}
         base_result["llm_enhancement_failed"] = str(e)
         return base_result
 
-def enhanced_duplication_detector_tool(files: List[Dict[str, str]], include_llm_insights: bool = True) -> Dict[str, Any]:
-    """Enhanced duplication detector with LLM integration"""
+def detect_duplication(files: List[Dict[str, str]], include_llm_insights: bool = True) -> Dict[str, Any]:
+    """
+    Main entry point for duplication detection - expected by test files
+    Enhanced duplication detector with LLM integration
+    
+    Args:
+        files: List of file dictionaries with 'path' and 'content' keys
+        include_llm_insights: Whether to include LLM-generated insights
+        
+    Returns:
+        Duplication analysis results dictionary
+    """
     return asyncio.run(enhanced_duplication_analysis(files, include_llm_insights))
+
+# Keep the old name for backward compatibility
+enhanced_duplication_detector_tool = detect_duplication
 
 # ADK FunctionTool for duplication detection
 DuplicationDetectorTool = FunctionTool(duplication_detector_tool)
 
 # Enhanced ADK FunctionTool with LLM integration
+EnhancedDuplicationDetectorTool = FunctionTool(detect_duplication)
 EnhancedDuplicationDetectorTool = FunctionTool(enhanced_duplication_detector_tool)
