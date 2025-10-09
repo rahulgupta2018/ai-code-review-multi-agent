@@ -1,0 +1,38 @@
+# Sustainability Agent Configuration
+agent_id: "sustainability"
+name: "Sustainability Agent"
+version: "1.0.0"
+priority: 7
+
+analysis_scope:
+  - carbon_footprint_analysis
+  - energy_efficiency_review
+  - resource_optimization
+  - green_coding_practices
+
+carbon_footprint:
+  metrics:
+    - "compute_resource_usage"
+    - "data_transfer_volume"
+    - "storage_efficiency"
+    - "algorithm_efficiency"
+  
+  optimization_suggestions:
+    - "efficient_algorithms"
+    - "resource_pooling"
+    - "lazy_loading"
+    - "caching_strategies"
+
+energy_efficiency:
+  code_patterns:
+    - "loop_optimization"
+    - "memory_efficient_structures"
+    - "database_query_optimization"
+    - "async_processing"
+
+green_coding:
+  best_practices:
+    - "minimize_data_transfer"
+    - "optimize_database_queries"
+    - "use_efficient_data_structures"
+    - "implement_caching"

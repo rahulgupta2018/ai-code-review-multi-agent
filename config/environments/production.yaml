@@ -1,0 +1,77 @@
+# Production Environment Configuration  
+# Optimized for reliability, security, and comprehensive analysis
+environment: production
+
+agents:
+  enabled_agents:
+    - security_standards      # Critical in production
+    - performance            # User experience matters
+    - sustainability         # Cost/environmental optimization
+    - architecture           # Long-term maintainability
+    - api_design            # Production API quality
+    - cloud_native          # Production deployment patterns
+    - code_quality          # Overall quality assurance
+    - microservices         # If using microservices architecture
+  
+  agent_configs:
+    security_standards:
+      strict_mode: true
+      compliance_frameworks: ["OWASP", "NIST", "CWE"]
+      fail_on_critical: true
+      vulnerability_database_updates: "daily"
+      
+    performance:
+      benchmark_mode: production
+      latency_thresholds: strict
+      memory_optimization: true
+      algorithm_complexity_analysis: true
+      
+    sustainability:
+      carbon_tracking: true
+      cost_optimization: true
+      energy_monitoring: true
+      green_metrics_reporting: true
+      
+    architecture:
+      enterprise_patterns: true
+      scalability_analysis: true
+      maintainability_focus: true
+      technical_debt_tracking: true
+      
+    api_design:
+      production_readiness: true
+      versioning_compliance: true
+      documentation_completeness: true
+      security_integration: true
+      
+    cloud_native:
+      production_patterns: true
+      observability_requirements: true
+      reliability_patterns: true
+      cost_optimization: true
+
+llm:
+  models:
+    orchestrator: "gemini-1.5-pro"     # Comprehensive model
+    agents: "gemini-2.0-flash"         # Efficient model
+  
+  cost_optimization:
+    intelligent_batching: true
+    cache_results: true
+    progressive_analysis: true
+
+session:
+  ttl_seconds: 3600  # 1 hour
+  cleanup_frequency: 600  # 10 minutes
+  persistence: redis
+
+quality_control:
+  confidence_threshold: 0.8  # High threshold for production
+  human_review_trigger: 0.5
+  validation_required: true
+  bias_prevention: strict
+
+monitoring:
+  enable_metrics: true
+  track_performance: true
+  alert_on_failures: true

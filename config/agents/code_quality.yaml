@@ -1,0 +1,67 @@
+# Code Quality Agent Configuration
+agent_id: "code_quality"
+name: "Code Quality Agent"
+version: "1.0.0"
+priority: 1
+
+analysis_scope:
+  - complexity_analysis
+  - maintainability_scoring
+  - code_smells_detection
+  - documentation_quality
+  - test_coverage_analysis
+  - naming_conventions
+
+complexity_metrics:
+  cyclomatic_complexity:
+    enabled: true
+    thresholds:
+      low: 5
+      medium: 10
+      high: 15
+      critical: 20
+    
+  cognitive_complexity:
+    enabled: true
+    thresholds:
+      low: 7
+      medium: 15
+      high: 25
+      critical: 35
+
+maintainability_scoring:
+  factors:
+    complexity_weight: 0.25
+    documentation_weight: 0.20
+    test_coverage_weight: 0.20
+    naming_weight: 0.15
+    duplication_weight: 0.20
+    
+  thresholds:
+    excellent: 90
+    good: 75
+    acceptable: 60
+    poor: 40
+
+code_smell_detection:
+  rules:
+    long_method:
+      enabled: true
+      max_lines: 50
+    
+    large_class:
+      enabled: true
+      max_lines: 500
+      max_methods: 20
+    
+    too_many_parameters:
+      enabled: true
+      max_parameters: 5
+
+naming_conventions:
+  check_consistency: true
+  patterns:
+    class_names: "PascalCase"
+    function_names: "snake_case"
+    variable_names: "snake_case"
+    constant_names: "UPPER_SNAKE_CASE"

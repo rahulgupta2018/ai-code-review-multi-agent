@@ -1,0 +1,54 @@
+# Redis Integration Configuration
+connection:
+  host: "${REDIS_HOST:-localhost}"
+  port: "${REDIS_PORT:-6379}"
+  db: "${REDIS_DB:-0}"
+  password: "${REDIS_PASSWORD:-}"
+  ssl: "${REDIS_SSL:-false}"
+  
+connection_pool:
+  max_connections: 20
+  retry_on_timeout: true
+  socket_timeout: 5
+  socket_connect_timeout: 5
+
+session_management:
+  session_prefix: "adk_session:"
+  session_ttl: 3600  # 1 hour
+  cleanup_interval: 300  # 5 minutes
+  
+  serialization:
+    format: "json"
+    compression: true
+
+caching:
+  cache_prefix: "adk_cache:"
+  default_ttl: 1800  # 30 minutes
+  max_key_length: 250
+  
+  cache_levels:
+    analysis_results:
+      ttl: 3600
+      compression: true
+    
+    agent_outputs:
+      ttl: 1800
+      compression: false
+    
+    user_preferences:
+      ttl: 86400  # 24 hours
+      compression: false
+
+pub_sub:
+  channels:
+    progress_updates: "adk:progress"
+    status_changes: "adk:status"
+    notifications: "adk:notifications"
+  
+  message_format: "json"
+  max_message_size: 1048576  # 1MB
+
+monitoring:
+  health_check_interval: 30  # seconds
+  metrics_collection: true
+  slow_query_threshold: 100  # milliseconds

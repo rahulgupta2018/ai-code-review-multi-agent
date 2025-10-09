@@ -1,0 +1,80 @@
+# Neo4j Integration Configuration
+connection:
+  uri: "${NEO4J_URI:-bolt://localhost:7687}"
+  username: "${NEO4J_USERNAME:-neo4j}"
+  password: "${NEO4J_PASSWORD:-}"
+  database: "${NEO4J_DATABASE:-adk_knowledge}"
+  
+  driver_config:
+    max_connection_lifetime: 3600  # 1 hour
+    max_connection_pool_size: 50
+    connection_acquisition_timeout: 60
+    encrypted: false
+
+knowledge_graph:
+  schema:
+    nodes:
+      - label: "CodeFile"
+        properties: ["path", "language", "size", "hash"]
+      
+      - label: "Function"
+        properties: ["name", "complexity", "lines_of_code"]
+      
+      - label: "Class"
+        properties: ["name", "methods_count", "inheritance_depth"]
+      
+      - label: "Agent"
+        properties: ["name", "version", "analysis_type"]
+      
+      - label: "Analysis"
+        properties: ["timestamp", "confidence", "recommendations"]
+    
+    relationships:
+      - type: "CONTAINS"
+        from: "CodeFile"
+        to: "Function"
+      
+      - type: "DEFINES"
+        from: "CodeFile"
+        to: "Class"
+      
+      - type: "CALLS"
+        from: "Function"
+        to: "Function"
+      
+      - type: "ANALYZED_BY"
+        from: "CodeFile"
+        to: "Agent"
+
+indexing:
+  auto_index: true
+  indexes:
+    - label: "CodeFile"
+      properties: ["path", "hash"]
+    
+    - label: "Function"
+      properties: ["name"]
+    
+    - label: "Analysis"
+      properties: ["timestamp"]
+
+queries:
+  optimization:
+    use_explain: true
+    query_timeout: 30  # seconds
+    max_result_size: 10000
+  
+  caching:
+    enable_query_cache: true
+    cache_ttl: 1800  # 30 minutes
+
+learning:
+  pattern_detection:
+    enable: true
+    min_pattern_frequency: 3
+    confidence_threshold: 0.8
+  
+  recommendation_engine:
+    enable: true
+    similarity_threshold: 0.7
+    max_recommendations: 10

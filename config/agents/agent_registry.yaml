@@ -1,0 +1,77 @@
+# Agent Registry Configuration
+# Controls which agents are enabled and their execution parameters
+agents:
+  enabled_agents:
+    - code_quality
+    - security_standards  
+    - architecture
+    - performance
+    - cloud_native
+    - engineering_practices
+    - sustainability
+    - microservices
+    - api_design
+  
+  agent_priorities:
+    security_standards: 1.0    # Critical for production systems
+    code_quality: 0.9         # High importance for maintainability
+    performance: 0.8          # Important for user experience
+    architecture: 0.7         # Important for long-term success
+    sustainability: 0.6       # Moderate importance, growing
+    microservices: 0.5        # Context-dependent
+    api_design: 0.5           # Context-dependent
+    cloud_native: 0.4         # Lower priority for non-cloud projects
+    engineering_practices: 0.3 # Basic hygiene, always enabled
+
+  execution_strategy:
+    parallel_execution: true   # Run agents in parallel for speed
+    fail_fast: false         # Continue analysis if some agents fail
+    timeout_seconds: 300     # Max time per agent
+    retry_count: 2           # Retry failed agents
+    
+  # Agent-specific configurations
+  agent_configs:
+    code_quality:
+      complexity_threshold: 15
+      maintainability_min_score: 60
+      enable_refactoring_suggestions: true
+      
+    security_standards:
+      compliance_frameworks: ["OWASP", "NIST"]
+      vulnerability_severity_threshold: "medium"
+      enable_dependency_scanning: true
+      
+    architecture:
+      pattern_detection: true
+      coupling_analysis: true
+      solid_principles_check: true
+      
+    performance:
+      algorithm_analysis: true
+      resource_optimization: true
+      benchmark_comparisons: true
+      
+    cloud_native:
+      twelve_factor_compliance: true
+      container_best_practices: true
+      kubernetes_patterns: true
+      
+    engineering_practices:
+      style_enforcement: true
+      documentation_coverage: true
+      test_pattern_analysis: true
+      
+    sustainability:
+      energy_efficiency_analysis: true
+      carbon_footprint_estimation: true
+      green_coding_patterns: true
+      
+    microservices:
+      service_boundary_analysis: true
+      communication_pattern_detection: true
+      distributed_system_patterns: true
+      
+    api_design:
+      rest_design_principles: true
+      graphql_schema_analysis: true
+      documentation_quality: true

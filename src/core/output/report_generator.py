@@ -1,1 +1,0 @@
-# Multi-format report generation (JSON, MD, HTML, PDF, XML)

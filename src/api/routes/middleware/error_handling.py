@@ -1,1 +1,0 @@
-# Structured error handling for API routes

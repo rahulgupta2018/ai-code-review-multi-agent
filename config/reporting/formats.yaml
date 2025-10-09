@@ -1,0 +1,75 @@
+# Reporting Formats Configuration
+output_formats:
+  json:
+    enabled: true
+    pretty_print: true
+    include_metadata: true
+    file_extension: ".json"
+  
+  html:
+    enabled: true
+    template: "comprehensive_report.html"
+    include_charts: true
+    include_recommendations: true
+    file_extension: ".html"
+  
+  pdf:
+    enabled: true
+    template: "executive_summary.pdf"
+    include_executive_summary: true
+    include_detailed_analysis: true
+    file_extension: ".pdf"
+  
+  markdown:
+    enabled: true
+    template: "github_report.md"
+    include_code_snippets: true
+    file_extension: ".md"
+  
+  csv:
+    enabled: true
+    include_metrics_only: true
+    delimiter: ","
+    file_extension: ".csv"
+
+report_sections:
+  executive_summary:
+    enabled: true
+    max_length: 500
+    include_recommendations: true
+  
+  detailed_analysis:
+    enabled: true
+    include_code_examples: true
+    include_metrics: true
+  
+  agent_findings:
+    enabled: true
+    group_by_agent: true
+    include_confidence_scores: true
+  
+  recommendations:
+    enabled: true
+    prioritize_by_impact: true
+    include_implementation_guides: true
+  
+  metrics_dashboard:
+    enabled: true
+    include_trends: true
+    include_comparisons: true
+
+customization:
+  branding:
+    company_logo: true
+    custom_colors: true
+    footer_text: true
+  
+  filtering:
+    by_severity: true
+    by_agent: true
+    by_file_type: true
+  
+  export_options:
+    compress_outputs: true
+    batch_reports: true
+    email_delivery: true

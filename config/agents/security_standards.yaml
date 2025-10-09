@@ -1,0 +1,56 @@
+# Security Standards Agent Configuration
+agent_id: "security_standards"
+name: "Security Standards Agent"
+version: "1.0.0"
+priority: 2
+
+analysis_scope:
+  - vulnerability_scanning
+  - secrets_detection
+  - dependency_analysis
+  - input_validation
+  - authentication_analysis
+
+vulnerability_scanning:
+  enabled_scanners:
+    - "bandit"      # Python security linter
+    - "semgrep"     # Multi-language static analysis
+    - "safety"      # Python dependency vulnerability scanner
+  
+  severity_levels:
+    critical: 
+      fail_build: true
+      require_immediate_fix: true
+    high:
+      fail_build: true
+      max_allowed: 0
+    medium:
+      fail_build: false
+      max_allowed: 5
+
+secrets_detection:
+  patterns:
+    api_keys:
+      - "api[_-]?key"
+      - "apikey"
+      - "access[_-]?key"
+    
+    passwords:
+      - "password"
+      - "passwd"
+      - "pwd"
+    
+    tokens:
+      - "token"
+      - "auth[_-]?token"
+
+dependency_analysis:
+  check_known_vulnerabilities: true
+  check_license_compatibility: true
+  check_outdated_packages: true
+  
+  allowed_licenses:
+    - "MIT"
+    - "Apache-2.0"
+    - "BSD-3-Clause"
+    - "ISC"

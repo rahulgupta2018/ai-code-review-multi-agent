@@ -1,0 +1,76 @@
+# LLM Models Configuration
+default_provider: "google_gemini"
+
+providers:
+  google_gemini:
+    models:
+      gemini_pro:
+        name: "gemini-pro"
+        max_tokens: 8192
+        temperature: 0.3
+        top_p: 0.9
+        cost_per_1k_tokens:
+          input: 0.00025
+          output: 0.0005
+        
+      gemini_pro_vision:
+        name: "gemini-pro-vision"
+        max_tokens: 4096
+        supports_images: true
+        cost_per_1k_tokens:
+          input: 0.00025
+          output: 0.0005
+    
+    rate_limits:
+      requests_per_minute: 60
+      tokens_per_minute: 100000
+    
+    endpoints:
+      generate: "https://generativelanguage.googleapis.com/v1beta/models"
+    
+  openai:
+    models:
+      gpt_4:
+        name: "gpt-4"
+        max_tokens: 8192
+        temperature: 0.3
+        cost_per_1k_tokens:
+          input: 0.03
+          output: 0.06
+      
+      gpt_3_5_turbo:
+        name: "gpt-3.5-turbo"
+        max_tokens: 4096
+        temperature: 0.3
+        cost_per_1k_tokens:
+          input: 0.0015
+          output: 0.002
+    
+    rate_limits:
+      requests_per_minute: 20
+      tokens_per_minute: 40000
+
+# Model selection strategy
+model_selection:
+  strategy: "cost_optimized"  # options: cost_optimized, performance_optimized, balanced
+  
+  routing_rules:
+    - condition: "analysis_type == 'security'"
+      model: "gemini_pro"
+      reason: "Better security analysis capabilities"
+    
+    - condition: "file_size > 1000"
+      model: "gpt_4"
+      reason: "Better handling of large files"
+    
+    - condition: "complexity_score > 80"
+      model: "gemini_pro"
+      reason: "Better complex code analysis"
+
+# Fallback configuration
+fallback_strategy:
+  enable: true
+  max_retries: 3
+  fallback_sequence:
+    - "google_gemini"
+    - "openai"

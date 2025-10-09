@@ -1,0 +1,57 @@
+# Staging Environment Configuration
+environment: "staging"
+debug: false
+log_level: "INFO"
+
+# Staging-specific agent configuration
+agents:
+  enabled_agents:
+    - code_quality
+    - security_standards
+    - architecture
+    - performance
+    - cloud_native
+    - engineering_practices
+    - sustainability
+    - microservices
+    - api_design
+  
+  parallel_execution: true
+  max_concurrent_agents: 6
+  timeout_per_agent: 600  # 10 minutes
+
+# LLM Configuration for staging
+llm_providers:
+  primary:
+    provider: "google_gemini"
+    model: "gemini-pro"
+    temperature: 0.3
+    max_tokens: 4000
+  
+  fallback:
+    provider: "openai"
+    model: "gpt-4"
+
+# Quality thresholds for staging
+quality_thresholds:
+  code_quality:
+    complexity_threshold: 15
+    maintainability_threshold: 70
+  
+  security:
+    fail_on_high_severity: true
+    fail_on_secrets: true
+  
+  performance:
+    max_execution_time: 2000  # milliseconds
+
+# Integration settings
+integrations:
+  redis:
+    host: "staging-redis.internal"
+    port: 6379
+    db: 1
+  
+  neo4j:
+    uri: "bolt://staging-neo4j.internal:7687"
+    database: "staging_knowledge"

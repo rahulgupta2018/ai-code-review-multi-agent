@@ -1,0 +1,41 @@
+# Engineering Practices Agent Configuration
+agent_id: "engineering_practices"
+name: "Engineering Practices Agent"
+version: "1.0.0"
+priority: 6
+
+analysis_scope:
+  - testing_practices
+  - ci_cd_pipeline_review
+  - documentation_quality
+  - version_control_practices
+
+testing_practices:
+  test_types:
+    - "unit_tests"
+    - "integration_tests"
+    - "end_to_end_tests"
+  
+  quality_metrics:
+    coverage_threshold: 80
+    test_naming_conventions: true
+    test_isolation: true
+
+ci_cd_practices:
+  pipeline_stages:
+    - "build"
+    - "test"
+    - "security_scan"
+    - "deploy"
+  
+  quality_gates:
+    - "test_coverage"
+    - "security_vulnerabilities"
+    - "code_quality_metrics"
+
+documentation:
+  required_docs:
+    - "README"
+    - "API_documentation"
+    - "deployment_guide"
+    - "troubleshooting_guide"

@@ -1,0 +1,50 @@
+# Development Environment Configuration
+# Optimized for learning and rapid development
+environment: development
+
+agents:
+  enabled_agents:
+    - code_quality           # Focus on code learning
+    - engineering_practices  # Build good habits
+    - architecture           # Design patterns
+    - sustainability         # Optional: Learn green practices
+  
+  agent_configs:
+    code_quality:
+      learning_mode: true
+      detailed_explanations: true
+      severity_adjustment: lenient
+      provide_examples: true
+      
+    engineering_practices:
+      style_enforcement: relaxed
+      documentation_requirements: basic
+      test_coverage_threshold: 50
+      
+    architecture:
+      pattern_suggestions: true
+      design_alternatives: true
+      educational_mode: true
+      
+    sustainability:
+      educational_insights: true
+      optimization_suggestions: basic
+
+llm:
+  models:
+    orchestrator: "ollama/llama3.1:8b"  # Local model for dev
+    agents: "ollama/llama3.1:8b"        # Local model for dev
+  
+  cost_optimization:
+    use_cache_aggressively: true
+    limit_context_size: true
+    fallback_to_deterministic: true
+
+session:
+  ttl_seconds: 1800  # 30 minutes
+  cleanup_frequency: 300  # 5 minutes
+
+quality_control:
+  confidence_threshold: 0.5  # Lower threshold for learning
+  human_review_trigger: 0.2
+  enable_fallbacks: true

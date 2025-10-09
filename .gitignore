@@ -151,6 +151,9 @@ outputs/*/
 temp/
 cache/
 
+# Old code and legacy files
+old_code/
+
 # IDE files
 .vscode/
 .idea/

@@ -1,0 +1,40 @@
+# Microservices Agent Configuration
+agent_id: "microservices"
+name: "Microservices Agent"
+version: "1.0.0"
+priority: 8
+
+analysis_scope:
+  - service_boundary_analysis
+  - inter_service_communication
+  - data_consistency_patterns
+  - resilience_patterns
+
+service_boundaries:
+  domain_driven_design:
+    - "bounded_contexts"
+    - "domain_entities"
+    - "aggregates"
+  
+  coupling_analysis:
+    - "data_coupling"
+    - "behavioral_coupling"
+    - "temporal_coupling"
+
+communication_patterns:
+  synchronous:
+    - "REST_APIs"
+    - "GraphQL"
+    - "gRPC"
+  
+  asynchronous:
+    - "message_queues"
+    - "event_streaming"
+    - "publish_subscribe"
+
+resilience_patterns:
+  fault_tolerance:
+    - "circuit_breaker"
+    - "retry_with_backoff"
+    - "timeout_handling"
+    - "bulkhead_isolation"

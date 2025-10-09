@@ -1,0 +1,38 @@
+# API Design Agent Configuration
+agent_id: "api_design"
+name: "API Design Agent"
+version: "1.0.0"
+priority: 9
+
+analysis_scope:
+  - rest_api_design
+  - graphql_schema_analysis
+  - api_security_review
+  - api_documentation_quality
+
+rest_api_design:
+  best_practices:
+    - "resource_naming"
+    - "http_methods_usage"
+    - "status_codes"
+    - "versioning_strategy"
+  
+  security_checks:
+    - "authentication"
+    - "authorization"
+    - "input_validation"
+    - "rate_limiting"
+
+graphql_analysis:
+  schema_design:
+    - "type_definitions"
+    - "resolver_patterns"
+    - "query_complexity"
+    - "n_plus_one_prevention"
+
+api_documentation:
+  requirements:
+    - "endpoint_documentation"
+    - "request_examples"
+    - "response_schemas"
+    - "error_handling"

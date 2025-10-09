@@ -1,0 +1,49 @@
+# Architecture Agent Configuration
+agent_id: "architecture"
+name: "Architecture Agent"
+version: "1.0.0"
+priority: 3
+
+analysis_scope:
+  - design_patterns_analysis
+  - dependency_analysis
+  - layered_architecture_validation
+  - coupling_cohesion_metrics
+
+design_patterns:
+  detect_patterns:
+    creational:
+      - "singleton"
+      - "factory"
+      - "builder"
+    
+    structural:
+      - "adapter"
+      - "decorator"
+      - "facade"
+    
+    behavioral:
+      - "observer"
+      - "strategy"
+      - "command"
+  
+  anti_patterns:
+    - "god_object"
+    - "spaghetti_code"
+    - "copy_paste_programming"
+
+dependency_analysis:
+  metrics:
+    afferent_coupling: true
+    efferent_coupling: true
+    instability: true
+  
+  thresholds:
+    max_dependencies: 10
+    max_dependents: 15
+    max_cycle_length: 5
+
+coupling_cohesion:
+  thresholds:
+    max_coupling_factor: 0.3
+    min_cohesion_factor: 0.7

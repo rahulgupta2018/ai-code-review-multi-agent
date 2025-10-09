@@ -1,0 +1,45 @@
+# Performance Agent Configuration
+agent_id: "performance"
+name: "Performance Agent"
+version: "1.0.0"
+priority: 4
+
+analysis_scope:
+  - performance_profiling
+  - bottleneck_detection
+  - memory_usage_analysis
+  - database_query_optimization
+
+performance_profiling:
+  metrics_to_collect:
+    - "execution_time"
+    - "memory_usage"
+    - "cpu_usage"
+    - "io_operations"
+  
+  profiling_tools:
+    python:
+      - "cProfile"
+      - "line_profiler"
+      - "memory_profiler"
+
+bottleneck_detection:
+  threshold_rules:
+    execution_time:
+      warning: 1000  # milliseconds
+      critical: 5000
+    
+    memory_usage:
+      warning: 100   # MB
+      critical: 500
+
+database_optimization:
+  query_analysis:
+    - "missing_indexes"
+    - "slow_queries"
+    - "n_plus_one_queries"
+  
+  optimization_patterns:
+    - "query_optimization"
+    - "connection_pooling"
+    - "result_caching"
