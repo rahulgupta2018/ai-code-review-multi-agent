@@ -2,7 +2,7 @@
 # This Dockerfile creates a production-ready container with Google Cloud ADK support
 
 # Base stage with Python 3.11 and system dependencies
-FROM python:3.11-slim as base
+FROM python:3.11-slim AS base
 
 # Set environment variables
 ENV PYTHONUNBUFFERED=1 \
@@ -17,7 +17,7 @@ ENV PYTHONUNBUFFERED=1 \
 
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
-    build-essential \
+     build-essential \
     curl \
     git \
     gcc \
@@ -47,7 +47,7 @@ RUN pip install poetry==$POETRY_VERSION
 ENV PATH="$POETRY_HOME/bin:$PATH"
 
 # Development stage with additional tools
-FROM base as development
+FROM base AS development
 
 # Install development tools
 RUN apt-get update && apt-get install -y \
@@ -94,8 +94,8 @@ COPY infra/scripts/start-adk-dev.sh /usr/local/bin/start-adk-dev.sh
 RUN chmod +x /usr/local/bin/start-adk-dev.sh && \
     chmod +x ./scripts/adk-dev-portal.py
 
-# Production stage
-FROM base as production
+# Production stage with Google Cloud SDK
+FROM base AS production
 
 # Install Google Cloud CLI (minimal)
 RUN echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] https://packages.cloud.google.com/apt cloud-sdk main" | tee -a /etc/apt/sources.list.d/google-cloud-sdk.list && \
@@ -126,7 +126,7 @@ COPY src/ ./src/
 
 # Install the local package now that source is available
 RUN poetry install --only-root
-COPY config/ ./config/
+COPY config/ ./config/   
 COPY infra/scripts/ ./scripts/
 
 # Create required directories
@@ -146,8 +146,8 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
 # Default command
 CMD ["python", "-m", "src.api.main"]
 
-# ADK-specific stage for agent development
-FROM development as adk
+# ADK stage for Application Developer Kit integration  
+FROM development AS adk
 
 # Install additional development tools if needed
 # All dependencies including Google ADK and Tree-sitter parsers are already installed via Poetry
@@ -173,8 +173,8 @@ RUN chmod +x /usr/local/bin/start-adk-dev.sh
 # Default command for ADK development
 CMD ["/usr/local/bin/start-adk-dev.sh"]
 
-# Testing stage
-FROM development as testing
+# Testing stage with additional testing tools
+FROM development AS testing
 
 # Install testing dependencies
 RUN poetry install --with=dev,test
@@ -189,4 +189,4 @@ COPY tests/ ./tests/
 CMD ["python", "-m", "pytest", "tests/", "-v", "--cov=src", "--cov-report=html", "--cov-report=term"]
 
 # Final stage selection based on build argument
-FROM ${BUILD_STAGE:-production} as final
+FROM ${BUILD_STAGE:-production} AS final

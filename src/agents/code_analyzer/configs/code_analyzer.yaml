@@ -41,9 +41,25 @@ analysis:
     - maintainability_assessment
     - llm_enhancement
   
-  # Enhanced analysis mode
+  # Core analysis settings
   enhanced_mode: true
   parallel_analysis: true
+  max_file_size_mb: 1
+  
+  # Supported languages for analysis
+  supported_languages:
+    - python
+    - javascript
+    - typescript
+    - java
+    - c
+    - cpp
+    - go
+    - rust
+    - kotlin
+    - swift
+    - csharp
+    - sql
   
   # Complexity thresholds by language
   complexity_thresholds:
@@ -240,11 +256,9 @@ reporting:
 performance:
   # Analysis limits
   max_files_per_analysis: 1000
-  max_file_size_kb: 1024
   analysis_timeout_seconds: 300
   
-  # Parallel processing
-  enable_parallel_analysis: true
+  # Parallel processing (inherits from analysis.parallel_analysis)
   max_concurrent_files: 10
   
   # Memory optimization
@@ -260,21 +274,35 @@ language_detection:
   file_extensions:
     '.py': 'python'
     '.js': 'javascript'
-    '.ts': 'typescript'
     '.jsx': 'javascript'
+    '.ts': 'typescript'
     '.tsx': 'typescript'
     '.java': 'java'
-    '.kt': 'kotlin'
-    '.swift': 'swift'
-    '.go': 'go'
-    '.rs': 'rust'
-    '.cs': 'csharp'
-    '.sql': 'sql'
+    '.c': 'cpp'
     '.cpp': 'cpp'
     '.cc': 'cpp'
     '.cxx': 'cpp'
-    '.c': 'cpp'
+    '.go': 'go'
+    '.rs': 'rust'
+    '.kt': 'kotlin'
+    '.swift': 'swift'
+    '.cs': 'csharp'
+    '.sql': 'sql'
   default_language: 'unknown'
+  
+  # Mapping from language names to AnalysisLanguage enum values
+  enum_mapping:
+    'python': 'PYTHON'
+    'javascript': 'JAVASCRIPT'
+    'typescript': 'TYPESCRIPT'
+    'java': 'JAVA'
+    'cpp': 'CPP'
+    'go': 'GO'
+    'rust': 'RUST'
+    'kotlin': 'KOTLIN'
+    'swift': 'SWIFT'
+    'csharp': 'CSHARP'
+    'sql': 'SQL'
 
 # Pattern detection rules for architectural patterns
 pattern_rules:

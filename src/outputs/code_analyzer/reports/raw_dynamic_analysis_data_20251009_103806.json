@@ -1,0 +1,244 @@
+{
+  "findings": [
+    {
+      "file": "/app/tests/input_files/AuthenticationAppService.ts",
+      "file_name": "AuthenticationAppService.ts",
+      "language": "typescript",
+      "line": 1,
+      "severity": "FindingSeverity.MEDIUM",
+      "category": "complexity",
+      "description": "High cognitive complexity: 142 (threshold: 15)",
+      "recommendation": "Reduce nesting and simplify control flow"
+    },
+    {
+      "file": "/app/tests/input_files/user_utilities.js",
+      "file_name": "user_utilities.js",
+      "language": "javascript",
+      "line": 1,
+      "severity": "FindingSeverity.MEDIUM",
+      "category": "complexity",
+      "description": "High cognitive complexity: 103 (threshold: 15)",
+      "recommendation": "Reduce nesting and simplify control flow"
+    },
+    {
+      "file": "/app/tests/input_files/user_utilities.js",
+      "file_name": "user_utilities.js",
+      "language": "javascript",
+      "line": 1,
+      "severity": "FindingSeverity.MEDIUM",
+      "category": "complexity",
+      "description": "Deep nesting detected: 10 levels (threshold: 4)",
+      "recommendation": "Extract nested logic into separate functions"
+    },
+    {
+      "file": "/app/tests/input_files/sample_data_processor.py",
+      "file_name": "sample_data_processor.py",
+      "language": "python",
+      "line": 1,
+      "severity": "FindingSeverity.MEDIUM",
+      "category": "complexity",
+      "description": "High cognitive complexity: 92 (threshold: 15)",
+      "recommendation": "Reduce nesting and simplify control flow"
+    },
+    {
+      "file": "/app/tests/input_files/sample_data_processor.py",
+      "file_name": "sample_data_processor.py",
+      "language": "python",
+      "line": 1,
+      "severity": "FindingSeverity.MEDIUM",
+      "category": "complexity",
+      "description": "Deep nesting detected: 9 levels (threshold: 4)",
+      "recommendation": "Extract nested logic into separate functions"
+    },
+    {
+      "file": "/app/tests/input_files/user_service.go",
+      "file_name": "user_service.go",
+      "language": "go",
+      "line": 1,
+      "severity": "FindingSeverity.MEDIUM",
+      "category": "complexity",
+      "description": "High cognitive complexity: 63 (threshold: 15)",
+      "recommendation": "Reduce nesting and simplify control flow"
+    },
+    {
+      "file": "/app/tests/input_files/user_service.go",
+      "file_name": "user_service.go",
+      "language": "go",
+      "line": 1,
+      "severity": "FindingSeverity.MEDIUM",
+      "category": "complexity",
+      "description": "Deep nesting detected: 8 levels (threshold: 4)",
+      "recommendation": "Extract nested logic into separate functions"
+    }
+  ],
+  "metrics": {
+    "/app/tests/input_files/AuthenticationAppService.ts": {
+      "complexity": {
+        "cyclomatic_complexity": 1,
+        "cognitive_complexity": 142,
+        "nesting_depth": 4,
+        "function_count": 0,
+        "total_lines": 1145,
+        "code_lines": 825,
+        "blank_lines": 149,
+        "comment_lines": 171,
+        "supported": true,
+        "llm_analysis_confidence": 0.8,
+        "llm_provider": "ollama",
+        "llm_insights_count": 0,
+        "llm_recommendations_count": 0
+      },
+      "duplication": {
+        "total_duplications": 0,
+        "duplication_percentage": 0.0,
+        "clone_type_distribution": {},
+        "processing_time": 0.03232216835021973
+      },
+      "maintainability": {
+        "score": 78.75,
+        "quality_level": "Good",
+        "complexity_score": 70.0,
+        "duplication_score": 100.0,
+        "documentation_score": 75.0,
+        "naming_score": 75.0,
+        "structure_score": 75.0,
+        "test_coverage_score": 75.0,
+        "processing_time": 0.047020673751831055
+      },
+      "file_info": {
+        "name": "AuthenticationAppService.ts",
+        "language": "typescript",
+        "total_lines": 1145,
+        "code_lines": 896,
+        "size_kb": 39.73
+      }
+    },
+    "/app/tests/input_files/user_utilities.js": {
+      "complexity": {
+        "cyclomatic_complexity": 1,
+        "cognitive_complexity": 103,
+        "nesting_depth": 10,
+        "function_count": 0,
+        "total_lines": 181,
+        "code_lines": 142,
+        "blank_lines": 23,
+        "comment_lines": 16,
+        "supported": true,
+        "llm_analysis_confidence": 0.8,
+        "llm_provider": "ollama",
+        "llm_insights_count": 0,
+        "llm_recommendations_count": 0
+      },
+      "duplication": {
+        "total_duplications": 0,
+        "duplication_percentage": 0.0,
+        "clone_type_distribution": {},
+        "processing_time": 0.006416797637939453
+      },
+      "maintainability": {
+        "score": 73.75,
+        "quality_level": "Good",
+        "complexity_score": 50.0,
+        "duplication_score": 100.0,
+        "documentation_score": 75.0,
+        "naming_score": 75.0,
+        "structure_score": 75.0,
+        "test_coverage_score": 75.0,
+        "processing_time": 0.014777898788452148
+      },
+      "file_info": {
+        "name": "user_utilities.js",
+        "language": "javascript",
+        "total_lines": 181,
+        "code_lines": 142,
+        "size_kb": 6.47
+      }
+    },
+    "/app/tests/input_files/sample_data_processor.py": {
+      "complexity": {
+        "cyclomatic_complexity": 1,
+        "cognitive_complexity": 92,
+        "nesting_depth": 9,
+        "function_count": 0,
+        "total_lines": 167,
+        "code_lines": 135,
+        "blank_lines": 27,
+        "comment_lines": 5,
+        "supported": true,
+        "llm_analysis_confidence": 0.8,
+        "llm_provider": "ollama",
+        "llm_insights_count": 0,
+        "llm_recommendations_count": 0
+      },
+      "duplication": {
+        "total_duplications": 0,
+        "duplication_percentage": 0.0,
+        "clone_type_distribution": {},
+        "processing_time": 0.010798215866088867
+      },
+      "maintainability": {
+        "score": 73.75,
+        "quality_level": "Good",
+        "complexity_score": 50.0,
+        "duplication_score": 100.0,
+        "documentation_score": 75.0,
+        "naming_score": 75.0,
+        "structure_score": 75.0,
+        "test_coverage_score": 75.0,
+        "processing_time": 0.015640974044799805
+      },
+      "file_info": {
+        "name": "sample_data_processor.py",
+        "language": "python",
+        "total_lines": 167,
+        "code_lines": 135,
+        "size_kb": 6.45
+      }
+    },
+    "/app/tests/input_files/user_service.go": {
+      "complexity": {
+        "cyclomatic_complexity": 1,
+        "cognitive_complexity": 63,
+        "nesting_depth": 8,
+        "function_count": 0,
+        "total_lines": 224,
+        "code_lines": 168,
+        "blank_lines": 37,
+        "comment_lines": 19,
+        "supported": true,
+        "llm_analysis_confidence": 0.8,
+        "llm_provider": "ollama",
+        "llm_insights_count": 0,
+        "llm_recommendations_count": 0
+      },
+      "duplication": {
+        "total_duplications": 0,
+        "duplication_percentage": 0.0,
+        "clone_type_distribution": {},
+        "processing_time": 0.005278825759887695
+      },
+      "maintainability": {
+        "score": 73.75,
+        "quality_level": "Good",
+        "complexity_score": 50.0,
+        "duplication_score": 100.0,
+        "documentation_score": 75.0,
+        "naming_score": 75.0,
+        "structure_score": 75.0,
+        "test_coverage_score": 75.0,
+        "processing_time": 0.008854150772094727
+      },
+      "file_info": {
+        "name": "user_service.go",
+        "language": "go",
+        "total_lines": 224,
+        "code_lines": 168,
+        "size_kb": 6.11
+      }
+    }
+  },
+  "execution_time": 197.27240347862244,
+  "success": true,
+  "files_analyzed": 4,
+  "total_files_discovered": 4
+}

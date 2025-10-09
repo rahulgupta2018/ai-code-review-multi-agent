@@ -34,10 +34,10 @@ from agents.base.base_classes import Finding, FindingSeverity, AnalysisContext, 
 # Agent-specific quality tools (moved to agent's tools directory)
 from .tools.complexity_analyzer import enhanced_complexity_analysis, complexity_analyzer_tool
 from .tools.duplication_detector import enhanced_duplication_analysis, duplication_detector_tool
-from .tools.maintainability_scorer import maintainability_scoring, maintainability_scorer_tool
-from .tools.maintainability_assessor import maintainability_assessment, maintainability_assessor_tool
+from .tools.maintainability_assessor import maintainability_assessor_tool
 from agents.base.tools.tool_schemas import CodeFileInput, AnalysisLanguage
 from agents.base.tools.llm_provider import get_llm_provider, LLMRequest
+from agents.base.tools.llm_response_validator import validate_llm_response
 
 logger = logging.getLogger(__name__)
 
@@ -45,13 +45,33 @@ logger = logging.getLogger(__name__)
 @dataclass
 class CodeAnalysisConfig:
     """Configuration for code analysis operations"""
-    enable_enhanced_analysis: bool = True
-    max_file_size: int = 1024 * 1024  # 1MB
-    supported_languages: List[str] = field(default_factory=lambda: [
-        'python', 'javascript', 'typescript', 'java', 'c', 'cpp', 'go', 'rust'
-    ])
-    parallel_analysis: bool = True
-    output_format: str = 'json'
+    enable_enhanced_analysis: bool
+    max_file_size: int  
+    supported_languages: List[str]
+    parallel_analysis: bool
+    output_format: str
+    
+    @classmethod
+    def from_yaml_config(cls, config_dict: Dict[str, Any]) -> 'CodeAnalysisConfig':
+        """Create configuration from loaded YAML config"""
+        analysis_config = config_dict['analysis']
+        agent_config = config_dict['agent']
+        
+        # Extract values from config - no fallbacks, config is required
+        enable_enhanced_analysis = analysis_config['enhanced_mode']
+        max_file_size_mb = analysis_config['max_file_size_mb']
+        max_file_size = max_file_size_mb * 1024 * 1024  # Convert MB to bytes
+        supported_languages = analysis_config['supported_languages']
+        parallel_analysis = analysis_config['parallel_analysis']
+        output_format = agent_config['output_format']
+        
+        return cls(
+            enable_enhanced_analysis=enable_enhanced_analysis,
+            max_file_size=max_file_size,
+            supported_languages=supported_languages,
+            parallel_analysis=parallel_analysis,
+            output_format=output_format
+        )
 
 
 class CodeAnalyzerAgent(BaseAgent):
@@ -86,7 +106,8 @@ class CodeAnalyzerAgent(BaseAgent):
         super().__init__(**kwargs)
         
         # Set agent-specific configuration using model fields
-        self.analysis_config = config or CodeAnalysisConfig()
+        # We'll load the config from YAML in _load_agent_config, not here
+        self.analysis_config = config  # This will be None initially if not provided
         self.tools_initialized = False
         
         # Initialize agent components
@@ -262,33 +283,22 @@ class CodeAnalyzerAgent(BaseAgent):
                 for finding_data in complexity_result.findings:
                     # Handle both dict and AnalysisOutput object findings
                     if isinstance(finding_data, dict):
+                        # Handle the key mapping from complexity analyzer format
+                        title = finding_data.get('title', finding_data.get('type', 'Complexity Issue'))
+                        line_number = finding_data.get('line_number', finding_data.get('line', 1))
                         finding = Finding(
-                            title=finding_data.get('title', 'Complexity issue detected'),
-                            description=finding_data.get('message', 'High complexity detected in code'),
+                            title=title,
+                            description=finding_data['message'],
                             severity=FindingSeverity.MEDIUM,
                             category='complexity',
                             file_path=file_path,
-                            line_number=finding_data.get('line_number') or finding_data.get('line', 1),
-                            recommendation=finding_data.get('suggestion', 'Consider refactoring to reduce complexity')
+                            line_number=line_number,
+                            recommendation=finding_data.get('suggestion', 'No recommendation available')
                         )
                         findings.append(finding)
                 # Store metrics from AnalysisOutput object
                 if hasattr(complexity_result, 'metrics'):
                     metrics['complexity'] = complexity_result.metrics
-            elif isinstance(complexity_result, dict) and 'findings' in complexity_result:
-                # Fallback for dict-style results
-                for finding_data in complexity_result['findings']:
-                    finding = Finding(
-                        title=finding_data.get('title', 'Complexity issue detected'),
-                        description=finding_data.get('message', 'High complexity detected in code'),
-                        severity=FindingSeverity.MEDIUM,
-                        category='complexity',
-                        file_path=file_path,
-                        line_number=finding_data.get('line_number', 1),
-                        recommendation=finding_data.get('suggestion', 'Consider refactoring to reduce complexity')
-                    )
-                    findings.append(finding)
-                metrics['complexity'] = complexity_result.get('metrics', {})
             
             # Run duplication detection
             files_dict = [{"file_path": file_path, "content": content}]
@@ -299,135 +309,52 @@ class CodeAnalyzerAgent(BaseAgent):
             
             # Process duplication results
             if isinstance(duplication_result, dict):
-                # Handle duplications key instead of findings
-                duplications = duplication_result.get('duplications', [])
+                # Handle duplications key
+                duplications = duplication_result['duplications']
                 if duplications:
                     for dup_data in duplications:
                         finding = Finding(
                             title='Code duplication detected',
-                            description=f"Duplicate code found: {dup_data.get('clone_type', 'Unknown type')} with {dup_data.get('similarity_score', 0):.2%} similarity",
+                            description=f"Duplicate code found: {dup_data['clone_type']} with {dup_data['similarity_score']:.2%} similarity",
                             severity=FindingSeverity.MEDIUM,
                             category='duplication',
                             file_path=file_path,
-                            line_number=dup_data.get('block1', {}).get('start_line', 1),
+                            line_number=dup_data['block1']['start_line'],
                             recommendation='Consider refactoring duplicate code into shared functions'
-                        )
-                        findings.append(finding)
-                
-                # Also check for findings key (fallback)
-                if 'findings' in duplication_result:
-                    for finding_data in duplication_result['findings']:
-                        finding = Finding(
-                            title=finding_data.get('title', 'Code duplication detected'),
-                            description=finding_data.get('message', 'Duplicate code patterns found'),
-                            severity=FindingSeverity.MEDIUM,
-                            category='duplication',
-                            file_path=file_path,
-                            line_number=finding_data.get('line_number', 1),
-                            recommendation=finding_data.get('suggestion', 'Consider refactoring duplicate code')
                         )
                         findings.append(finding)
                 
                 # Store metrics
                 metrics['duplication'] = {
-                    'total_duplications': duplication_result.get('total_duplications', 0),
-                    'duplication_percentage': duplication_result.get('duplication_percentage', 0),
-                    'clone_type_distribution': duplication_result.get('clone_type_distribution', {}),
-                    'processing_time': duplication_result.get('processing_time', 0)
+                    'total_duplications': duplication_result['total_duplications'],
+                    'duplication_percentage': duplication_result['duplication_percentage'],
+                    'clone_type_distribution': duplication_result['clone_type_distribution'],
+                    'processing_time': duplication_result['processing_time']
                 }
             
-            # Run maintainability analysis - intelligent routing
-            if mode == 'enhanced':
-                # For enhanced mode, choose tool based on context
-                if self._should_use_detailed_assessment(files_dict):
-                    # Use assessor for single-file detailed analysis
-                    maintainability_result = await maintainability_assessment(file_path, content)
-                else:
-                    # Use scorer for multi-file quantitative analysis
-                    maintainability_result = await maintainability_scoring(files_dict, True)
-            else:
-                # Standard mode always uses scorer
-                maintainability_result = maintainability_scorer_tool(files_dict)
+            # Run maintainability analysis - use unified assessor tool
+            maintainability_result = maintainability_assessor_tool(files_dict)
             
             # Process maintainability results
-            if isinstance(maintainability_result, dict):
-                # Handle maintainability_assessment results (single file detailed analysis)
-                if 'maintainability_score' in maintainability_result:
-                    # This is from maintainability_assessment function
-                    metrics_data = maintainability_result.get('metrics', {})
-                    metrics['maintainability'] = {
-                        'score': maintainability_result.get('maintainability_score', 0) * 100,  # Convert to 0-100 scale
-                        'quality_level': self._score_to_quality_level(maintainability_result.get('maintainability_score', 0)),
-                        'complexity_score': metrics_data.get('complexity_score', 0),
-                        'duplication_score': metrics_data.get('duplication_score', 0),
-                        'documentation_score': metrics_data.get('documentation_score', 0),
-                        'naming_score': metrics_data.get('naming_score', 0),
-                        'structure_score': metrics_data.get('structure_score', 0),
-                        'test_coverage_score': metrics_data.get('test_coverage_score', 0),
-                        'processing_time': metrics_data.get('processing_time', 0)
-                    }
-                # Handle maintainability_scorer results (multi-file scoring)
-                elif 'maintainability_index' in maintainability_result:
-                    # This is from maintainability_scorer_tool function
-                    metrics['maintainability'] = {
-                        'score': maintainability_result.get('maintainability_index', 0),
-                        'quality_level': maintainability_result.get('quality_level', 'Unknown'),
-                        'complexity_score': maintainability_result.get('scores', {}).get('complexity_score', 0),
-                        'duplication_score': maintainability_result.get('scores', {}).get('duplication_score', 0),
-                        'documentation_score': maintainability_result.get('scores', {}).get('documentation_score', 0),
-                        'naming_score': maintainability_result.get('scores', {}).get('naming_score', 0),
-                        'structure_score': maintainability_result.get('scores', {}).get('structure_score', 0),
-                        'test_coverage_score': maintainability_result.get('scores', {}).get('test_coverage_score', 0),
-                        'processing_time': maintainability_result.get('processing_time', 0)
-                    }
+            if isinstance(maintainability_result, dict) and 'maintainability_index' in maintainability_result:
+                # This is from unified maintainability_assessor_tool function
+                metrics['maintainability'] = {
+                    'score': maintainability_result['maintainability_index'],
+                    'quality_level': maintainability_result['quality_level'],
+                    'complexity_score': maintainability_result['scores']['complexity_score'],
+                    'duplication_score': maintainability_result['scores']['duplication_score'],
+                    'documentation_score': maintainability_result['scores']['documentation_score'],
+                    'naming_score': maintainability_result['scores']['naming_score'],
+                    'structure_score': maintainability_result['scores']['structure_score'],
+                    'test_coverage_score': maintainability_result['scores']['test_coverage_score'],
+                    'processing_time': maintainability_result['processing_time']
+                }
                 
                 # Check for findings key
-                if 'findings' in maintainability_result:
-                    for finding_data in maintainability_result['findings']:
-                        finding = Finding(
-                            title=finding_data.get('title', 'Maintainability issue detected'),
-                            description=finding_data.get('message', 'Code maintainability could be improved'),
-                            severity=FindingSeverity.LOW,
-                            category='maintainability',
-                            file_path=file_path,
-                            line_number=finding_data.get('line_number', 1),
-                            recommendation=finding_data.get('suggestion', 'Review and refactor for better maintainability')
-                        )
-                        findings.append(finding)
+            else:
+                # If no maintainability_index, log the unexpected format
+                logger.warning(f"Unexpected maintainability result format: {maintainability_result}")
                 
-                # Check for recommendations that could be converted to findings
-                recommendations = maintainability_result.get('recommendations', [])
-                if recommendations and not maintainability_result.get('findings'):
-                    # Convert recommendations to findings if no explicit findings
-                    for i, rec in enumerate(recommendations[:3]):  # Limit to first 3
-                        if isinstance(rec, str) and len(rec.strip()) > 10:
-                            finding = Finding(
-                                title='Maintainability improvement suggested',
-                                description=rec.strip(),
-                                severity=FindingSeverity.LOW,
-                                category='maintainability',
-                                file_path=file_path,
-                                line_number=1,
-                                recommendation=rec.strip()
-                            )
-                            findings.append(finding)
-            elif hasattr(maintainability_result, 'findings') and maintainability_result.findings:
-                # Handle AnalysisOutput object
-                for finding_data in maintainability_result.findings:
-                    if isinstance(finding_data, dict):
-                        finding = Finding(
-                            title=finding_data.get('title', 'Maintainability issue detected'),
-                            description=finding_data.get('message', 'Code maintainability could be improved'),
-                            severity=FindingSeverity.LOW,
-                            category='maintainability',
-                            file_path=file_path,
-                            line_number=finding_data.get('line_number') or finding_data.get('line', 1),
-                            recommendation=finding_data.get('suggestion', 'Review and refactor for better maintainability')
-                        )
-                        findings.append(finding)
-                if hasattr(maintainability_result, 'metrics'):
-                    metrics['maintainability'] = maintainability_result.metrics
-            
         except Exception as e:
             logger.error(f"Error analyzing file {file_path}: {e}")
         
@@ -446,192 +373,176 @@ class CodeAnalyzerAgent(BaseAgent):
         else:
             return "Critical"
     
-    def _should_use_detailed_assessment(self, files_dict: List[Dict[str, str]]) -> bool:
-        """
-        Determine whether to use detailed assessment vs quantitative scoring
-        
-        Args:
-            files_dict: List of file dictionaries with content
-            
-        Returns:
-            True if detailed assessment should be used, False for scoring
-        """
-        # Use detailed assessment for single file analysis
-        if len(files_dict) == 1:
-            return True
-        
-        # Use scoring for multi-file analysis
-        return False
-    
     def _detect_language(self, file_path: str) -> AnalysisLanguage:
         """Detect programming language from file extension"""
         extension = Path(file_path).suffix.lower()
         
-        language_mapping = {
-            '.py': AnalysisLanguage.PYTHON,
-            '.js': AnalysisLanguage.JAVASCRIPT,
-            '.jsx': AnalysisLanguage.JAVASCRIPT,
-            '.ts': AnalysisLanguage.TYPESCRIPT,
-            '.tsx': AnalysisLanguage.TYPESCRIPT,
-            '.java': AnalysisLanguage.JAVA,
-            '.c': AnalysisLanguage.CPP,  # Treat C as CPP for analysis
-            '.cpp': AnalysisLanguage.CPP,
-            '.cc': AnalysisLanguage.CPP,
-            '.cxx': AnalysisLanguage.CPP,
-            '.go': AnalysisLanguage.GO,
-            '.rs': AnalysisLanguage.RUST
-        }
+        # Get language mapping from configuration
+        language_extensions = self.agent_config['language_detection']['file_extensions']
+        language_name = language_extensions[extension]
         
-        return language_mapping.get(extension, AnalysisLanguage.PYTHON)
+        # Get enum mapping from configuration
+        enum_mapping = self.agent_config['language_detection']['enum_mapping']
+        enum_value = enum_mapping[language_name]
+        
+        # Return the corresponding AnalysisLanguage enum
+        return getattr(AnalysisLanguage, enum_value)
     
     def _format_analysis_summary(self, result: AnalysisResult) -> str:
         """Generate LLM-powered analysis summary"""
-        try:
-            # Use LLM for dynamic summary generation
-            return asyncio.run(self._generate_llm_summary(result))
-        except Exception as e:
-            logger.warning(f"LLM summary generation failed, using fallback: {e}")
-            return self._format_static_summary(result)
+        return asyncio.run(self._generate_llm_summary(result))
     
     async def _generate_llm_summary(self, result: AnalysisResult) -> str:
-        """Generate analysis summary using LLM"""
+        """Generate analysis summary using LLM with quality control"""
         try:
             # Prepare analysis data for LLM
             analysis_data = {
-                "files_analyzed": len(result.findings) if hasattr(result, 'findings') else 0,
-                "total_findings": len(result.findings) if hasattr(result, 'findings') else 0,
-                "execution_time": getattr(result, 'execution_time', 0),
-                "findings_by_severity": self._categorize_findings(result.findings if hasattr(result, 'findings') else []),
-                "findings_by_category": self._group_findings_by_category(result.findings if hasattr(result, 'findings') else []),
-                "metrics": getattr(result, 'metrics', {})
+                "files_analyzed": len(result.findings),
+                "total_findings": len(result.findings),
+                "execution_time": result.execution_time,
+                "findings_by_severity": self._categorize_findings(result.findings),
+                "findings_by_category": self._group_findings_by_category(result.findings),
+                "metrics": result.metrics
             }
             
-            # Get LLM provider
-            llm_provider = get_llm_provider()
-            
             # Get prompt template from config - required, no fallback
-            prompt_template = self.llm_config.get('agent_llm', {}).get('response_generation', {}).get('prompt_template', '')
+            prompt_template = self.llm_config['agent_llm']['response_generation']['prompt_template']
             if not prompt_template:
                 raise ValueError("Missing required config: agent_llm.response_generation.prompt_template")
             
             # Use configured prompt template
             prompt = prompt_template.format(
-                files_analyzed=analysis_data.get('files_analyzed', 0),
-                issues_found=analysis_data.get('issues_found', 0),
-                analysis_type=analysis_data.get('analysis_type', 'code_quality'),
-                severity_breakdown=json.dumps(analysis_data.get('findings_by_severity', {}))
+                files_analyzed=analysis_data['files_analyzed'],
+                issues_found=analysis_data['total_findings'],
+                analysis_type="comprehensive code quality analysis",
+                severity_breakdown=json.dumps(analysis_data['findings_by_severity'])
             )
             
-            system_prompt = self.llm_config.get('agent_llm', {}).get('response_generation', {}).get('system_prompt', '')
+            system_prompt = self.llm_config['agent_llm']['response_generation']['system_prompt']
             if not system_prompt:
                 raise ValueError("Missing required config: agent_llm.response_generation.system_prompt")
+            
+            # Get temperature and max_tokens from config
+            temperature = self.llm_config['agent_llm']['response_generation']['temperature']
+            max_tokens = self.llm_config['agent_llm']['response_generation']['max_tokens']
             
             llm_request = LLMRequest(
                 prompt=prompt,
                 system_prompt=system_prompt,
-                temperature=0.2,
-                max_tokens=2048
+                temperature=temperature,
+                max_tokens=max_tokens
             )
             
-            # Generate LLM response
-            response = await llm_provider.generate_response(llm_request)
-            return response.content if hasattr(response, 'content') else self._format_static_summary(result)
+            # Use quality-controlled LLM response with bias prevention and hallucination detection
+            validation_result = await validate_llm_response(
+                llm_request=llm_request,
+                context_data={
+                    'findings': result.findings,
+                    'metrics': result.metrics,
+                    'findings_by_severity': analysis_data['findings_by_severity'],
+                    'findings_by_category': analysis_data['findings_by_category']
+                },
+                response_type="summary"
+            )
+            
+            if validation_result.is_valid:
+                # Log quality metrics for monitoring
+                logger.info(f"LLM summary generated with confidence: {validation_result.confidence_score:.2f}, "
+                           f"evidence: {validation_result.evidence_score:.2f}")
+                
+                # Log any warnings
+                if validation_result.validation_warnings:
+                    logger.warning(f"LLM summary warnings: {validation_result.validation_warnings}")
+                
+                return validation_result.cleaned_response
+            else:
+                # Fail fast - no fallback, configuration or validation must work
+                logger.error(f"LLM summary validation failed: {validation_result.validation_errors}")
+                raise ValueError(f"LLM summary validation failed: {validation_result.validation_errors}")
             
         except Exception as e:
             logger.error(f"LLM summary generation failed: {e}")
-            return self._format_static_summary(result)
+            raise
     
     def _categorize_findings(self, findings: List[Finding]) -> Dict[str, int]:
         """Categorize findings by severity"""
         categories = {"high": 0, "medium": 0, "low": 0}
         for finding in findings:
-            if hasattr(finding, 'severity'):
-                if finding.severity == FindingSeverity.HIGH:
-                    categories["high"] += 1
-                elif finding.severity == FindingSeverity.MEDIUM:
-                    categories["medium"] += 1
-                elif finding.severity == FindingSeverity.LOW:
-                    categories["low"] += 1
+            if finding.severity == FindingSeverity.HIGH:
+                categories["high"] += 1
+            elif finding.severity == FindingSeverity.MEDIUM:
+                categories["medium"] += 1
+            elif finding.severity == FindingSeverity.LOW:
+                categories["low"] += 1
         return categories
+    
+    def _group_findings_by_severity(self, findings: List[Finding]) -> Dict[str, List[Finding]]:
+        """Group findings by severity level"""
+        groups = {"HIGH": [], "MEDIUM": [], "LOW": []}
+        for finding in findings:
+            if finding.severity == FindingSeverity.HIGH:
+                groups["HIGH"].append(finding)
+            elif finding.severity == FindingSeverity.MEDIUM:
+                groups["MEDIUM"].append(finding)
+            elif finding.severity == FindingSeverity.LOW:
+                groups["LOW"].append(finding)
+        return groups
     
     def _group_findings_by_category(self, findings: List[Finding]) -> Dict[str, int]:
         """Group findings by category"""
         categories = {}
         for finding in findings:
-            if hasattr(finding, 'category'):
-                category = finding.category
-                categories[category] = categories.get(category, 0) + 1
+            category = finding.category
+            if category not in categories:
+                categories[category] = 0
+            categories[category] += 1
         return categories
-    
-    def _format_static_summary(self, result: AnalysisResult) -> str:
-        """Fallback static summary format"""
-        findings_count = len(result.findings) if hasattr(result, 'findings') else 0
-        execution_time = getattr(result, 'execution_time', 0)
-        
-        return f"""
-📊 **Code Analysis Complete**
-
-- **Total Findings**: {findings_count}
-- **Analysis Time**: {execution_time:.2f}s
-- **Mode**: Enhanced (LLM)
-
-**Summary**: Analysis completed successfully with {findings_count} findings identified.
-"""
     
     def _format_findings_details(self, findings: List[Finding]) -> str:
         """Generate LLM-powered findings details with JSON output option"""
-        try:
-            # Check if JSON output is requested
-            output_format = self.llm_config.get('output', {}).get('format', 'markdown')
-            
-            if output_format == 'json':
-                return self._generate_json_output(findings)
-            else:
-                # Use LLM for markdown format
-                return asyncio.run(self._generate_llm_findings_details(findings))
-        except Exception as e:
-            logger.warning(f"LLM findings generation failed, using fallback: {e}")
-            return self._format_static_findings(findings)
+        # Check if JSON output is requested
+        output_format = self.llm_config['output']['format']
+        
+        if output_format == 'json':
+            return self._generate_json_output(findings)
+        else:
+            # Use LLM for markdown format
+            return asyncio.run(self._generate_llm_findings_details(findings))
     
     def _generate_json_output(self, findings: List[Finding]) -> str:
         """Generate structured JSON output"""
-        try:
-            output_data = {
-                "analysis_results": {
-                    "timestamp": time.time(),
-                    "agent": "code_analyzer",
-                    "total_findings": len(findings),
-                    "findings_by_severity": self._categorize_findings(findings),
-                    "findings_by_category": self._group_findings_by_category(findings),
-                    "detailed_findings": []
-                }
+        output_data = {
+            "analysis_results": {
+                "timestamp": time.time(),
+                "agent": "code_analyzer",
+                "total_findings": len(findings),
+                "findings_by_severity": self._categorize_findings(findings),
+                "findings_by_category": self._group_findings_by_category(findings),
+                "detailed_findings": []
             }
-            
-            # Add detailed findings
-            for finding in findings:
-                finding_data = {
-                    "file_path": getattr(finding, 'file_path', ''),
-                    "line_number": getattr(finding, 'line_number', 0),
-                    "severity": str(getattr(finding, 'severity', 'unknown')),
-                    "category": getattr(finding, 'category', 'general'),
-                    "title": getattr(finding, 'title', ''),
-                    "description": getattr(finding, 'description', ''),
-                    "suggestion": getattr(finding, 'suggestion', '')
-                }
-                output_data["analysis_results"]["detailed_findings"].append(finding_data)
-            
-            # Pretty print if configured
-            if self.llm_config.get('output', {}).get('pretty_print', True):
-                return json.dumps(output_data, indent=2, ensure_ascii=False)
-            else:
-                return json.dumps(output_data, ensure_ascii=False)
-                
-        except Exception as e:
-            logger.error(f"JSON output generation failed: {e}")
-            return json.dumps({"error": f"Failed to generate JSON output: {str(e)}"}, indent=2)
+        }
+        
+        # Add detailed findings
+        for finding in findings:
+            finding_data = {
+                "file_path": finding.file_path,
+                "line_number": finding.line_number,
+                "severity": str(finding.severity),
+                "category": finding.category,
+                "title": finding.title,
+                "description": finding.description,
+                "suggestion": finding.recommendation
+            }
+            output_data["analysis_results"]["detailed_findings"].append(finding_data)
+        
+        # Pretty print if configured
+        if self.llm_config['output']['pretty_print']:
+            return json.dumps(output_data, indent=2, ensure_ascii=False)
+        else:
+            return json.dumps(output_data, ensure_ascii=False)
     
     async def _generate_llm_findings_details(self, findings: List[Finding]) -> str:
-        """Generate detailed findings using LLM"""
+        """Generate detailed findings using LLM with quality control"""
         try:
             if not findings:
                 return "✅ **No issues found** - Code quality looks good!"
@@ -640,20 +551,17 @@ class CodeAnalyzerAgent(BaseAgent):
             findings_data = []
             for finding in findings:
                 finding_info = {
-                    "file": getattr(finding, 'file_path', ''),
-                    "line": getattr(finding, 'line_number', 0),
-                    "severity": str(getattr(finding, 'severity', 'unknown')),
-                    "category": getattr(finding, 'category', 'general'),
-                    "title": getattr(finding, 'title', ''),
-                    "description": getattr(finding, 'description', '')
+                    "file": finding.file_path,
+                    "line": finding.line_number,
+                    "severity": str(finding.severity),
+                    "category": finding.category,
+                    "title": finding.title,
+                    "description": finding.description
                 }
                 findings_data.append(finding_info)
             
-            # Get LLM provider
-            llm_provider = get_llm_provider()
-            
             # Get prompt template from config - required, no fallback
-            prompt_template = self.llm_config.get('agent_llm', {}).get('findings_enhancement', {}).get('prompt_template', '')
+            prompt_template = self.llm_config['agent_llm']['findings_enhancement']['prompt_template']
             if not prompt_template:
                 raise ValueError("Missing required config: agent_llm.findings_enhancement.prompt_template")
             
@@ -662,51 +570,50 @@ class CodeAnalyzerAgent(BaseAgent):
                 findings_data=json.dumps(findings_data[:10], indent=2)  # Limit to first 10 for prompt size
             )
             
-            system_prompt = self.llm_config.get('agent_llm', {}).get('findings_enhancement', {}).get('system_prompt', '')
+            system_prompt = self.llm_config['agent_llm']['findings_enhancement']['system_prompt']
             if not system_prompt:
                 raise ValueError("Missing required config: agent_llm.findings_enhancement.system_prompt")
+            
+            # Get temperature and max_tokens from config
+            temperature = self.llm_config['agent_llm']['findings_enhancement']['temperature']
+            max_tokens = self.llm_config['agent_llm']['findings_enhancement']['max_tokens']
             
             llm_request = LLMRequest(
                 prompt=prompt,
                 system_prompt=system_prompt,
-                temperature=0.1,
-                max_tokens=1024
+                temperature=temperature,
+                max_tokens=max_tokens
             )
             
-            # Generate LLM response
-            response = await llm_provider.generate_response(llm_request)
-            return response.content if hasattr(response, 'content') else self._format_static_findings(findings)
+            # Use quality-controlled LLM response with bias prevention and hallucination detection
+            validation_result = await validate_llm_response(
+                llm_request=llm_request,
+                context_data={
+                    'findings': findings_data,
+                    'findings_by_severity': self._categorize_findings(findings),
+                    'findings_by_category': self._group_findings_by_category(findings)
+                },
+                response_type="findings_details"
+            )
+            
+            if validation_result.is_valid:
+                # Log quality metrics for monitoring
+                logger.info(f"LLM findings generated with confidence: {validation_result.confidence_score:.2f}, "
+                           f"evidence: {validation_result.evidence_score:.2f}")
+                
+                # Log any warnings
+                if validation_result.validation_warnings:
+                    logger.warning(f"LLM findings warnings: {validation_result.validation_warnings}")
+                
+                return validation_result.cleaned_response
+            else:
+                # Fail fast - no fallback, configuration or validation must work
+                logger.error(f"LLM findings validation failed: {validation_result.validation_errors}")
+                raise ValueError(f"LLM findings validation failed: {validation_result.validation_errors}")
             
         except Exception as e:
             logger.error(f"LLM findings generation failed: {e}")
-            return self._format_static_findings(findings)
-    
-    def _format_static_findings(self, findings: List[Finding]) -> str:
-        """Fallback static findings format"""
-        if not findings:
-            return "✅ **No issues found** - Code quality looks good!"
-        
-        details = "🔍 **Detailed Findings**:\n\n"
-        
-        # Group by category
-        by_category = {}
-        for finding in findings:
-            category = getattr(finding, 'category', 'general')
-            if category not in by_category:
-                by_category[category] = []
-            by_category[category].append(finding)
-        
-        for category, category_findings in by_category.items():
-            details += f"**{category.title()}** ({len(category_findings)} issues):\n"
-            for finding in category_findings[:5]:  # Limit to first 5 per category
-                line_num = getattr(finding, 'line_number', 0)
-                title = getattr(finding, 'title', 'Issue found')
-                details += f"- Line {line_num}: {title}\n"
-            if len(category_findings) > 5:
-                details += f"  ... and {len(category_findings) - 5} more\n"
-            details += "\n"
-        
-        return details
+            raise
     
     def _initialize_tools(self):
         """Initialize the quality analysis tools available to this agent"""
@@ -716,10 +623,7 @@ class CodeAnalyzerAgent(BaseAgent):
                 'enhanced_complexity_analysis': enhanced_complexity_analysis,
                 'duplication_detector': duplication_detector_tool,
                 'enhanced_duplication_analysis': enhanced_duplication_analysis,
-                'maintainability_scorer': maintainability_scorer_tool,
-                'maintainability_scoring': maintainability_scoring,
                 'maintainability_assessor': maintainability_assessor_tool,
-                'maintainability_assessment': maintainability_assessment,
             }
             self.tools_initialized = True
             logger.debug(f"Initialized {len(self.tools)} quality analysis tools")
@@ -734,17 +638,26 @@ class CodeAnalyzerAgent(BaseAgent):
             with open(config_path, 'r', encoding='utf-8') as f:
                 self.agent_config = yaml.safe_load(f)
             logger.debug("Loaded code analyzer agent configuration")
+            
+            # Update analysis_config with values from YAML
+            if self.analysis_config is None:
+                self.analysis_config = CodeAnalysisConfig.from_yaml_config(self.agent_config)
+            else:
+                # Update existing config with YAML values
+                updated_config = CodeAnalysisConfig.from_yaml_config(self.agent_config)
+                self.analysis_config = updated_config
+                
         except Exception as e:
-            logger.warning(f"Failed to load agent configuration: {e}")
-            self.agent_config = {"agents": {"code_analyzer": {"enabled": True}}}
+            logger.error(f"Failed to load agent configuration: {e}")
+            raise
         
         try:
             with open(llm_config_path, 'r', encoding='utf-8') as f:
                 self.llm_config = yaml.safe_load(f)
             logger.debug("Loaded shared LLM configuration from agents/configs/")
         except Exception as e:
-            logger.warning(f"Failed to load LLM configuration: {e}")
-            self.llm_config = {"output": {"format": "json"}, "agent_llm": {"response_generation": {"system_prompt": "You are a code analysis assistant."}}}
+            logger.error(f"Failed to load LLM configuration: {e}")
+            raise
 
 
 # Factory function for agent creation
