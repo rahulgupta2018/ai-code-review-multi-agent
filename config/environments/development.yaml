@@ -1,5 +1,7 @@
 # Development Environment Configuration
 # Optimized for learning and rapid development
+
+version: "1.0.0"
 environment: development
 
 agents:

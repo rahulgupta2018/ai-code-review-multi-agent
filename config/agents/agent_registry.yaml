@@ -1,5 +1,7 @@
 # Agent Registry Configuration
 # Controls which agents are enabled and their execution parameters
+version: "1.0.0"
+
 agents:
   enabled_agents:
     - code_quality

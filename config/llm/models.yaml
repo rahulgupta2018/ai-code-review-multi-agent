@@ -1,4 +1,7 @@
 # LLM Models Configuration
+
+version: "1.0.0"
+
 default_provider: "ollama"
 
 providers:

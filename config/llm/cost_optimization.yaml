@@ -1,4 +1,8 @@
 # Cost Optimization Configuration
+# Settings to monitor and optimize costs associated with LLM usage
+# This file focuses on cost management for LLM interactions
+version: "1.0.0"
+
 budget_management:
   daily_budget: 100.00  # USD
   monthly_budget: 2000.00  # USD

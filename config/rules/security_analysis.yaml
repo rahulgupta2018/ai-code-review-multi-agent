@@ -1,6 +1,7 @@
 # Application Security Analysis Rules
 # Security vulnerability detection rules for code being analyzed
 # This file defines what security issues to look for in target applications
+version: "1.0.0"
 
 application_security_analysis:
   vulnerability_detection:

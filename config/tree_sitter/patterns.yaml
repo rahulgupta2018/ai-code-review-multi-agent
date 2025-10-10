@@ -1,7 +1,7 @@
 # Tree-sitter Analysis Patterns Configuration
 # Contains Tree-sitter specific query patterns using S-expression syntax
 # These patterns are used to extract specific constructs from parsed AST trees
-
+version: "1.0.0"
 # Global analysis patterns using Tree-sitter query syntax
 analysis_patterns:
   # Complexity analysis patterns

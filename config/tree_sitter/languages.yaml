@@ -1,14 +1,13 @@
 # Tree-sitter Language Configuration
 # Comprehensive multi-language support configuration for AST parsing and analysis
-
+version: "1.0.0"
 # Language support configuration
 supported_languages:
   python:
     grammar: "tree-sitter-python"
-    version: "0.25.2"
     file_extensions: [".py", ".pyw", ".pyi"]
-    
-    # Advanced AST node mappings
+
+    # AST node mappings
     ast_node_mappings:
       functions: ["function_definition", "async_function_definition"]
       classes: ["class_definition"]
