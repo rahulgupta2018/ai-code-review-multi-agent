@@ -1,9 +1,8 @@
-# Google ADK Multi-Agent System Design
-**AI Code Review Multi-Agent System - Lower Level Design**
+# ADK Multi-Agent System Design - Orchestration Layer
 
-*Version: 1.0*  
-*Date: October 9, 2025*  
-*Architecture: Google ADK-Compliant Multi-Agent System*
+**Version**: 1.0  
+**Date**: October 13, 2025  
+**Architecture**: ADK-Based Multi-Agent Orchestration System
 
 ---
 
@@ -11,13 +10,14 @@
 
 1. [Executive Summary](#executive-summary)
 2. [System Architecture Overview](#system-architecture-overview)
-3. [Agent Hierarchy & Orchestration](#agent-hierarchy--orchestration)
-4. [Component Design](#component-design)
-5. [ADK Integration Patterns](#adk-integration-patterns)
-6. [Implementation Plan](#implementation-plan)
-7. [File Structure](#file-structure)
-8. [Testing Strategy](#testing-strategy)
-9. [Deployment Architecture](#deployment-architecture)
+3. [Orchestration Layer Design](#orchestration-layer-design)
+4. [Business Logic Components](#business-logic-components)
+5. [Session & Memory Management](#session--memory-management)
+6. [Agent Coordination Patterns](#agent-coordination-patterns)
+7. [Quality Control & Learning](#quality-control--learning)
+8. [Integration with System APIs](#integration-with-system-apis)
+9. [Performance & Optimization](#performance--optimization)
+10. [Deployment & Operations](#deployment--operations)
 
 ---
 
@@ -26,46 +26,155 @@
 This document defines the lower-level design for an AI Code Review Multi-Agent System using Google ADK (Agent Development Kit) best practices. The system implements a hierarchical orchestrator pattern with specialized analysis agents, following ADK's event-driven architecture and agent team collaboration patterns with lightweight LLM integration.
 
 ### Architectural Philosophy
+Why This Architecture? The design addresses three critical challenges in AI-powered code review systems:
 
-**Why This Architecture?**
-The design addresses three critical challenges in AI-powered code review systems:
+Cost Efficiency: Traditional approaches that use powerful LLMs for every analysis step become prohibitively expensive at scale. Our hybrid approach uses deterministic tools for computational tasks and lightweight LLMs only for domain-specific insights.
 
-1. **Cost Efficiency**: Traditional approaches that use powerful LLMs for every analysis step become prohibitively expensive at scale. Our hybrid approach uses deterministic tools for computational tasks and lightweight LLMs only for domain-specific insights.
+Accuracy Through Specialization: Instead of one "super-agent" trying to handle all aspects of code review, we deploy specialized agents that become experts in their domains (security, performance, architecture). Each agent maintains deep knowledge in its area while collaborating effectively.
 
-2. **Accuracy Through Specialization**: Instead of one "super-agent" trying to handle all aspects of code review, we deploy specialized agents that become experts in their domains (security, performance, architecture). Each agent maintains deep knowledge in its area while collaborating effectively.
+Self-Learning Capabilities: The system gets smarter over time through a Neo4j knowledge graph that captures patterns, relationships, and successful solutions. Each analysis both benefits from and contributes to this collective intelligence.
 
-3. **Self-Learning Capabilities**: The system gets smarter over time through a Neo4j knowledge graph that captures patterns, relationships, and successful solutions. Each analysis both benefits from and contributes to this collective intelligence.
+### Key Architectural Principles
 
-### Key Design Principles
+## 1. Single ADK API Server Architecture
 
-**1. Single ADK API Server Architecture**
-- **Why**: Simplifies deployment and operations compared to distributed microservices
-- **How**: All specialized agents run in the same container, coordinated by a master orchestrator
-- **Benefit**: Avoids the "nightmare project" complexity of multiple independent services while maintaining agent specialization
+Why: Simplifies deployment and operations compared to distributed microservices
+How: All specialized agents run in the same container, coordinated by a master orchestrator
+Benefit: Avoids the "nightmare project" complexity of multiple independent services while maintaining agent specialization
 
-**2. Lightweight LLM Sub-Agents**
-- **Why**: Balances intelligence with cost-effectiveness
-- **How**: Each specialized agent uses gemini-2.0-flash for domain-specific insights, while the orchestrator uses gemini-1.5-pro for comprehensive synthesis
-- **Benefit**: Estimated cost of $0.05-$0.50 per analysis vs $2-5 for naive approaches
+## 2. Lightweight LLM Sub-Agents
 
-**3. Deterministic Tools + AI Synthesis**
-- **Why**: Combines reliability of computational analysis with flexibility of AI interpretation
-- **How**: Tree-sitter parsers, complexity calculators, and pattern detectors provide facts; LLMs provide insights and recommendations
-- **Benefit**: Reproducible results enhanced by intelligent interpretation
+Why: Balances intelligence with cost-effectiveness
+How: Each specialized agent uses gemini-2.0-flash for domain-specific insights, while the orchestrator uses gemini-1.5-pro for comprehensive synthesis
+Benefit: Estimated cost of $0.05-$0.50 per analysis vs $2-5 for naive approaches
 
-**4. Neo4j Knowledge Graph for Self-Learning**
-- **Why**: Code patterns have complex relationships better represented as graphs than traditional databases
-- **How**: Stores patterns, vulnerabilities, solutions, and their relationships; uses graph algorithms for similarity detection
-- **Benefit**: 5x faster pattern matching, 10x more contextual insights, exponential learning improvement
+## 3. Deterministic Tools + AI Synthesis
 
-**5. Redis Session Management**
-- **Why**: Production-ready session persistence and cross-agent communication
-- **How**: ADK InMemorySessionService backed by Redis for persistence and pub/sub for real-time updates
-- **Benefit**: Scalable session state management with container restart resilience
+Why: Combines reliability of computational analysis with flexibility of AI interpretation
+How: Tree-sitter parsers, complexity calculators, and pattern detectors provide facts; LLMs provide insights and recommendations
+Benefit: Reproducible results enhanced by intelligent interpretation
+
+## 4. Neo4j Knowledge Graph for Self-Learning
+
+Why: Code patterns have complex relationships better represented as graphs than traditional databases
+How: Stores patterns, vulnerabilities, solutions, and their relationships; uses graph algorithms for similarity detection
+Benefit: 5x faster pattern matching, 10x more contextual insights, exponential learning improvement
+
+## 5. Redis Session Management
+
+Why: Production-ready session persistence and cross-agent communication
+How: ADK InMemorySessionService backed by Redis for persistence and pub/sub for real-time updates
+Benefit: Scalable session state management with container restart resilience
+
+- **Separation of Concerns**: Orchestration logic separate from data persistence
+- **ADK Integration**: Built on Google's Agent Development Kit framework
+- **Intelligent Coordination**: AI-driven agent selection and workflow optimization
+- **Self-Learning**: Continuous improvement through pattern recognition
+- **Scalable Design**: Microservices architecture with elastic scaling
+
+### System Boundaries
+
+```yaml
+orchestration_layer:
+  responsibilities:
+    - Multi-agent workflow orchestration
+    - Session lifecycle management
+    - Memory coordination and synthesis
+    - Agent selection and configuration
+    - Quality control and validation
+    - Performance optimization
+    - Learning and adaptation
+    - Cross-agent communication
+
+system_api_layer:
+  responsibilities:
+    - Pure CRUD operations
+    - Data persistence
+    - Cache management
+    - Basic session storage
+    - Agent state storage
+    - Memory storage
+```
 
 ---
 
 ## System Architecture Overview
+
+### 1. High-Level Architecture
+
+```mermaid
+graph TB
+    %% External Interfaces
+    UI[User Interface] --> ORC[Orchestration Layer]
+    API[External APIs] --> ORC
+    WEBHOOK[Webhooks] --> ORC
+    
+    %% Orchestration Layer Components
+    ORC --> WF[Workflow Engine]
+    ORC --> AC[Agent Coordinator]
+    ORC --> QC[Quality Controller]
+    ORC --> LM[Learning Manager]
+    ORC --> SM[Session Manager]
+    ORC --> MM[Memory Manager]
+    
+    %% System API Integration
+    WF --> SAPI[Session System API]
+    AC --> SAPI
+    SM --> SAPI
+    MM --> SAPI
+    
+    %% Data Layer
+    SAPI --> REDIS[Redis Cache]
+    SAPI --> DB[Database]
+    
+    %% ADK Integration
+    ORC --> ADK[Google ADK Framework]
+    ADK --> AGENTS[Agent Registry]
+    
+    %% External Services
+    ORC --> EXT[External Services]
+    ORC --> MONITOR[Monitoring]
+```
+
+### 2. Component Interaction Matrix
+
+```yaml
+component_interactions:
+  orchestration_to_system_api:
+    session_operations:
+      - create_session(session_config) → session_id
+      - update_session_status(session_id, status)
+      - retrieve_session_data(session_id) → session_object
+      - store_session_results(session_id, results)
+    
+    memory_operations:
+      - store_agent_memory(agent_id, session_id, memory_data)
+      - retrieve_agent_memory(agent_id, session_id) → memory_object
+      - merge_memory_contexts(session_id, memory_contexts)
+      - archive_session_memory(session_id)
+    
+    cache_operations:
+      - cache_workflow_results(workflow_id, results)
+      - retrieve_cached_results(workflow_id) → results
+      - invalidate_cache(cache_key)
+      - optimize_cache_strategy(usage_patterns)
+    
+    Learning and adaptation:
+      - <actions requried to capture learning and store in neo4j> 
+
+  adk_integration:
+    agent_management:
+      - discover_available_agents() → agent_list
+      - instantiate_agent(agent_config) → agent_instance
+      - configure_agent_parameters(agent_id, parameters)
+      - monitor_agent_health(agent_id) → health_status
+    
+    workflow_execution:
+      - execute_agent_workflow(workflow_definition)
+      - coordinate_parallel_execution(agent_list, tasks)
+      - handle_agent_failures(failed_agent, recovery_strategy)
+      - aggregate_agent_results(agent_results) → synthesized_result
+```
 
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
