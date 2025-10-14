@@ -262,7 +262,7 @@ ai-code-review-multi-agent/
 │   │   └── 📄 production.yaml        # Production environment config
 │   │
 │   ├── 📁 llm/
-│   │   ├── 📄 model_config.yaml      # LLM model configurations
+│   │   ├── 📄 models.yaml      # LLM model configurations
 │   │   └── 📄 cost_optimization.yaml # Cost optimization settings
 │   │
 │   ├── 📁 rules/
