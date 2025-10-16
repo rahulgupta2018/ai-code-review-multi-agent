@@ -16,9 +16,28 @@ from dataclasses import dataclass, field
 from functools import wraps
 import json
 
-from ..core.config import get_config
-from ..core.types import PerformanceMetrics, HealthStatus
-from ..core.constants import HTTP_STATUS_CODES
+from ..config.loader import get_config
+from ..api.constants import (
+    HTTP_200_OK, HTTP_500_INTERNAL_SERVER_ERROR,
+    SUCCESS_STATUS_CODES, SERVER_ERROR_STATUS_CODES
+)
+
+# TODO: Move these types to appropriate modules
+from typing import TypedDict
+
+class PerformanceMetrics(TypedDict):
+    """Performance metrics structure."""
+    cpu_percent: float
+    memory_percent: float
+    disk_usage_percent: float
+    response_time_ms: float
+    timestamp: datetime
+
+class HealthStatus(TypedDict):
+    """Health status structure."""
+    status: str
+    details: Dict[str, Any]
+    timestamp: datetime
 
 # Circular buffer for storing recent metrics
 MAX_METRIC_HISTORY = 1000

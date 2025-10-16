@@ -1,0 +1,83 @@
+# Application Configuration
+# Core application metadata and API settings
+
+version: "1.0.0"
+
+# Application metadata
+application:
+  name: "AI Code Review Multi-Agent"
+  version: "1.0.0"
+  api_version: "v1"
+  api_prefix: "/api/v1"
+  description: "ADK-powered multi-agent code analysis system"
+
+# API Configuration
+api:
+  timeouts:
+    api: 30
+    agent: 300
+    workflow: 900
+    llm: 120
+  
+  rate_limiting:
+    session_timeout: 3600
+    requests_per_minute: 100
+    concurrent_requests: 10
+    max_retries: 3
+    retry_delay: 1.0
+    backoff_factor: 2.0
+  
+  file_processing:
+    max_file_size_bytes: 1048576  # 1MB
+    max_files_per_request: 10
+    max_total_content_size: 10485760  # 10MB
+    max_filename_length: 255
+    max_file_content_length: 100000
+
+# HTTP Configuration
+http:
+  status_codes:
+    success: 200
+    created: 201
+    accepted: 202
+    bad_request: 400
+    unauthorized: 401
+    forbidden: 403
+    not_found: 404
+    timeout: 408
+    rate_limited: 429
+    internal_error: 500
+  
+  headers:
+    correlation_id: "X-Correlation-ID"
+    request_id: "X-Request-ID"
+    
+    default_response_headers:
+      "Content-Type": "application/json"
+      "X-API-Version": "v1"
+
+# Session Management
+session:
+  max_concurrent: 100
+  cleanup_interval: 300  # seconds
+  max_memory_mb: 500
+  timeout: 3600
+
+# API Messages
+messages:
+  success: "Operation completed successfully"
+  error: "An error occurred during processing"
+  timeout: "Operation timed out"
+  rate_limited: "Rate limit exceeded"
+  
+  analysis:
+    started: "Code analysis started"
+    completed: "Code analysis completed"
+    failed: "Code analysis failed"
+
+# Analysis Configuration
+analysis:
+  complexity:
+    min_threshold: 1
+    max_threshold: 100
+    default_threshold: 10

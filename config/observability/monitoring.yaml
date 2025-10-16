@@ -1,0 +1,115 @@
+# Observability Configuration
+# Logging, monitoring, metrics, and alerting settings
+
+version: "1.0.0"
+
+# Logging Configuration
+logging:
+  level: "INFO"
+  format: "json"
+  
+  formatters:
+    json:
+      format: "%(asctime)s %(name)s %(levelname)s %(message)s"
+      datefmt: "%Y-%m-%d %H:%M:%S"
+    
+    structured:
+      format: "%(asctime)s [%(levelname)s] %(name)s: %(message)s"
+      datefmt: "%Y-%m-%d %H:%M:%S"
+  
+  outputs:
+    console: true
+    file: true
+    structured_logs: true
+  
+  file_settings:
+    path: "/app/logs"
+    max_size_mb: 100
+    backup_count: 5
+    rotation: "daily"
+
+# Monitoring and Metrics
+monitoring:
+  enabled: true
+  log_level: "INFO"
+  log_format: "json"
+  
+  metrics:
+    enabled: true
+    track_response_times: true
+    track_token_usage: true
+    track_error_rates: true
+    track_model_switches: true
+    track_agent_performance: true
+    track_memory_usage: true
+    track_cpu_usage: true
+  
+  collection_interval: 30  # seconds
+  retention_days: 30
+  
+  # Health checks
+  health_checks:
+    enabled: true
+    interval: 60  # seconds
+    endpoints:
+      - "/health"
+      - "/ready"
+      - "/metrics"
+  
+  # Performance monitoring
+  performance:
+    slow_request_threshold_ms: 1000
+    memory_usage_threshold_mb: 1000
+    cpu_usage_threshold_percent: 80
+    
+  # Error tracking
+  error_tracking:
+    enabled: true
+    capture_stack_traces: true
+    max_error_events_per_minute: 100
+    
+# Alerting Configuration
+alerting:
+  enabled: true
+  
+  channels:
+    console: true
+    webhook: false
+    email: false
+    slack: false
+  
+  thresholds:
+    error_rate_percent: 5
+    response_time_ms: 2000
+    memory_usage_mb: 800
+    cpu_usage_percent: 85
+    failed_requests_per_minute: 10
+    
+  webhook_settings:
+    url: ""
+    timeout: 10
+    retry_count: 3
+    
+# Debugging Configuration
+debugging:
+  enabled: false  # Enable in development
+  request_logging: false
+  response_logging: false
+  trace_requests: false
+  detailed_error_responses: false
+  
+# OpenTelemetry Configuration (future)
+telemetry:
+  enabled: false
+  tracing:
+    enabled: false
+    sampling_rate: 0.1
+  
+  exporters:
+    jaeger:
+      enabled: false
+      endpoint: "http://localhost:14268/api/traces"
+    
+    prometheus:
+      enabled: false
+      endpoint: "http://localhost:9090"

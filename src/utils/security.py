@@ -14,9 +14,18 @@ from datetime import datetime, timedelta
 import base64
 import json
 
-from ..core.config import get_config
-from ..core.exceptions import SecurityError, AuthenticationError, AuthorizationError
-from ..core.constants import CORRELATION_ID_HEADER
+from ..config.loader import get_config
+from ..common import SecurityError
+from ..api.constants import CORRELATION_ID_HEADER
+
+# TODO: Move these exceptions to appropriate modules
+class AuthenticationError(SecurityError):
+    """Authentication related errors."""
+    pass
+
+class AuthorizationError(SecurityError):
+    """Authorization related errors."""
+    pass
 
 
 class PIIDetector:
