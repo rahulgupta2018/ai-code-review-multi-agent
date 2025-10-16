@@ -12,6 +12,7 @@ fastapi = "^0.115.0"  # Updated to match Google Cloud AI Platform requirements
 uvicorn = "^0.34.0"  # Updated to be compatible with google-adk
 pydantic = "^2.5.0"
 pyyaml = "^6.0.1"
+structlog = "^23.2.0"
 tree-sitter = "^0.25.2"  # Updated to latest version
 redis = "^5.0.1"
 sqlalchemy = "^2.0.23"

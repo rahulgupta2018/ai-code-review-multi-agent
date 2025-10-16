@@ -1,0 +1,76 @@
+# Docker Compose Configuration for AI Code Review Multi-Agent System
+# Simplified version focusing on the main application container
+
+services:
+  # Main Application Service
+  ai-code-review-adk:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+      target: development
+    container_name: ai-code-review-adk
+    hostname: ai-code-review-adk
+    restart: unless-stopped
+    command: ["/usr/local/bin/start-adk-dev.sh"]
+    env_file:
+      - .env
+    environment:
+      # Critical ADK variables needed by startup script
+      - ADK_WORKSPACE=/app/adk-workspace
+      - ADK_DEV_PORTAL_HOST=0.0.0.0
+      - ADK_DEV_PORTAL_PORT=8200
+      - ADK_LOG_LEVEL=INFO
+      - GADK_LOG_LEVEL=INFO
+      - ENVIRONMENT=development
+      - DEBUG=true
+      - GOOGLE_APPLICATION_CREDENTIALS=/app/credentials/google-cloud-credentials.json
+      # Redis configuration (assuming external Redis or host Redis)
+      - REDIS_HOST=host.docker.internal
+      - REDIS_PORT=6379
+    ports:
+      - "8000:8000"     # Main API
+      - "8200:8200"     # ADK Dev Portal
+    volumes:
+      # Source code for development
+      - .:/app
+      - ./data:/app/data
+      - ./logs:/app/logs
+      - ./outputs:/app/outputs
+      - ./credentials:/app/credentials
+      # ADK workspace
+      - adk-workspace:/app/adk-workspace
+      # Cache volumes
+      - pip-cache:/root/.cache/pip
+      - poetry-cache:/root/.cache/pypoetry
+    networks:
+      - ai-code-review-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    profiles:
+      - main
+      - development
+
+# Networks
+networks:
+  ai-code-review-network:
+    driver: bridge
+    name: ai-code-review-network
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
+
+# Volumes
+volumes:
+  # Development data
+  adk-workspace:
+    name: ai-code-review-adk-workspace
+  
+  # Cache volumes
+  pip-cache:
+    name: ai-code-review-pip-cache
+  poetry-cache:
+    name: ai-code-review-poetry-cache
