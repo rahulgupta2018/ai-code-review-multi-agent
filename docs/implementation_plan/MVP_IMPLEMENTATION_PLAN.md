@@ -139,7 +139,7 @@ Based on the comprehensive review of the current codebase at `/Users/rahulgupta/
 ✅ src/utils/logging.py        # Production structured logging with correlation IDs
 ✅ src/utils/monitoring.py     # Performance monitoring framework
 ✅ src/utils/validation.py     # Input validation utilities
-✅ src/utils/security.py       # Security utilities for PII detection
+✅ src/utils/security.py       # Security utilities for PII detection and content guardrails
 ```
 
 **Implemented Features:**
@@ -167,18 +167,26 @@ Based on the comprehensive review of the current codebase at `/Users/rahulgupta/
 
 ### Priority 1.2: ADK Integration Foundation ⏸️ **PARTIALLY COMPLETE**
 
-#### **Task 1.2.1: ADK BaseAgent Implementation** ❌ **PENDING**
+#### **Task 1.2.1: ADK BaseAgent Implementation** ❌ **MVP CRITICAL PATH**
 ```bash
 # Files to implement:
 ❌ src/agents/base_agent.py    # ADK BaseAgent extension (EMPTY - needs implementation)
 ✅ src/utils/adk_helpers.py    # ADK-specific utilities (implemented)
 ```
 
-**Requirements:**
-- Production-ready BaseAgent with proper error handling
-- Standardized agent lifecycle management  
-- Structured logging integration
-- Timeout and retry mechanisms
+**MVP Requirements (Production-Ready):**
+- ✅ **Existing Framework**: BaseAgent class with lifecycle management (282 lines implemented)
+- ❌ **ADK Integration**: Real Google ADK BaseAgent extension needed
+- ❌ **Configuration Integration**: Load from `config/agents/specialized_agents.yaml`
+- ❌ **Tool Orchestration**: Dynamic tool loading and execution
+- ❌ **Error Recovery**: Comprehensive retry and fallback mechanisms
+- ❌ **Performance Monitoring**: Metrics collection and logging integration
+
+**MVP Success Criteria:**
+- BaseAgent can instantiate and configure any agent via YAML
+- Tool registration and execution framework operational
+- Session lifecycle management with proper cleanup
+- Error handling with structured logging and recovery
 
 #### **Task 1.2.2: Service Layer Foundation** ⏸️ **PARTIALLY COMPLETE**
 ```bash
@@ -225,62 +233,89 @@ src/llm/
 ❌ src/tools/tree_sitter_tool.py      # Code parsing tool (EMPTY)
 ❌ src/tools/complexity_analyzer_tool.py  # Complexity metrics (EMPTY)
 ❌ src/tools/static_analyzer_tool.py   # Static analysis (EMPTY)
+❌ src/tools/content_guardrails_tool.py   # Content filtering and compliance (NEW)
 ```
 
 **Requirements:**
 - ❌ Real ADK FunctionTool implementations
+- ❌ **Content Guardrails Tool**: Professional content standards enforcement
 - ❌ Proper tool registration
 - ❌ Error handling and fallbacks
 - ❌ Performance optimization
 - ❌ Caching for repeated analyses
 
+#### **Task 2.1.3: Content Guardrails & Compliance** ❌ **MVP ESSENTIAL**
+```bash
+# Files need implementation:
+❌ src/utils/content_filter.py        # Content filtering and moderation
+❌ src/utils/compliance_validator.py  # Enterprise compliance validation
+❌ config/rules/content_standards.yaml # Professional content standards
+```
+
+**Critical Requirements:**
+- ❌ **Inappropriate Language Detection**: Profanity, offensive terms, harassment content
+- ❌ **Professional Standards**: Code comments, variable names, documentation validation
+- ❌ **Enterprise Compliance**: Workplace harassment policy enforcement
+- ❌ **Configurable Filtering**: Industry-specific and organization-specific rules
+- ❌ **Audit Logging**: Complete audit trail for compliance reporting
+- ❌ **Multi-Language Support**: Content filtering across programming languages and natural languages
+
 ---
 
 ## Phase 3: Core Agents Implementation ❌ **PENDING IMPLEMENTATION**
 
-### Priority 3.1: Three Core Agents ❌ **ALL EMPTY**
+### Priority 3.1: MVP Two-Agent Implementation ❌ **CRITICAL BUSINESS VALUE**
 
-#### **Task 3.1.1: Code Quality Agent** ❌ **PENDING**
+#### **Task 3.1.1: Code Quality Agent (MVP Priority 1)** ❌ **PENDING**
 ```bash
 # File status:
 ❌ src/agents/specialized/code_quality_agent.py (EMPTY - needs full implementation)
 ```
 
-**Implementation Requirements:**
-- ❌ Extends ADK BaseAgent
-- ❌ Real complexity calculations (no hardcoding)  
-- ❌ Tree-sitter AST analysis
-- ❌ Metrics: cyclomatic complexity, maintainability index, code duplication
-- ❌ LLM integration for qualitative analysis
-- ❌ Structured findings and recommendations
+**MVP Implementation Requirements:**
+- ❌ Extends ADK BaseAgent with configuration from `config/agents/specialized_agents.yaml`
+- ❌ **Essential Metrics**: Cyclomatic complexity, maintainability index, code duplication
+- ❌ Tree-sitter AST analysis for multi-language support (Python, JS, TS, Java priority)
+- ❌ LLM integration for qualitative analysis and recommendations
+- ❌ **Production Output**: Structured findings with actionable recommendations
+- ❌ **Performance Target**: <60 seconds for 1000 lines of code
 
-#### **Task 3.1.2: Security Agent** ❌ **PENDING**
+**MVP Success Criteria:**
+- Analyzes Python/JavaScript codebases accurately
+- Produces JSON reports suitable for dashboard integration
+- Demonstrates 85%+ accuracy in complexity calculations
+- LLM-enhanced recommendations provide actionable insights
+
+#### **Task 3.1.2: Security Agent (MVP Priority 2)** ❌ **PENDING**
 ```bash
 # File status:
 ❌ src/agents/specialized/security_agent.py (EMPTY - needs full implementation)
 ```
 
-**Implementation Requirements:**
-- ❌ Pattern-based vulnerability detection
-- ❌ OWASP Top 10 compliance checking
-- ❌ Secret detection (API keys, passwords)
-- ❌ Dependency vulnerability analysis
-- ❌ LLM-powered security assessment
-- ❌ Risk scoring and prioritization
+**MVP Implementation Requirements:**
+- ❌ **Critical Vulnerabilities**: OWASP Top 5 detection (injection, auth, XSS, secrets, dependencies)
+- ❌ **Secret Detection**: API keys, passwords, tokens in code and config files
+- ❌ **Pattern-Based Scanning**: Static analysis for common security anti-patterns
+- ❌ **Risk Scoring**: Priority-based findings (Critical, High, Medium, Low)
+- ❌ **LLM Enhancement**: Context-aware security recommendations
+- ❌ **Integration Ready**: CI/CD pipeline integration for automated security gates
 
-#### **Task 3.1.3: Engineering Practices Agent** ❌ **PENDING**
+**MVP Success Criteria:**
+- Detects hardcoded secrets with 95%+ accuracy
+- Identifies SQL injection patterns and XSS vulnerabilities
+- Risk scoring enables automated CI/CD quality gates
+- Security recommendations actionable for developers
+
+#### **Task 3.1.3: Engineering Practices Agent** ⏸️ **PHASE 2 (Post-MVP)**
 ```bash
 # File status:
-❌ src/agents/specialized/engineering_practices_agent.py (EMPTY - needs full implementation)
+❌ src/agents/specialized/engineering_practices_agent.py (EMPTY - reserved for expansion)
 ```
 
-**Implementation Requirements:**
-- ❌ Testing practices analysis
-- ❌ Error handling assessment
-- ❌ Logging standards validation
-- ❌ Performance considerations
-- ❌ DevOps best practices
-- ❌ Actionable improvement recommendations
+**Post-MVP Implementation:**
+- Implements after MVP validation with Code Quality + Security agents
+- Demonstrates seamless agent addition via configuration
+- Validates framework extensibility and tool reusability
 
 ### Priority 3.2: Agent Coordination
 
@@ -586,8 +621,11 @@ async def monitor_operation(operation_name: str, **context):
 
 ### Security Requirements
 
-#### **Input Sanitization**
+#### **Input Sanitization & Content Guardrails**
 - All user inputs must be sanitized
+- **Content filtering for inappropriate language and offensive material**
+- **Professional content standards enforcement (comments, variable names, documentation)**
+- **Enterprise compliance with workplace harassment policies**
 - Code content scanning for malicious patterns
 - File size and count limits
 - Rate limiting implementation
@@ -662,27 +700,108 @@ curl http://localhost:8000/api/v1/health
 
 ---
 
+## 🎯 **MVP-SPECIFIC SCOPE & VALIDATION**
+
+### **MVP Philosophy: 2-Agent Foundation with Seamless Expansion**
+
+This MVP implements a **production-ready core framework** with **2 essential agents** that:
+1. **Deliver immediate business value** (80% of code review benefit)
+2. **Validate framework architecture** for seamless expansion
+3. **Establish production patterns** for enterprise deployment
+
+### **MVP Agent Selection Rationale**
+
+#### **Code Quality Agent (MVP Essential)**
+- **Business Value**: Addresses technical debt, maintainability concerns
+- **Universal Need**: Required for all codebases regardless of domain
+- **Framework Validation**: Tests AST parsing, LLM integration, tool orchestration
+- **Expansion Pattern**: Demonstrates how complexity analysis extends to performance, architecture
+
+#### **Security Agent (MVP Critical)**
+- **Business Risk**: Security vulnerabilities have immediate production impact
+- **Compliance Requirement**: Essential for enterprise deployment
+- **Pattern-Based Analysis**: Validates static analysis framework
+- **CI/CD Integration**: Demonstrates automated quality gates
+
+#### **Framework Validation Through 2 Agents**
+- **Agent Registry**: Dynamic discovery and configuration-driven instantiation
+- **Tool Reusability**: Tree-sitter tools shared between agents
+- **LLM Integration**: Both agents use same LLM client with different prompting
+- **Configuration System**: Agent behavior completely driven by YAML configuration
+- **API Patterns**: Standardized analysis request/response formats
+
+### **Seamless Expansion Validation**
+
+#### **Phase 2 Agent Addition (Post-MVP)**
+```yaml
+# Engineering Practices Agent addition requires ONLY:
+agents:
+  engineering_practices:
+    name: "EngineeringPracticesAgent"
+    description: "Evaluates development practices and standards"
+    enabled: true
+    priority: 3
+    timeout: 250
+    # ... agent-specific configuration
+```
+
+#### **Zero Infrastructure Changes Required**
+- ✅ **Agent Registry**: Automatically discovers new agent via configuration
+- ✅ **Tool Framework**: Existing tools (Tree-sitter, complexity) immediately available
+- ✅ **LLM Integration**: Same client with agent-specific prompts
+- ✅ **API Layer**: Same endpoints handle additional agent
+- ✅ **Orchestration**: Master orchestrator includes new agent automatically
+- ✅ **Monitoring**: Existing metrics collection extends to new agent
+
+### **MVP Success Metrics**
+
+#### **Technical Validation**
+- ✅ **Framework Completeness**: All infrastructure operational without mocks
+- ✅ **Agent Independence**: Each agent testable and deployable independently  
+- ✅ **Configuration Flexibility**: Agent behavior 100% configurable via YAML
+- ✅ **Performance Standards**: Production performance targets achieved
+- ✅ **Error Resilience**: Comprehensive error handling and recovery
+
+#### **Business Validation**
+- ✅ **Code Quality Insights**: Actionable complexity and maintainability recommendations
+- ✅ **Security Risk Reduction**: Critical vulnerabilities detected and prioritized
+- ✅ **Developer Productivity**: <2 minute end-to-end analysis workflow
+- ✅ **Enterprise Integration**: CI/CD pipeline integration functional
+- ✅ **Cost Effectiveness**: LLM usage optimized with rate limiting and caching
+
+#### **Expansion Validation**
+- ✅ **Configuration-Only Addition**: New agents added without code changes
+- ✅ **Tool Reusability**: Existing tools immediately available to new agents
+- ✅ **Performance Scaling**: System handles additional agents without degradation
+- ✅ **Monitoring Extension**: Observability automatically includes new agents
+
+---
+
 ## Success Criteria & Validation
 
 ### Functional Validation
-- [ ] All three agents produce meaningful analysis
-- [ ] Sequential workflow executes successfully
-- [ ] API endpoints respond correctly
-- [ ] Error handling works properly
-- [ ] Logging provides complete observability
+- [ ] **MVP Core Agents**: Code Quality and Security agents produce meaningful analysis
+- [ ] **Framework Validation**: Agent registry and tool orchestration operational
+- [ ] **Sequential Workflow**: Two-agent coordination executes successfully
+- [ ] **API Integration**: Analysis endpoints respond correctly with structured output
+- [ ] **Error Recovery**: Comprehensive error handling with graceful degradation
+- [ ] **Configuration Expansion**: Third agent can be added via YAML configuration only
+- [ ] **Logging & Monitoring**: Complete observability for debugging and optimization
 
 ### Performance Validation
-- [ ] < 2 minute analysis for 5 Python files
-- [ ] < 200ms API response time
-- [ ] 50+ concurrent sessions supported
-- [ ] < 500MB memory per session
+- [ ] **Analysis Speed**: < 90 seconds for 1000 lines of code (both agents)
+- [ ] **API Response**: < 200ms for status endpoints, < 10s for analysis initiation
+- [ ] **Concurrent Sessions**: 25+ concurrent sessions supported (MVP target)
+- [ ] **Memory Efficiency**: < 300MB memory per session
+- [ ] **LLM Cost Control**: Rate limiting operational with cost tracking
 
 ### Production Readiness
-- [ ] Comprehensive error handling
-- [ ] Structured logging throughout
-- [ ] Input validation and sanitization
-- [ ] Security measures implemented
-- [ ] Monitoring and alerting configured
+- [ ] **Security Hardening**: Input validation, authentication, rate limiting operational
+- [ ] **Monitoring Integration**: Metrics collection and alerting configured
+- [ ] **Container Deployment**: Docker environment production-ready with health checks
+- [ ] **CI/CD Integration**: GitHub/GitLab pipeline integration functional
+- [ ] **Documentation**: API documentation and deployment guides complete
+- [ ] **Backup & Recovery**: Session state persistence and recovery mechanisms tested
 
 ---
 

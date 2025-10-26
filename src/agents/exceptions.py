@@ -39,6 +39,11 @@ class AgentTimeoutError(AgentError):
     pass
 
 
+class AgentValidationError(AgentError):
+    """Raised when agent input/output validation fails."""
+    pass
+
+
 class WorkflowError(ADKError):
     """Base exception for workflow-related errors."""
     
