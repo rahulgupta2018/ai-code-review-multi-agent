@@ -1,5 +1,4 @@
 # Multi-stage Dockerfile for AI Code Review Multi-Agent System with Google ADK Integration
-# This Dockerfile creates a production-ready container with Google Cloud ADK support
 
 # Base stage with Python 3.11 and system dependencies
 FROM python:3.11-slim AS base
@@ -17,7 +16,7 @@ ENV PYTHONUNBUFFERED=1 \
 
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
-     build-essential \
+    build-essential \
     curl \
     git \
     gcc \
@@ -34,7 +33,6 @@ RUN apt-get update && apt-get install -y \
     tk-dev \
     libxml2-dev \
     libxmlsec1-dev \
-    libffi-dev \
     liblzma-dev \
     wget \
     ca-certificates \
@@ -45,6 +43,19 @@ RUN apt-get update && apt-get install -y \
 # Install Poetry
 RUN pip install poetry==$POETRY_VERSION
 ENV PATH="$POETRY_HOME/bin:$PATH"
+
+# Create application user
+RUN groupadd --gid 1000 appuser && \
+    useradd --uid 1000 --gid appuser --shell /bin/bash --create-home appuser
+
+# Set working directory
+WORKDIR /app
+
+# Copy dependency files and README
+COPY pyproject.toml poetry.lock* README.md ./
+
+# Copy source code (needed for Poetry package installation)
+COPY src/ ./src/
 
 # Development stage with additional tools
 FROM base AS development
@@ -64,69 +75,39 @@ RUN curl -sSL https://packages.cloud.google.com/apt/doc/apt-key.gpg | gpg --dear
     apt-get update && apt-get install -y google-cloud-cli && \
     rm -rf /var/lib/apt/lists/*
 
-# Create application user
-RUN groupadd --gid 1000 appuser && \
-    useradd --uid 1000 --gid appuser --shell /bin/bash --create-home appuser
-
-# Set working directory
-WORKDIR /app
-
-# Copy dependency files
-COPY pyproject.toml poetry.lock* README.md ./
-
-# Create src directory temporarily for Poetry installation
-RUN mkdir -p src
-
-# Install Python dependencies using Poetry (includes all deps from pyproject.toml)
+# Install Python dependencies with development packages
 RUN poetry config virtualenvs.create false && \
-    poetry install --with=dev --no-root && \
+    poetry install --with=dev && \
     rm -rf $POETRY_CACHE_DIR
 
-# Copy source code
-COPY src/ ./src/
+# Copy configuration and infrastructure
+COPY config/ ./config/
+COPY infra/ ./infra/
+COPY tests/ ./tests/
 
-# Install the local package now that source is available
-RUN poetry install --only-root
+# Set permissions for scripts
+RUN chmod +x ./infra/scripts/*.sh ./infra/scripts/*.py 2>/dev/null || true
 
-# Copy scripts for development
-COPY infra/scripts/ ./scripts/
-COPY infra/scripts/start-adk-dev.sh /usr/local/bin/start-adk-dev.sh
-RUN chmod +x /usr/local/bin/start-adk-dev.sh && \
-    chmod +x ./scripts/adk-dev-portal.py
+# Create required directories
+RUN mkdir -p /app/logs /app/outputs /app/data /app/credentials /app/adk-workspace && \
+    chown -R appuser:appuser /app
 
-# Production stage with Google Cloud SDK
+# Production stage
 FROM base AS production
 
 # Install Google Cloud CLI (minimal)
-RUN echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] https://packages.cloud.google.com/apt cloud-sdk main" | tee -a /etc/apt/sources.list.d/google-cloud-sdk.list && \
-    curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key --keyring /usr/share/keyrings/cloud.google.gpg add - && \
+RUN curl -sSL https://packages.cloud.google.com/apt/doc/apt-key.gpg | gpg --dearmor -o /usr/share/keyrings/cloud.google.gpg && \
+    echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] https://packages.cloud.google.com/apt cloud-sdk main" | tee -a /etc/apt/sources.list.d/google-cloud-sdk.list && \
     apt-get update && apt-get install -y google-cloud-cli && \
     rm -rf /var/lib/apt/lists/*
 
-# Create application user
-RUN groupadd --gid 1000 appuser && \
-    useradd --uid 1000 --gid appuser --shell /bin/bash --create-home appuser
-
-# Set working directory
-WORKDIR /app
-
-# Copy dependency files
-COPY pyproject.toml poetry.lock* README.md ./
-
-# Create src directory temporarily for Poetry installation
-RUN mkdir -p src
-
 # Install Python dependencies (production only)
 RUN poetry config virtualenvs.create false && \
-    poetry install --only=main --no-root && \
+    poetry install --only=main && \
     rm -rf $POETRY_CACHE_DIR
 
-# Copy application code
-COPY src/ ./src/
-
-# Install the local package now that source is available
-RUN poetry install --only-root
-COPY config/ ./config/   
+# Copy application files
+COPY config/ ./config/
 COPY infra/scripts/ ./scripts/
 
 # Create required directories
@@ -149,44 +130,30 @@ CMD ["python", "-m", "src.api.main"]
 # ADK stage for Application Developer Kit integration  
 FROM development AS adk
 
-# Install additional development tools if needed
-# All dependencies including Google ADK and Tree-sitter parsers are already installed via Poetry
-
-# Create ADK workspace
-RUN mkdir -p /app/adk-workspace /app/dev-portal
-
-# Copy ADK configuration
-COPY config/adk/ ./config/adk/ 2>/dev/null || mkdir -p ./config/adk
-
 # Set ADK environment variables
 ENV ADK_WORKSPACE=/app/adk-workspace \
     ADK_DEV_PORTAL_PORT=8200 \
     ADK_LOG_LEVEL=INFO
 
-# Expose ADK dev portal port
-EXPOSE 8200
-
-# Start script for ADK development
+# Copy startup script
 COPY infra/scripts/start-adk-dev.sh /usr/local/bin/start-adk-dev.sh
 RUN chmod +x /usr/local/bin/start-adk-dev.sh
+
+# Expose ADK dev portal port
+EXPOSE 8000 8200
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD curl -f http://localhost:8000/health || exit 1
 
 # Default command for ADK development
 CMD ["/usr/local/bin/start-adk-dev.sh"]
 
-# Testing stage with additional testing tools
+# Testing stage
 FROM development AS testing
 
-# Install testing dependencies
-RUN poetry install --with=dev,test
-
 # Install additional testing tools
-RUN pip install pytest-cov pytest-xdist pytest-mock coverage[toml]
-
-# Copy test files
-COPY tests/ ./tests/
+RUN poetry install --with=test
 
 # Default command for testing
 CMD ["python", "-m", "pytest", "tests/", "-v", "--cov=src", "--cov-report=html", "--cov-report=term"]
-
-# Final stage selection based on build argument
-FROM ${BUILD_STAGE:-production} AS final

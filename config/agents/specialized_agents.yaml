@@ -10,6 +10,11 @@ agents:
     priority: 2  # High priority
     timeout: 300  # 5 minutes
     
+    # Tools configuration
+    tools:
+      - "tree_sitter_tool"
+      - "complexity_analyzer_tool"
+    
     # Analysis configuration
     analysis:
       complexity_threshold: 10
@@ -41,6 +46,11 @@ agents:
     priority: 1  # Critical priority
     timeout: 400  # 6 minutes 40 seconds
     
+    # Tools configuration
+    tools:
+      - "tree_sitter_tool"
+      - "static_analyzer_tool"
+    
     # Security analysis
     analysis:
       vulnerability_scanning: true
@@ -71,6 +81,11 @@ agents:
     enabled: true
     priority: 3  # Medium priority
     timeout: 250  # 4 minutes 10 seconds
+    
+    # Tools configuration
+    tools:
+      - "tree_sitter_tool"
+      - "complexity_analyzer_tool"
     
     # Practice areas
     practices:

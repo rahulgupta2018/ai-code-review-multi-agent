@@ -6,8 +6,8 @@ services:
   ai-code-review-adk:
     build:
       context: .
-      dockerfile: Dockerfile.dev
-      target: development
+      dockerfile: Dockerfile
+      target: adk
     container_name: ai-code-review-adk
     hostname: ai-code-review-adk
     restart: unless-stopped

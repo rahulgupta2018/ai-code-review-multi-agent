@@ -18,6 +18,8 @@
 8. [API Endpoints](#api-endpoints)
 9. [MVP Repository Structure](#mvp-repository-structure)
 10. [Deployment & Setup](#deployment--setup)
+11. [Related Documentation](#related-documentation)
+12. [MVP Success Criteria](#mvp-success-criteria)
 
 ---
 
@@ -74,6 +76,7 @@ graph TB
         ORC[ADK Master Orchestrator<br/>SequentialAgent]
         SM[ADK Session Manager<br/>InMemorySessionService]
         MM[ADK Memory Manager]
+        CE[Context Engineering Manager<br/>Language/Framework/Domain Detection]
     end
     
     subgraph "🤖 Three Core Agents"
@@ -98,10 +101,15 @@ graph TB
     API --> ORC
     ORC --> SM
     ORC --> MM
+    ORC --> CE
     
     SM --> CRA
     SM --> SA
     SM --> EPA
+    
+    CE --> CRA
+    CE --> SA
+    CE --> EPA
     
     CRA --> GEMINI
     SA --> FLASH
@@ -141,6 +149,14 @@ ai-code-review-multi-agent/
 │   │   ├── 📄 config.py              # Configuration management
 │   │   ├── 📄 constants.py           # System constants and enums
 │   │   └── 📄 types.py               # Common type definitions
+│   │
+│   ├── 📁 context/                    # 🆕 Context Engineering Framework
+│   │   ├── 📄 __init__.py
+│   │   ├── 📄 context_manager.py      # Context detection and management
+│   │   ├── 📄 language_detector.py    # Language and framework detection
+│   │   ├── 📄 domain_detector.py      # Business domain context detection
+│   │   ├── 📄 prompt_engineer.py      # Context-aware prompt engineering
+│   │   └── 📄 agent_context_bridge.py # Context sharing between agents
 │   │
 │   ├── 📁 agents/
 │   │   ├── 📄 __init__.py
@@ -190,6 +206,7 @@ ai-code-review-multi-agent/
 │   │   ├── 📄 agent_models.py        # Agent configuration models
 │   │   ├── 📄 workflow_models.py     # ADK workflow configuration models
 │   │   ├── 📄 tool_models.py         # ADK FunctionTool configuration models
+│   │   ├── 📄 context_models.py      # Context engineering models (language, framework, domain)
 │   │   └── 📄 report_models.py       # Report generation models
 │   │   # Note: learning_models.py will be added when Neo4j integration is implemented
 │   │
@@ -231,6 +248,7 @@ ai-code-review-multi-agent/
 │   │   │   ├── 📄 sessions.py        # Session API schemas
 │   │   │   ├── 📄 agents.py          # Agent API schemas
 │   │   │   ├── 📄 reports.py         # Reports API schemas
+│   │   │   ├── 📄 context.py         # Context engineering API schemas
 │   │   │   └── 📄 common.py          # Common API schemas and types
 │   │   │   # Note: workflows.py, tools.py, learning.py, health.py, webhooks.py 
 │   │   │   # schemas will be added in future phases
@@ -256,19 +274,49 @@ ai-code-review-multi-agent/
 │   │   ├── 📄 orchestrator.yaml      # Master orchestrator configuration
 │   │   └── 📄 custom_agents.yaml     # Custom agent definitions
 │   │
+│   ├── 📁 api/
+│   │   └── 📄 application.yaml       # API application configuration
+│   │
 │   ├── 📁 environments/
 │   │   ├── 📄 development.yaml       # Development environment config
 │   │   ├── 📄 staging.yaml           # Staging environment config
 │   │   └── 📄 production.yaml        # Production environment config
 │   │
+│   ├── 📁 integrations/
+│   │   ├── 📄 adk.yaml               # Google ADK integration configuration
+│   │   ├── 📄 neo4j.yaml             # Neo4j graph database integration
+│   │   └── 📄 redis.yaml             # Redis cache integration
+│   │
 │   ├── 📁 llm/
-│   │   ├── 📄 models.yaml      # LLM model configurations
-│   │   └── 📄 cost_optimization.yaml # Cost optimization settings
+│   │   ├── 📄 models.yaml            # LLM model configurations (Ollama, Gemini, OpenAI)
+│   │   ├── 📄 cost_optimization.yaml # Cost optimization and budget management
+│   │   ├── 📄 output_validation.yaml # LLM output validation rules
+│   │   └── 📄 system_protection.yaml # System protection and rate limiting
+│   │
+│   ├── 📁 tree_sitter/
+│   │   ├── 📄 README.md              # Tree-sitter configuration documentation
+│   │   ├── � languages.yaml         # Language detection and framework patterns
+│   │   └── 📄 patterns.yaml          # Tree-sitter query patterns for analysis
+│   │
+│   ├── �📁 context/
+│   │   ├── 📄 domain_detection.yaml      # Business domain detection (NEW - not in tree_sitter)
+│   │   ├── 📄 context_templates.yaml     # Context prompt templates for agents (NEW)
+│   │   └── 📄 llm_context_enhancement.yaml # LLM-specific context enhancement rules (NEW)
+│   │   # Note: Language & framework detection leverages existing config/tree_sitter/languages.yaml
 │   │
 │   ├── 📁 rules/
-│   │   ├── 📄 quality_rules.yaml     # Quality control and validation rules
-│   │   ├── 📄 security_rules.yaml    # Security analysis rules
-│   │   └── 📄 custom_rules.yaml      # Organization-specific rules
+│   │   ├── 📄 quality_gates.yaml         # Code quality thresholds and gates
+│   │   ├── 📄 security_analysis.yaml     # Application security analysis rules
+│   │   ├── 📄 bias_prevention.yaml       # AI bias prevention and quality control
+│   │   ├── 📄 custom_rules.yaml          # Organization-specific rules
+│   │   └── 📄 hallucination_prevention.yaml # AI hallucination prevention rules
+│   │
+│   ├── 📁 observability/
+│   │   └── 📄 monitoring.yaml        # System monitoring and observability
+│   │
+│   ├── 📁 reporting/
+│   │   ├── 📄 formats.yaml           # Report output formats
+│   │   └── 📄 templates.yaml         # Report templates
 │   │
 │   └── 📄 app.yaml                   # Main application configuration with ADK integration
 │
@@ -1084,6 +1132,29 @@ mvp_adk_config:
       timeout: 120
       priority: 3
 
+  # Context engineering configuration
+  context_engineering:
+    language_detection:
+      enabled: true
+      source_config: "config/tree_sitter/languages.yaml"  # Leverage existing tree_sitter config
+      confidence_threshold: 0.8
+    
+    framework_detection:
+      enabled: true
+      source_config: "config/tree_sitter/languages.yaml"  # Leverage existing framework patterns
+      confidence_threshold: 0.7
+    
+    domain_detection:
+      enabled: true
+      patterns_file: "config/context/domain_detection.yaml"  # NEW - business domain detection
+      confidence_threshold: 0.6
+    
+    context_templates:
+      templates_file: "config/context/context_templates.yaml"  # NEW - LLM prompt templates
+      enhancement_file: "config/context/llm_context_enhancement.yaml"  # NEW - LLM enhancement rules
+      enable_dynamic_context: true
+      max_context_tokens: 2000
+
   # Session configuration
   session_config:
     type: "InMemorySessionService"
@@ -1138,6 +1209,382 @@ mvp_app:
     output_formats: ["json", "markdown"]
     include_code_snippets: true
     max_recommendations: 10
+```
+
+---
+
+### Context Engineering Configuration
+
+#### **Integration with Existing Tree-sitter Configuration**
+
+The context engineering framework leverages the existing comprehensive language and framework detection in `config/tree_sitter/languages.yaml` to avoid duplication while adding LLM-specific enhancements.
+
+#### **config/context/domain_detection.yaml** (NEW)
+
+```yaml
+# Business domain and application context detection
+# Extends tree_sitter language/framework detection with business domain intelligence
+domain_detection:
+  version: "1.0"
+  
+  domains:
+    fintech:
+      keywords: ["transaction", "account", "balance", "payment", "transfer", "banking"]
+      patterns: ["financial", "money", "currency", "wallet", "invoice"]
+      file_patterns: ["payment", "transaction", "billing", "finance"]
+      security_focus: ["pii_protection", "encryption", "audit_logging", "compliance"]
+      quality_focus: ["accuracy", "reliability", "performance", "regulatory_compliance"]
+      confidence_weight: 0.8
+      
+    healthcare:
+      keywords: ["patient", "medical", "diagnosis", "treatment", "health", "hipaa"]
+      patterns: ["medical record", "prescription", "healthcare", "clinical"]
+      file_patterns: ["patient", "medical", "health", "clinical"]
+      security_focus: ["hipaa_compliance", "data_encryption", "access_control", "audit_trails"]
+      quality_focus: ["safety", "compliance", "reliability", "data_integrity"]
+      confidence_weight: 0.9
+      
+    ecommerce:
+      keywords: ["cart", "checkout", "order", "product", "inventory", "shipping"]
+      patterns: ["shopping", "purchase", "catalog", "store", "customer"]
+      file_patterns: ["cart", "order", "product", "inventory", "shop"]
+      security_focus: ["payment_security", "data_protection", "fraud_prevention"]
+      quality_focus: ["scalability", "availability", "performance", "user_experience"]
+      confidence_weight: 0.7
+      
+    education:
+      keywords: ["student", "course", "grade", "assignment", "class", "curriculum"]
+      patterns: ["learning", "education", "academic", "school", "university"]
+      file_patterns: ["student", "course", "grade", "assignment"]
+      security_focus: ["data_privacy", "access_control", "student_records"]
+      quality_focus: ["accessibility", "usability", "scalability"]
+      confidence_weight: 0.7
+
+  detection_rules:
+    confidence_thresholds:
+      high: 0.8
+      medium: 0.6
+      low: 0.4
+    combination_scoring: true  # Combine multiple domain indicators
+    fallback_domain: "general_software"
+```
+
+#### **config/context/llm_context_enhancement.yaml** (NEW)
+
+```yaml
+# LLM-specific context enhancement rules
+# Leverages tree_sitter language/framework data for intelligent prompt enhancement
+llm_context_enhancement:
+  version: "1.0"
+  
+  # Language-specific LLM context enhancement
+  language_enhancement:
+    python:
+      analysis_focus: ["PEP 8 compliance", "type hints", "async patterns", "performance"]
+      security_patterns: ["input validation", "SQL injection", "pickle security"]
+      framework_integration: true  # Use tree_sitter framework detection
+      
+    javascript:
+      analysis_focus: ["ES6+ features", "async/await", "performance", "bundling"]
+      security_patterns: ["XSS prevention", "CSRF protection", "dependency vulnerabilities"]
+      framework_integration: true
+      
+    typescript:
+      analysis_focus: ["type safety", "interface design", "generic usage"]
+      security_patterns: ["type assertion safety", "any type usage", "strict mode"]
+      framework_integration: true
+      
+    java:
+      analysis_focus: ["enterprise patterns", "spring integration", "performance"]
+      security_patterns: ["injection prevention", "authentication", "authorization"]
+      framework_integration: true
+
+  # Framework-specific enhancement (integrates with tree_sitter framework detection)
+  framework_enhancement:
+    react:
+      context_enhancement: ["component architecture", "state management", "performance optimization"]
+      security_focus: ["XSS prevention", "prop validation", "secure refs"]
+      
+    django:
+      context_enhancement: ["MVT patterns", "ORM optimization", "middleware design"]
+      security_focus: ["CSRF protection", "SQL injection prevention", "authentication"]
+      
+    fastapi:
+      context_enhancement: ["async patterns", "dependency injection", "API design"]
+      security_focus: ["input validation", "OAuth2", "CORS configuration"]
+      
+    spring:
+      context_enhancement: ["dependency injection", "enterprise patterns", "microservices"]
+      security_focus: ["authentication", "authorization", "method security"]
+
+  # Domain-specific LLM enhancement
+  domain_enhancement:
+    fintech:
+      prompt_modifiers: ["regulatory compliance", "financial accuracy", "audit requirements"]
+      security_emphasis: ["PII protection", "transaction integrity", "fraud prevention"]
+      quality_emphasis: ["accuracy", "reliability", "performance", "compliance"]
+      
+    healthcare:
+      prompt_modifiers: ["HIPAA compliance", "patient safety", "data integrity"]
+      security_emphasis: ["data encryption", "access control", "audit trails"]
+      quality_emphasis: ["safety", "reliability", "compliance", "data_integrity"]
+      
+    ecommerce:
+      prompt_modifiers: ["scalability", "user experience", "payment security"]
+      security_emphasis: ["payment security", "fraud prevention", "data protection"]
+      quality_emphasis: ["performance", "availability", "scalability"]
+
+  # Prompt template integration
+  prompt_integration:
+    template_injection: true
+    context_tokens_limit: 2000
+    priority_order: ["domain", "framework", "language"]
+    fallback_templates: true
+```
+
+#### **config/context/context_templates.yaml**
+
+```yaml
+# Context prompt templates for agents
+context_templates:
+  version: "1.0"
+  
+  base_templates:
+    code_review:
+      template: |
+        You are analyzing {language} code using {framework} framework in the {domain} domain.
+        
+        Context Information:
+        - Language: {language} ({language_confidence}% confidence)
+        - Framework: {framework} ({framework_confidence}% confidence)
+        - Domain: {domain} ({domain_confidence}% confidence)
+        
+        Focus Areas for {domain}:
+        {domain_focus_areas}
+        
+        Language-Specific Considerations for {language}:
+        {language_considerations}
+        
+        Framework-Specific Patterns for {framework}:
+        {framework_patterns}
+        
+    security_analysis:
+      template: |
+        Security analysis for {language} {framework} application in {domain} domain.
+        
+        Priority Security Concerns for {domain}:
+        {security_priorities}
+        
+        {language} Security Patterns:
+        {language_security_patterns}
+        
+        {framework} Security Best Practices:
+        {framework_security_patterns}
+
+  language_considerations:
+    python:
+      patterns: ["PEP 8 compliance", "type hints usage", "async/await patterns"]
+      security: ["input validation", "SQL injection prevention", "pickle security"]
+      performance: ["list comprehensions", "generator usage", "memory management"]
+      
+    javascript:
+      patterns: ["ES6+ features", "promise handling", "event loop understanding"]
+      security: ["XSS prevention", "CSRF protection", "dependency vulnerabilities"]
+      performance: ["bundling optimization", "async loading", "memory leaks"]
+      
+    typescript:
+      patterns: ["type safety", "interface design", "generic usage"]
+      security: ["type assertion safety", "any type usage", "strict mode"]
+      performance: ["compilation optimization", "tree shaking", "type inference"]
+
+  framework_patterns:
+    react:
+      architecture: ["component composition", "state management", "lifecycle methods"]
+      security: ["prop validation", "XSS prevention", "secure refs"]
+      performance: ["virtual DOM optimization", "memo usage", "lazy loading"]
+      
+    django:
+      architecture: ["MVT pattern", "ORM usage", "middleware design"]
+      security: ["CSRF protection", "SQL injection prevention", "authentication"]
+      performance: ["query optimization", "caching strategies", "database indexing"]
+      
+    fastapi:
+      architecture: ["dependency injection", "async patterns", "router organization"]
+      security: ["input validation", "OAuth2 integration", "CORS configuration"]
+      performance: ["async optimization", "background tasks", "response caching"]
+
+  domain_focus_areas:
+    fintech:
+      security: ["PII protection", "transaction integrity", "audit logging", "encryption"]
+      quality: ["accuracy", "reliability", "performance", "compliance"]
+      patterns: ["idempotency", "eventual consistency", "error handling"]
+      
+    healthcare:
+      security: ["HIPAA compliance", "data encryption", "access control", "audit trails"]
+      quality: ["safety", "reliability", "data integrity", "compliance"]
+      patterns: ["fault tolerance", "data validation", "secure communication"]
+      
+    ecommerce:
+      security: ["payment security", "data protection", "fraud prevention", "session management"]
+      quality: ["scalability", "availability", "performance", "user experience"]
+      patterns: ["event sourcing", "microservices", "caching strategies"]
+```
+
+### Additional Configuration Examples
+
+#### **config/llm/models.yaml** (Enhanced)
+
+The existing LLM models configuration provides comprehensive model management with development-optimized defaults:
+
+```yaml
+# Key highlights from existing config:
+version: "1.0.0"
+default_provider: "ollama"  # Development-optimized for MVP
+
+# Multiple provider support with intelligent routing
+providers:
+  ollama:  # Primary for development
+    models:
+      llama3_1_8b: # Primary development model
+        context_window: 128000
+        cost_per_1k_tokens: { input: 0.0, output: 0.0 }
+      
+      phi3_medium: # Gemini alternative for reasoning
+        specialized_for: "reasoning"
+        notes: "Microsoft Phi-3 Medium - excellent reasoning capabilities"
+      
+      gemma2_9b: # Google's open-source model
+        notes: "Google Gemma2 9B - Google's own open-source model"
+
+# Intelligent model routing for different use cases
+model_selection:
+  strategy: "development_optimized"
+  routing_rules:
+    - condition: "analysis_type == 'security'"
+      model: "gemma2_9b"
+      reason: "Google Gemma2 for security analysis (Gemini alternative)"
+```
+
+#### **config/tree_sitter/languages.yaml** (Comprehensive)
+
+The existing tree_sitter configuration provides extensive language support:
+
+```yaml
+# Key highlights from existing comprehensive config:
+supported_languages:
+  python:
+    grammar: "tree-sitter-python"
+    file_extensions: [".py", ".pyw", ".pyi"]
+    
+    # Comprehensive framework detection
+    frameworks:
+      - name: "FastAPI"
+        patterns: ["FastAPI", "@app.get", "@app.post", "APIRouter"]
+      - name: "Django"
+        patterns: ["django", "models.Model", "forms.Form"]
+    
+    # Advanced analysis patterns
+    complexity_patterns: ["function_definition", "class_definition", "if_statement"]
+    security_patterns: ["import_statement", "call", "attribute", "string"]
+
+  javascript:
+    # Similar comprehensive patterns for JS/TS
+    frameworks:
+      - name: "React"
+        patterns: ["import React", "useState", "useEffect"]
+
+# Performance optimization
+parsing_configuration:
+  cache_parse_trees: true
+  incremental_parsing: true
+  max_file_size: 10485760  # 10MB
+  parallel_parsing: true
+```
+
+#### **config/rules/bias_prevention.yaml** (AI Quality Control)
+
+The existing bias prevention configuration provides comprehensive AI quality control:
+
+```yaml
+# Key highlights from comprehensive bias prevention:
+bias_prevention:
+  general_guidelines:
+    - "Focus on objective, measurable code characteristics"
+    - "Avoid assumptions about programming languages or frameworks"
+    - "Present findings based on established software engineering principles"
+
+  # Cognitive bias mitigation
+  cognitive_bias:
+    confirmation_bias:
+      enable_contradictory_analysis: true
+      require_alternative_perspectives: true
+      minimum_counterarguments: 2
+    
+    anchoring_bias:
+      randomize_analysis_order: true
+      use_multiple_starting_points: true
+
+  # Technical bias mitigation
+  technical_bias:
+    language_bias:
+      apply_consistent_standards: true
+      use_language_agnostic_metrics: true
+    
+    technology_bias:
+      evaluate_based_on_requirements: true
+      avoid_personal_technology_preferences: true
+
+# Quality gates for bias prevention
+quality_gates:
+  pre_analysis:
+    input_validation: { validate_code_syntax: true }
+  analysis_gates:
+    progress_validation: { monitor_analysis_coherence: true }
+  post_analysis:
+    result_validation: { validate_output_format: true }
+```
+
+#### **config/rules/quality_gates.yaml** (Code Quality Standards)
+
+```yaml
+# Application quality gates for target code analysis:
+code_quality_gates:
+  code_quality:
+    thresholds:
+      cyclomatic_complexity: 15
+      cognitive_complexity: 25
+      maintainability_index: 60
+      test_coverage: 80
+    blocking: true
+    failure_action: "block_merge"
+  
+  security:
+    thresholds:
+      critical_vulnerabilities: 0
+      high_vulnerabilities: 0
+      secrets_detected: 0
+    blocking: true
+```
+
+#### **config/integrations/adk.yaml** (Google ADK Integration)
+
+```yaml
+# Google ADK integration configuration:
+adk_integration:
+  version: "1.15.1+"
+  
+  agent_development_kit:
+    base_agent_config:
+      session_service: "InMemorySessionService"
+      memory_manager: "MemoryManager"
+    
+    workflow_patterns:
+      sequential_agent: true
+      parallel_agent: false  # MVP: Sequential only
+    
+    function_tools:
+      enable_custom_tools: true
+      tool_timeout: 120
 ```
 
 ---
@@ -1249,20 +1696,49 @@ adk-code-review-mvp/
 │   ├── 📁 core/
 │   │   ├── 📄 __init__.py
 │   │   ├── 📄 exceptions.py           # MVP-specific exceptions
-│   │   ├── 📄 models.py               # Data models for MVP
+│   │   ├── 📄 config.py              # Configuration management
 │   │   └── 📄 types.py                # Type definitions
 │   │
 │   ├── 📁 agents/
 │   │   ├── 📄 __init__.py
-│   │   ├── 📄 base_agent.py           # ADK BaseAgent extension
-│   │   ├── 📄 code_review_analyzer.py # Code quality analysis agent
-│   │   ├── 📄 security_agent.py       # Security analysis agent
-│   │   └── 📄 engineering_practices_agent.py # Engineering practices agent
+│   │   ├── 📄 base_agent.py           # ADK BaseAgent extension with common functionality
+│   │   ├── � specialized/
+│   │   │   ├── �📄 __init__.py
+│   │   │   ├── 📄 code_quality_agent.py      # MVP: Code quality analysis (extends BaseAgent)
+│   │   │   ├── 📄 security_agent.py          # MVP: Security standards analysis (extends BaseAgent)
+│   │   │   └── 📄 engineering_practices_agent.py # MVP: DevOps and practices (extends BaseAgent)
+│   │   │   # Note: Other agents (architecture, performance, etc.) will be added in future phases
+│   │   │
+│   │   └── 📁 custom/
+│   │       ├── 📄 __init__.py
+│   │       ├── 📄 plugin_framework.py        # Custom agent plugin system
+│   │       └── 📄 agent_registry.py          # Dynamic agent discovery
 │   │
-│   ├── 📁 orchestration/
+│   ├── 📁 tools/
 │   │   ├── 📄 __init__.py
-│   │   ├── 📄 mvp_orchestrator.py     # Main MVP orchestrator
-│   │   └── 📄 session_manager.py      # ADK session management
+│   │   # MVP: Basic tools for the three core agents
+│   │   ├── 📄 tree_sitter_tool.py        # ADK FunctionTool for code parsing
+│   │   ├── � complexity_analyzer_tool.py # ADK FunctionTool for complexity metrics
+│   │   └── 📄 static_analyzer_tool.py     # ADK FunctionTool for static analysis
+│   │   # Note: Additional tools (github, gitlab, etc.) will be added in future phases
+│   │
+│   ├── 📁 workflows/
+│   │   ├── 📄 __init__.py
+│   │   ├── 📄 master_orchestrator.py     # Main orchestrator using ADK workflow patternsc
+│   │   └── 📄 sequential_analysis_workflow.py # ADK SequentialAgent for ordered analysis
+│   │   # Note: Parallel and loop workflows will be added in future phases
+│   │
+│   ├── 📁 services/
+│   │   ├── 📄 __init__.py
+│   │   ├── 📄 session_service.py     # ADK InMemorySessionService (in-memory for MVP)
+│   │   ├── 📄 memory_service.py      # Memory management service using ADK patterns
+│   │   └── 📄 model_service.py       # ADK Model Garden integration service
+│   │   # Note: learning_service.py will be added when Neo4j integration is implemented
+│   │
+│   ├── 📁 adapters/
+│   │   ├── 📄 __init__.py
+│   │   # MVP: Placeholder for future external service adapters
+│   │   # redis_adapter.py, neo4j_adapter.py will be added in future phases
 │   │
 │   ├── 📁 llm/
 │   │   ├── 📄 __init__.py
@@ -1271,24 +1747,130 @@ adk-code-review-mvp/
 │   │
 │   ├── 📁 api/
 │   │   ├── 📄 __init__.py
-│   │   ├── 📄 main.py                 # FastAPI application
-│   │   ├── 📄 endpoints.py            # API endpoints
-│   │   └── 📄 schemas.py              # Request/response schemas
+│   │   ├── 📄 main.py                # FastAPI application and ADK integration
+│   │   ├── 📄 dependencies.py        # API dependency injection
+│   │   ├── 📄 middleware.py          # Custom middleware (auth, rate limiting, etc.)
+│   │   ├── 📁 v1/
+│   │   │   ├── 📄 __init__.py
+│   │   │   ├── 📄 router.py          # Main v1 API router
+│   │   │   └── 📁 endpoints/
+│   │   │       ├── 📄 __init__.py
+│   │   │       ├── 📄 analysis.py    # Analysis endpoints (/api/v1/analysis)
+│   │   │       ├── 📄 sessions.py    # Session management (/api/v1/sessions)
+│   │   │       ├── 📄 agents.py      # Agent management (/api/v1/agents)
+│   │   │       ├── 📄 reports.py     # Reports API (/api/v1/reports)
+│   │   │       └── 📄 health.py      # Health checks (/api/v1/health)
+│   │   │       # Note: workflows.py, tools.py, learning.py, metrics.py, webhooks.py 
+│   │   │       # will be added in future phases
+│   │   │
+│   │   ├── 📁 auth/
+│   │   │   ├── 📄 __init__.py
+│   │   │   ├── 📄 api_key.py         # API key authentication
+│   │   │   ├── 📄 jwt_auth.py        # JWT token authentication
+│   │   │   └── 📄 permissions.py     # Permission management
+│   │   │
+│   │   ├── 📁 schemas/
+│   │   │   ├── 📄 __init__.py
+│   │   │   ├── 📄 analysis.py        # Analysis API schemas
+│   │   │   ├── 📄 sessions.py        # Session API schemas
+│   │   │   ├── 📄 agents.py          # Agent API schemas
+│   │   │   ├── 📄 reports.py         # Reports API schemas
+│   │   │   ├── 📄 context.py         # Context engineering API schemas
+│   │   │   └── 📄 common.py          # Common API schemas and types
+│   │   │   # Note: workflows.py, tools.py, learning.py, health.py, webhooks.py 
+│   │   │   # schemas will be added in future phases
+│   │   │
+│   │   └── 📁 responses/
+│   │       ├── 📄 __init__.py
+│   │       ├── 📄 formatters.py      # Response formatting utilities
+│   │       ├── 📄 paginated.py       # Pagination response handlers
+│   │       └── 📄 error_handlers.py  # Error response formatting
+│   │
+│   ├── 📁 models/
+│   │   ├── 📄 __init__.py
+│   │   ├── 📄 analysis_models.py     # Analysis request/response models
+│   │   ├── 📄 session_models.py      # Session-related data models
+│   │   ├── 📄 agent_models.py        # Agent configuration models
+│   │   ├── 📄 workflow_models.py     # ADK workflow configuration models
+│   │   ├── 📄 tool_models.py         # ADK FunctionTool configuration models
+│   │   └── 📄 report_models.py       # Report generation models
+│   │   # Note: learning_models.py will be added when Neo4j integration is implemented
 │   │
 │   ├── 📁 utils/
-│   │   ├── 📄 __init__.py
-│   │   ├── 📄 logging.py              # Logging configuration
-│   │   ├── 📄 config.py               # Configuration management
-│   │   └── 📄 report_generator.py     # Report formatting utilities
+│   │   ├── �📄 __init__.py
+│   │   ├── 📄 logging.py             # Centralized logging configuration
+│   │   ├── 📄 monitoring.py          # Performance monitoring utilities
+│   │   ├── 📄 security.py            # Security utilities (PII detection, etc.)
+│   │   ├── 📄 validation.py          # Input validation and sanitization
+│   │   └── 📄 adk_helpers.py         # ADK-specific utility functions
 │   │
 │   └── 📄 main.py                     # Application entry point
 │
 ├── 📁 config/
 │   ├── 📁 adk/
-│   │   ├── 📄 agent.yaml              # ADK agent configuration
-│   │   └── 📄 session.yaml            # Session service configuration
+│   │   ├── 📄 agent.yaml             # ADK agent configuration (BaseAgent, InMemorySessionService)
+│   │   ├── 📄 tools.yaml             # ADK FunctionTool definitions for MVP tools
+│   │   ├── 📄 workflows.yaml         # ADK workflow agent configurations (Sequential for MVP)
+│   │   ├── 📄 session_service.yaml   # ADK session service configuration (in-memory for MVP)
+│   │   └── 📄 model_garden.yaml      # ADK Model Garden configuration for Gemini models
 │   │
-│   └── 📄 mvp_app.yaml                # Main application configuration
+│   ├── 📁 agents/
+│   │   ├── 📄 specialized_agents.yaml # MVP: Three core agents configuration
+│   │   ├── 📄 orchestrator.yaml      # Master orchestrator configuration
+│   │   └── 📄 custom_agents.yaml     # Custom agent definitions
+│   │
+│   ├── 📁 api/
+│   │   ├── 📄 application.yaml       # API application configuration
+│   │   ├── 📄 versioning.yaml        # API versioning strategy and compatibility
+│   │   ├── 📄 authentication.yaml    # Authentication and authorization settings
+│   │   ├── 📄 rate_limiting.yaml     # Rate limiting and throttling configuration
+│   │   ├── 📄 middleware.yaml        # Custom middleware configuration
+│   │   ├── 📄 cors.yaml             # CORS policy configuration
+│   │   ├── 📄 validation.yaml        # Request/response validation rules
+│   │   └── 📄 documentation.yaml     # API documentation generation settings
+│   │
+│   ├── 📁 environments/
+│   │   ├── 📄 development.yaml       # Development environment config
+│   │   ├── 📄 staging.yaml           # Staging environment config
+│   │   └── 📄 production.yaml        # Production environment config
+│   │
+│   ├── 📁 integrations/
+│   │   ├── 📄 adk.yaml               # Google ADK integration configuration
+│   │   ├── 📄 neo4j.yaml             # Neo4j graph database integration
+│   │   └── 📄 redis.yaml             # Redis cache integration
+│   │
+│   ├── 📁 llm/
+│   │   ├── 📄 models.yaml            # LLM model configurations (Ollama, Gemini, OpenAI)
+│   │   ├── 📄 cost_optimization.yaml # Cost optimization and budget management
+│   │   ├── 📄 output_validation.yaml # LLM output validation rules
+│   │   └── 📄 system_protection.yaml # System protection and rate limiting
+│   │
+│   ├── 📁 tree_sitter/
+│   │   ├── 📄 README.md              # Tree-sitter configuration documentation
+│   │   ├── 📄 languages.yaml         # Language detection and framework patterns
+│   │   └── 📄 patterns.yaml          # Tree-sitter query patterns for analysis
+│   │
+│   ├── 📁 context/
+│   │   ├── 📄 domain_detection.yaml      # Business domain detection (NEW - not in tree_sitter)
+│   │   ├── 📄 context_templates.yaml     # Context prompt templates for agents (NEW)
+│   │   └── 📄 llm_context_enhancement.yaml # LLM-specific context enhancement rules (NEW)
+│   │   # Note: Language & framework detection leverages existing config/tree_sitter/languages.yaml
+│   │
+│   ├── � rules/
+│   │   ├── �📄 quality_gates.yaml         # Code quality thresholds and gates
+│   │   ├── 📄 security_analysis.yaml     # Application security analysis rules
+│   │   ├── 📄 bias_prevention.yaml       # AI bias prevention and quality control
+│   │   ├── 📄 custom_rules.yaml          # Organization-specific rules
+│   │   └── 📄 hallucination_prevention.yaml # AI hallucination prevention rules
+│   │
+│   ├── 📁 observability/
+│   │   └── 📄 monitoring.yaml        # System monitoring and observability
+│   │
+│   ├── 📁 reporting/
+│   │   ├── 📄 formats.yaml           # Report output formats
+│   │   └── 📄 templates.yaml         # Report templates
+│   │
+│   └── 📄 app.yaml                   # Main application configuration with ADK integration
 │
 ├── 📁 tests/
 │   ├── 📄 __init__.py
@@ -1442,6 +2024,48 @@ MAX_FILES_PER_REQUEST=10
 MAX_FILE_SIZE_MB=5
 ANALYSIS_TIMEOUT=300
 ```
+
+---
+
+## Related Documentation
+
+### 📋 **Companion Design Documents**
+
+#### **ADK MVP Orchestration Layer Design**
+- **Document:** `docs/architecture/ADK_MVP_ORCHESTRATION_LAYER_DESIGN.md`
+- **Purpose:** Detailed orchestration patterns and workflow engine design
+- **Key Integration Points:**
+  - Context Engineering Manager workflow implementation
+  - Sequential agent coordination with context injection
+  - Context-aware agent execution patterns
+  - Session management with context persistence
+
+#### **MVP Implementation Plan**
+- **Document:** `docs/implementation_plan/MVP_IMPLEMENTATION_PLAN.md` 
+- **Purpose:** Complete implementation roadmap with context engineering tasks
+- **Key Implementation Phases:**
+  - Phase 2.1.4: Context Engineering Framework implementation
+  - Context-aware agent development tasks
+  - Context engineering configuration setup
+  - Document synchronization and cross-references
+
+### 🔄 **Architecture Consistency**
+
+#### **Context Engineering Integration**
+- **System Design**: Context directory structure, models, and API schemas
+- **Orchestration Design**: Context workflow patterns and agent integration
+- **Implementation Plan**: Context engineering tasks and development phases
+- **Tree-sitter Integration**: Leverages existing `config/tree_sitter/languages.yaml` for language/framework detection to avoid duplication
+
+#### **ADK Framework Alignment** 
+- **System Design**: ADK BaseAgent patterns, session services, and tools
+- **Orchestration Design**: ADK SequentialAgent workflow implementation
+- **Implementation Plan**: ADK integration tasks and development priorities
+
+#### **MVP Scope Synchronization**
+- **Consistent Agent Definitions**: Three-agent MVP scope across all documents
+- **Context Engineering Foundation**: Scalable context framework for future expansion
+- **Configuration Architecture**: YAML-driven approach standardized across designs
 
 ---
 

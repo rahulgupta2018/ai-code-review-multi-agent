@@ -6,7 +6,7 @@ import uuid
 import logging
 from abc import ABC, abstractmethod
 from datetime import datetime
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional, List
 
 try:
     import structlog
@@ -67,7 +67,16 @@ class ADKBaseAgent(ADKBaseAgentCore, ABC):
         self._current_session: Optional[Dict[str, Any]] = None
         self._session_data: Dict[str, Any] = {}
         
-        self.logger.info("Agent initialized - ID: %s, Type: %s", self.agent_id, agent_type.value)
+        # Tool orchestration components
+        self._tools: Dict[str, Any] = {}
+        self._tool_registry: Dict[str, Dict[str, Any]] = {}
+        self._tool_timeouts: Dict[str, float] = {}
+        
+        # Initialize tool orchestration
+        self._load_tools()
+        
+        self.logger.info("Agent initialized - ID: %s, Type: %s, Tools: %d", 
+                        self.agent_id, agent_type.value, len(self._tools))
     
     def _load_configuration(self, agent_type: AgentType, config_override: Optional[Dict[str, Any]] = None) -> None:
         """Load configuration from YAML files with no hardcoding."""
@@ -102,6 +111,314 @@ class ADKBaseAgent(ADKBaseAgentCore, ABC):
         timeout = self._config.get('timeout', DEFAULT_AGENT_TIMEOUT)
         if not isinstance(timeout, (int, float)) or timeout <= 0:
             raise AgentConfigurationError(f"Invalid timeout value: {timeout}")
+    
+    def _load_tools(self) -> None:
+        """Load and register tools based strictly on agent configuration - no fallbacks."""
+        try:
+            # Get tool configuration from agent config - fail if not present
+            agent_tools = self._config.get('tools', [])
+            
+            if not agent_tools:
+                self.logger.error("No tools configured for agent type: %s", self.agent_type.value)
+                raise AgentConfigurationError(f"No tools configured for agent type: {self.agent_type.value}")
+            
+            self.logger.info("Loading configured tools for agent type: %s, tools: %s", 
+                           self.agent_type.value, agent_tools)
+            
+            # Get available tools from configuration
+            available_tools = self._discover_available_tools()
+            
+            # Register tools based on agent configuration - fail if any tool is missing
+            missing_tools = []
+            for tool_name in agent_tools:
+                if tool_name in available_tools:
+                    self._register_tool(tool_name, available_tools[tool_name])
+                else:
+                    missing_tools.append(tool_name)
+            
+            # Fail fast if any configured tools are missing
+            if missing_tools:
+                self.logger.error("Configured tools not available: %s", missing_tools)
+                raise AgentConfigurationError(f"Configured tools not available: {missing_tools}")
+            
+            if len(self._tools) == 0:
+                self.logger.error("No tools successfully registered for agent type: %s", self.agent_type.value)
+                raise AgentConfigurationError(f"No tools successfully registered for agent type: {self.agent_type.value}")
+            
+            self.logger.info("Tool loading completed - %d tools registered", len(self._tools))
+            
+        except Exception as e:
+            self.logger.error("Failed to load tools: %s", str(e))
+            if isinstance(e, AgentConfigurationError):
+                raise
+            else:
+                raise AgentConfigurationError(f"Tool loading failed: {e}") from e
+    
+    def _discover_available_tools(self) -> Dict[str, Dict[str, Any]]:
+        """Discover available tools from configuration and validate against src/tools directory."""
+        available_tools = {}
+        
+        try:
+            # Load tool configuration from config/adk/tools.yaml
+            config = get_config()
+            tools_config = config.get('adk', {}).get('tools', {})
+            
+            if not tools_config:
+                self.logger.error("No ADK tools configuration found in config/adk/tools.yaml")
+                raise AgentConfigurationError("ADK tools configuration not found")
+            
+            configured_tools = tools_config.get('tools', {})
+            if not configured_tools:
+                self.logger.error("No tools defined in tools configuration")
+                raise AgentConfigurationError("No tools defined in configuration")
+            
+            # Get tools directory path for validation
+            from pathlib import Path
+            tools_path = Path(__file__).parent.parent / "tools"
+            
+            if not tools_path.exists():
+                self.logger.error("Tools directory not found: %s", tools_path)
+                raise AgentConfigurationError(f"Tools directory not found: {tools_path}")
+            
+            # Process each configured tool
+            for tool_key, tool_config in configured_tools.items():
+                try:
+                    # Validate tool configuration
+                    required_fields = ['name', 'description', 'module', 'agent_types']
+                    missing_fields = [field for field in required_fields if field not in tool_config]
+                    
+                    if missing_fields:
+                        self.logger.error("Tool %s missing required fields: %s", tool_key, missing_fields)
+                        continue
+                    
+                    # Check if this tool is compatible with current agent type
+                    if self.agent_type.value not in tool_config['agent_types']:
+                        self.logger.debug("Tool %s not compatible with agent type %s", 
+                                        tool_key, self.agent_type.value)
+                        continue
+                    
+                    # Validate tool file exists
+                    tool_file = tools_path / f"{tool_config['module']}.py"
+                    if not tool_file.exists():
+                        self.logger.error("Tool module file not found: %s", tool_file)
+                        raise AgentConfigurationError(f"Tool module file not found: {tool_file}")
+                    
+                    # Add tool to available tools
+                    available_tools[tool_key] = {
+                        'name': tool_config['name'],
+                        'description': tool_config['description'],
+                        'module': tool_config['module'],
+                        'agent_types': tool_config['agent_types'],
+                        'timeout': tool_config.get('timeout', 60.0),
+                        'parameters': tool_config.get('parameters', {}),
+                        'config': tool_config.get('config', {})
+                    }
+                    
+                    self.logger.debug("Discovered tool: %s for agent type: %s", 
+                                    tool_key, self.agent_type.value)
+                    
+                except Exception as e:
+                    self.logger.error("Failed to process tool configuration %s: %s", tool_key, str(e))
+                    raise AgentConfigurationError(f"Invalid tool configuration for {tool_key}: {e}") from e
+            
+            if not available_tools:
+                self.logger.error("No compatible tools found for agent type: %s", self.agent_type.value)
+                raise AgentConfigurationError(f"No compatible tools found for agent type: {self.agent_type.value}")
+            
+            self.logger.info("Tool discovery completed - %d tools available for %s", 
+                           len(available_tools), self.agent_type.value)
+            return available_tools
+            
+        except Exception as e:
+            self.logger.error("Tool discovery failed: %s", str(e))
+            if isinstance(e, AgentConfigurationError):
+                raise
+            else:
+                raise AgentConfigurationError(f"Tool discovery failed: {e}") from e
+    
+    def _register_tool(self, tool_name: str, tool_info: Dict[str, Any]) -> None:
+        """Register a tool for use by this agent."""
+        try:
+            # Create tool registration entry
+            tool_registration = {
+                'name': tool_info['name'],
+                'description': tool_info['description'],
+                'module': tool_info['module'],
+                'timeout': tool_info.get('timeout', 60.0),
+                'agent_types': tool_info['agent_types'],
+                'status': 'registered',
+                'registered_at': time.time()
+            }
+            
+            # Store in registries
+            self._tool_registry[tool_name] = tool_registration
+            self._tool_timeouts[tool_name] = tool_registration['timeout']
+            
+            # For now, store the tool info - actual tool instances will be created when needed
+            self._tools[tool_name] = tool_registration
+            
+            self.logger.info("Tool registered: %s (%s)", tool_name, tool_info['name'])
+            
+        except Exception as e:
+            self.logger.error("Failed to register tool %s: %s", tool_name, str(e))
+            raise AgentConfigurationError(f"Tool registration failed for {tool_name}: {e}") from e
+    
+    async def _execute_tool(self, tool_name: str, **kwargs) -> Dict[str, Any]:
+        """Execute a registered tool with comprehensive error handling and timeout management."""
+        if tool_name not in self._tools:
+            raise AgentExecutionError(f"Tool not registered: {tool_name}")
+        
+        tool_info = self._tools[tool_name]
+        execution_start = time.time()
+        tool_timeout = self._tool_timeouts.get(tool_name, 60.0)
+        
+        self.logger.info("Executing tool: %s with timeout: %.1fs", tool_name, tool_timeout)
+        
+        try:
+            # Create tool execution context
+            tool_context = {
+                'agent_id': self.agent_id,
+                'agent_type': self.agent_type.value,
+                'session': self._current_session,
+                'correlation_id': self.correlation_id,
+                'execution_start': execution_start,
+                **kwargs
+            }
+            
+            # Execute tool with timeout
+            result = await asyncio.wait_for(
+                self._execute_tool_implementation(tool_name, tool_info, tool_context),
+                timeout=tool_timeout
+            )
+            
+            execution_time = time.time() - execution_start
+            self.logger.info("Tool execution completed: %s in %.2fs", tool_name, execution_time)
+            
+            # Validate and enhance result
+            validated_result = await self._validate_tool_result(tool_name, result)
+            validated_result.update({
+                'execution_time_seconds': execution_time,
+                'tool_name': tool_name,
+                'agent_id': self.agent_id
+            })
+            
+            return validated_result
+            
+        except asyncio.TimeoutError as e:
+            execution_time = time.time() - execution_start
+            self.logger.error("Tool execution timeout: %s after %.2fs", tool_name, execution_time)
+            raise AgentTimeoutError(f"Tool {tool_name} execution timed out after {execution_time:.2f}s") from e
+            
+        except Exception as e:
+            execution_time = time.time() - execution_start
+            self.logger.error("Tool execution failed: %s after %.2fs, error: %s", 
+                            tool_name, execution_time, str(e))
+            raise AgentExecutionError(f"Tool {tool_name} execution failed: {e}") from e
+    
+    async def _execute_tool_implementation(self, tool_name: str, tool_info: Dict[str, Any], 
+                                         tool_context: Dict[str, Any]) -> Dict[str, Any]:
+        """Execute the actual tool implementation with proper error handling."""
+        try:
+            # Dynamic import of tool module
+            import importlib
+            module_name = f"src.tools.{tool_info['module']}"
+            
+            try:
+                # Import the tool module
+                tool_module = importlib.import_module(module_name)
+            except ImportError as e:
+                self.logger.error("Failed to import tool module %s: %s", module_name, str(e))
+                raise AgentExecutionError(f"Tool module {module_name} not found or failed to import: {e}") from e
+            
+            # Check if the tool module has the expected function or class
+            tool_class_name = tool_info['name']
+            if not hasattr(tool_module, tool_class_name):
+                self.logger.error("Tool class %s not found in module %s", tool_class_name, module_name)
+                raise AgentExecutionError(f"Tool class {tool_class_name} not found in module {module_name}")
+            
+            # Get the tool class
+            tool_class = getattr(tool_module, tool_class_name)
+            
+            # Instantiate the tool with configuration
+            tool_config = tool_info.get('config', {})
+            tool_parameters = tool_info.get('parameters', {})
+            
+            try:
+                tool_instance = tool_class(config=tool_config, **tool_parameters)
+            except Exception as e:
+                self.logger.error("Failed to instantiate tool %s: %s", tool_class_name, str(e))
+                raise AgentExecutionError(f"Failed to instantiate tool {tool_class_name}: {e}") from e
+            
+            # Execute the tool with the provided context
+            try:
+                if hasattr(tool_instance, 'execute'):
+                    if asyncio.iscoroutinefunction(tool_instance.execute):
+                        result = await tool_instance.execute(tool_context)
+                    else:
+                        result = tool_instance.execute(tool_context)
+                elif hasattr(tool_instance, 'run'):
+                    if asyncio.iscoroutinefunction(tool_instance.run):
+                        result = await tool_instance.run(tool_context)
+                    else:
+                        result = tool_instance.run(tool_context)
+                elif callable(tool_instance):
+                    if asyncio.iscoroutinefunction(tool_instance):
+                        result = await tool_instance(tool_context)
+                    else:
+                        result = tool_instance(tool_context)
+                else:
+                    self.logger.error("Tool %s has no executable method (execute, run, or __call__)", tool_class_name)
+                    raise AgentExecutionError(f"Tool {tool_class_name} has no executable method")
+                
+                # Ensure result is a dictionary
+                if not isinstance(result, dict):
+                    self.logger.error("Tool %s returned non-dictionary result: %s", tool_class_name, type(result))
+                    raise AgentExecutionError(f"Tool {tool_class_name} must return a dictionary result")
+                
+                return result
+                
+            except Exception as e:
+                self.logger.error("Tool execution failed for %s: %s", tool_class_name, str(e))
+                raise AgentExecutionError(f"Tool {tool_class_name} execution failed: {e}") from e
+                
+        except Exception as e:
+            self.logger.error("Tool implementation execution failed: %s", str(e))
+            if isinstance(e, AgentExecutionError):
+                raise
+            else:
+                raise AgentExecutionError(f"Tool implementation execution failed: {e}") from e
+    
+    async def _validate_tool_result(self, tool_name: str, result: Dict[str, Any]) -> Dict[str, Any]:
+        """Validate and standardize tool execution results."""
+        try:
+            # Ensure result is a dictionary
+            if not isinstance(result, dict):
+                self.logger.warning("Tool result not a dictionary: %s", tool_name)
+                result = {'status': 'error', 'error_message': 'Invalid result format'}
+            
+            # Ensure required fields exist
+            required_fields = ['status']
+            for field in required_fields:
+                if field not in result:
+                    result[field] = 'unknown'
+            
+            # Add tool metadata
+            result.setdefault('metadata', {}).update({
+                'tool_name': tool_name,
+                'agent_id': self.agent_id,
+                'validation_timestamp': time.time()
+            })
+            
+            return result
+            
+        except Exception as e:
+            self.logger.error("Tool result validation failed for %s: %s", tool_name, str(e))
+            return {
+                'status': 'validation_error',
+                'tool_name': tool_name,
+                'error_message': f"Result validation failed: {e}",
+                'metadata': {'agent_id': self.agent_id, 'validation_timestamp': time.time()}
+            }
     
     @property
     def config(self) -> Dict[str, Any]:
@@ -240,8 +557,58 @@ class ADKBaseAgent(ADKBaseAgentCore, ABC):
         agent_result.update({k: v for k, v in result.items() if k != 'metadata'})
         return agent_result
     
+    def get_registered_tools(self) -> Dict[str, Dict[str, Any]]:
+        """Get information about all registered tools."""
+        return self._tool_registry.copy()
+    
+    def is_tool_available(self, tool_name: str) -> bool:
+        """Check if a specific tool is available for execution."""
+        return tool_name in self._tools
+    
+    def get_tool_info(self, tool_name: str) -> Optional[Dict[str, Any]]:
+        """Get detailed information about a specific tool."""
+        return self._tool_registry.get(tool_name)
+    
+    async def execute_tools(self, tool_executions: List[Dict[str, Any]]) -> Dict[str, Any]:
+        """Execute multiple tools and aggregate results."""
+        results = {}
+        execution_start = time.time()
+        
+        self.logger.info("Executing %d tools", len(tool_executions))
+        
+        for tool_execution in tool_executions:
+            tool_name = tool_execution.get('tool_name')
+            tool_kwargs = tool_execution.get('kwargs', {})
+            
+            if not tool_name:
+                self.logger.warning("Tool execution missing tool_name")
+                continue
+                
+            try:
+                result = await self._execute_tool(tool_name, **tool_kwargs)
+                results[tool_name] = result
+            except Exception as e:
+                self.logger.error("Failed to execute tool %s: %s", tool_name, str(e))
+                results[tool_name] = {
+                    'status': 'error',
+                    'tool_name': tool_name,
+                    'error_message': str(e),
+                    'error_type': type(e).__name__
+                }
+        
+        total_execution_time = time.time() - execution_start
+        
+        return {
+            'total_execution_time_seconds': total_execution_time,
+            'tools_executed': len(results),
+            'successful_tools': len([r for r in results.values() if r.get('status') != 'error']),
+            'failed_tools': len([r for r in results.values() if r.get('status') == 'error']),
+            'results': results,
+            'agent_id': self.agent_id
+        }
+    
     async def health_check(self) -> Dict[str, Any]:
-        """Perform agent health check."""
+        """Perform agent health check including tool orchestration status."""
         try:            
             health_status = {
                 'agent_id': self.agent_id,
@@ -250,9 +617,15 @@ class ADKBaseAgent(ADKBaseAgentCore, ABC):
                 'last_check': datetime.now(),
                 'metrics': self._metrics,
                 'configuration_valid': True,
-                'session_active': self._current_session is not None
+                'session_active': self._current_session is not None,
+                'tool_orchestration': {
+                    'tools_loaded': len(self._tools) > 0,
+                    'registered_tools_count': len(self._tools),
+                    'tool_registry_status': 'operational' if self._tool_registry else 'empty',
+                    'tools_available': list(self._tools.keys())
+                }
             }
-            self.logger.info("Health check completed - Status: healthy")
+            self.logger.info("Health check completed - Status: healthy, Tools: %d", len(self._tools))
             return health_status
         except Exception as e:
             self.logger.error("Health check failed - Error: %s", str(e))
@@ -261,11 +634,15 @@ class ADKBaseAgent(ADKBaseAgentCore, ABC):
                 'agent_type': self.agent_type.value,
                 'status': 'unhealthy',
                 'last_check': datetime.now(),
-                'error': str(e)
+                'error': str(e),
+                'tool_orchestration': {
+                    'tools_loaded': False,
+                    'error': 'Health check failed during tool status evaluation'
+                }
             }
     
     def get_agent_info(self) -> Dict[str, Any]:
-        """Get comprehensive agent information."""
+        """Get comprehensive agent information including tool orchestration details."""
         return {
             'agent_id': self.agent_id,
             'agent_type': self.agent_type.value,
@@ -277,5 +654,11 @@ class ADKBaseAgent(ADKBaseAgentCore, ABC):
             'current_session': self._current_session,
             'correlation_id': self.correlation_id,
             'has_adk': HAS_ADK,
-            'has_structlog': HAS_STRUCTLOG
+            'has_structlog': HAS_STRUCTLOG,
+            'tool_orchestration': {
+                'registered_tools': list(self._tools.keys()),
+                'tool_registry': self._tool_registry,
+                'tool_count': len(self._tools),
+                'tool_timeouts': self._tool_timeouts
+            }
         }

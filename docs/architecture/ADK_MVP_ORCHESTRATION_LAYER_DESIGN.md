@@ -17,6 +17,8 @@
 7. [MVP Integration Patterns](#mvp-integration-patterns)
 8. [Performance & Simplicity](#performance--simplicity)
 9. [MVP Deployment](#mvp-deployment)
+10. [Related Documentation](#related-documentation)
+11. [MVP Success Criteria](#mvp-success-criteria)
 
 ---
 
@@ -79,11 +81,11 @@ The MVP follows a streamlined layered architecture focused on essential orchestr
 │  │Master Orch  │ │   Workflow  │ │   Manager   │               │
 │  │             │ │   Engine    │ │  (In-Mem)   │               │
 │  └─────────────┘ └─────────────┘ └─────────────┘               │
-│  ┌─────────────┐ ┌─────────────┐                               │
-│  │   Result    │ │    Memory   │                               │
-│  │ Synthesizer │ │   Manager   │                               │
-│  │             │ │  (In-Mem)   │                               │
-│  └─────────────┘ └─────────────┘                               │
+│  ┌─────────────┐ ┌─────────────┐ ┌─────────────┐               │
+│  │   Result    │ │    Memory   │ │  Context    │               │
+│  │ Synthesizer │ │   Manager   │ │Engineering  │               │
+│  │             │ │  (In-Mem)   │ │   Manager   │               │
+│  └─────────────┘ └─────────────┘ └─────────────┘               │
 └─────────────────────┬───────────────────────────────────────────┘
                       │ (Direct Integration)
 ┌─────────────────────▼───────────────────────────────────────────┐
@@ -108,6 +110,7 @@ The MVP follows a streamlined layered architecture focused on essential orchestr
 | **Session Operations** | Simple lifecycle management | InMemorySessionService |
 | **Agent Coordination** | Sequential execution | SequentialAgent pattern |
 | **Memory Operations** | Basic result storage | In-memory only |
+| **Context Engineering** | Language/framework/domain detection | Pattern matching + LLM analysis |
 | **Result Synthesis** | LLM-powered aggregation | Direct Gemini calls |
 
 ---
@@ -391,10 +394,18 @@ class MVPSequentialWorkflowEngine:
         # Initialize workflow state
         self.workflow_state.initialize(workflow_definition, session_id)
         
-        # Execute each step sequentially
-        step_results = {}
+        # Step 0: Context Engineering (pre-analysis)
+        context_result = await self._execute_context_engineering(
+            workflow_definition.input_data, session_id
+        )
+        
+        # Execute each step sequentially with context
+        step_results = {'context_engineering': context_result}
         
         for step in workflow_definition.steps:
+            # Inject context into step
+            step.context = context_result
+            
             # Execute workflow step
             step_result = await self._execute_workflow_step(
                 step, session_id, step_results
@@ -448,6 +459,36 @@ class MVPSequentialWorkflowEngine:
                 error=str(e),
                 execution_time=0
             )
+
+    async def _execute_context_engineering(self, input_data: Dict, 
+                                         session_id: str) -> ContextResult:
+        """Execute context engineering analysis before agent execution."""
+        
+        context_manager = ContextEngineeringManager()
+        
+        # Detect programming language
+        language_result = await context_manager.detect_language(input_data)
+        
+        # Detect framework/libraries
+        framework_result = await context_manager.detect_framework(
+            input_data, language_result.language
+        )
+        
+        # Detect domain context
+        domain_result = await context_manager.detect_domain(input_data)
+        
+        # Generate context templates
+        context_templates = await context_manager.generate_templates(
+            language_result, framework_result, domain_result
+        )
+        
+        return ContextResult(
+            language=language_result,
+            framework=framework_result,
+            domain=domain_result,
+            templates=context_templates,
+            session_id=session_id
+        )
 ```
 
 ### Workflow Definitions
@@ -459,29 +500,43 @@ mvp_code_review_workflow:
   version: "1.0"
   type: "sequential"
   
+  # Context engineering configuration (pre-processing)
+  context_engineering:
+    enabled: true
+    language_detection: true
+    framework_detection: true
+    domain_detection: true
+    confidence_threshold: 0.6
+  
   steps:
     - name: "code_quality_analysis"
       agent: "code_quality_agent"
       timeout: 120
+      context_aware: true
       config:
         analysis_depth: "standard"
         metrics_enabled: true
+        use_context_templates: true
         
     - name: "security_analysis"  
       agent: "security_agent"
       timeout: 120
+      context_aware: true
       requires: ["code_quality_analysis"]
       config:
         scan_type: "comprehensive"
         severity_threshold: "medium"
+        use_domain_security_patterns: true
         
     - name: "practices_analysis"
       agent: "engineering_practices_agent" 
       timeout: 120
+      context_aware: true
       requires: ["code_quality_analysis", "security_analysis"]
       config:
         practices_scope: "devops_essentials"
         recommendation_level: "actionable"
+        use_framework_patterns: true
 ```
 
 ---
@@ -753,6 +808,138 @@ class MVPLLMClient:
         return self._parse_structured_response(response)
 ```
 
+### Context Engineering Integration Patterns
+
+```python
+class ContextEngineeringManager:
+    """
+    MVP Context Engineering Manager for intelligent agent prompting.
+    """
+    
+    def __init__(self):
+        self.language_detector = LanguageDetector()
+        self.framework_detector = FrameworkDetector()
+        self.domain_detector = DomainDetector()
+        self.template_generator = ContextTemplateGenerator()
+        
+    async def detect_language(self, input_data: Dict) -> LanguageResult:
+        """Detect programming language with confidence scoring."""
+        
+        # Pattern-based detection
+        patterns_result = self.language_detector.detect_by_patterns(
+            input_data['files']
+        )
+        
+        # LLM-enhanced detection for complex cases
+        if patterns_result.confidence < 0.8:
+            llm_result = await self.language_detector.llm_detect(
+                input_data['files']
+            )
+            return self._combine_results(patterns_result, llm_result)
+            
+        return patterns_result
+        
+    async def detect_framework(self, input_data: Dict, 
+                              language: str) -> FrameworkResult:
+        """Detect frameworks and libraries used."""
+        
+        framework_result = self.framework_detector.detect(
+            input_data['files'], language
+        )
+        
+        return FrameworkResult(
+            framework=framework_result.primary_framework,
+            libraries=framework_result.detected_libraries,
+            confidence=framework_result.confidence,
+            context_tags=framework_result.context_tags
+        )
+        
+    async def detect_domain(self, input_data: Dict) -> DomainResult:
+        """Detect business/application domain."""
+        
+        # Analyze file names, imports, and code patterns
+        domain_hints = self.domain_detector.extract_domain_hints(
+            input_data['files']
+        )
+        
+        # LLM analysis for domain classification
+        domain_classification = await self.domain_detector.classify_domain(
+            domain_hints
+        )
+        
+        return DomainResult(
+            domain=domain_classification.domain,
+            confidence=domain_classification.confidence,
+            security_focus=domain_classification.security_priorities,
+            quality_focus=domain_classification.quality_priorities
+        )
+        
+    async def generate_templates(self, language_result: LanguageResult,
+                               framework_result: FrameworkResult,
+                               domain_result: DomainResult) -> ContextTemplates:
+        """Generate context-aware prompt templates for agents."""
+        
+        templates = self.template_generator.generate(
+            language=language_result.language,
+            framework=framework_result.framework,
+            domain=domain_result.domain,
+            confidence_scores={
+                'language': language_result.confidence,
+                'framework': framework_result.confidence,
+                'domain': domain_result.confidence
+            }
+        )
+        
+        return ContextTemplates(
+            code_quality_template=templates.code_quality,
+            security_template=templates.security,
+            practices_template=templates.practices,
+            synthesis_template=templates.synthesis
+        )
+
+class ContextAwareAgent:
+    """Base class for context-aware agents."""
+    
+    def __init__(self, agent_config: Dict):
+        self.agent_config = agent_config
+        self.context_templates = None
+        
+    def set_context(self, context_result: ContextResult):
+        """Inject context engineering results into agent."""
+        self.context_templates = context_result.templates
+        self.language_context = context_result.language
+        self.framework_context = context_result.framework
+        self.domain_context = context_result.domain
+        
+    async def execute_with_context(self, input_data: Dict) -> Dict:
+        """Execute agent analysis with context-enhanced prompts."""
+        
+        if self.context_templates:
+            enhanced_prompt = self._build_context_prompt(
+                input_data, self.context_templates
+            )
+        else:
+            enhanced_prompt = self._build_default_prompt(input_data)
+            
+        return await self._execute_llm_analysis(enhanced_prompt)
+        
+    def _build_context_prompt(self, input_data: Dict, 
+                            templates: ContextTemplates) -> str:
+        """Build context-enhanced prompt using templates."""
+        
+        agent_template = getattr(templates, f"{self.agent_type}_template")
+        
+        return agent_template.format(
+            language=self.language_context.language,
+            framework=self.framework_context.framework,
+            domain=self.domain_context.domain,
+            code_content=input_data['content'],
+            language_patterns=self.language_context.patterns,
+            framework_patterns=self.framework_context.patterns,
+            domain_priorities=self.domain_context.priorities
+        )
+```
+
 ---
 
 ## Performance & Simplicity
@@ -897,6 +1084,47 @@ curl -X POST http://localhost:8000/api/v1/analyze \
     ]
   }'
 ```
+
+---
+
+## Related Documentation
+
+### 📋 **Companion Design Documents**
+
+#### **ADK MVP System Design**
+- **Document:** `docs/architecture/ADK_MVP_CODE_REVIEW_SYSTEM_DESIGN.md`
+- **Purpose:** Complete system architecture with context engineering integration
+- **Key Integration Points:**
+  - Context engineering directory structure and models
+  - Context detection patterns and configuration
+  - Context-aware API schemas and endpoints
+  - ADK BaseAgent patterns and session management
+
+#### **MVP Implementation Plan**
+- **Document:** `docs/implementation_plan/MVP_IMPLEMENTATION_PLAN.md`
+- **Purpose:** Complete implementation roadmap with orchestration tasks
+- **Key Implementation Phases:**
+  - Phase 4.1.1: Context-Aware Sequential Workflow Implementation
+  - Context engineering workflow integration tasks
+  - Orchestration layer development priorities
+  - Context-aware agent coordination patterns
+
+### 🔄 **Orchestration Integration Points**
+
+#### **Context Engineering Workflow**
+- **System Design**: Context engineering manager architecture and components
+- **Orchestration Design**: Context workflow execution and agent integration
+- **Implementation Plan**: Context engineering workflow development tasks
+
+#### **Agent Coordination Patterns**
+- **System Design**: ADK BaseAgent patterns and specialized agent definitions
+- **Orchestration Design**: Sequential workflow with context injection
+- **Implementation Plan**: Agent implementation with context-aware capabilities
+
+#### **Session and Memory Management**
+- **System Design**: ADK session service configuration and memory models
+- **Orchestration Design**: In-memory session management with context persistence
+- **Implementation Plan**: Session service implementation with context integration
 
 ---
 
