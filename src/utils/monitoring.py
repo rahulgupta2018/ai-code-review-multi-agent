@@ -16,8 +16,8 @@ from dataclasses import dataclass, field
 from functools import wraps
 import json
 
-from ..config.loader import get_config
-from ..api.constants import (
+from .config_loader import get_config
+from .constants import (
     HTTP_200_OK, HTTP_500_INTERNAL_SERVER_ERROR,
     SUCCESS_STATUS_CODES, SERVER_ERROR_STATUS_CODES
 )

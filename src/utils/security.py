@@ -14,9 +14,9 @@ from datetime import datetime, timedelta
 import base64
 import json
 
-from ..config.loader import get_config
-from ..common import SecurityError
-from ..api.constants import CORRELATION_ID_HEADER
+from .config_loader import get_config
+from ..utils.exceptions import SecurityError
+from .constants import CORRELATION_ID_HEADER
 
 # TODO: Move these exceptions to appropriate modules
 class AuthenticationError(SecurityError):

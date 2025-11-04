@@ -51,13 +51,12 @@ except ImportError:
             pass
     HAS_ADK = False
 
-from ..config.loader import get_config
-from ..common.exceptions import ADKCodeReviewError
-from ..common.utils import generate_correlation_id
-from ..agents.types import AgentSession, SessionStatus
-from ..agents.exceptions import (
-    SessionError, SessionConfigurationError, SessionExecutionError
+from ..utils.config_loader import get_config
+from ..utils.exceptions import (
+    ADKCodeReviewError, SessionError, SessionConfigurationError, SessionExecutionError
 )
+from ..utils.common import generate_correlation_id
+from ..utils.types import AgentSession, SessionStatus
 
 
 class ADKSessionService(ADKInMemorySessionService):

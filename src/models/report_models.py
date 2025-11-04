@@ -12,9 +12,8 @@ from enum import Enum
 from pydantic import BaseModel, Field, validator, root_validator
 from pydantic.types import StrictStr, StrictInt, StrictFloat, StrictBool
 
-from ..core.constants import (
-    ReportType, ReportFormat, Priority, Severity, FindingCategory,
-    SupportedLanguage
+from ..utils.constants import (
+    Priority, MAX_SUMMARY_LENGTH, MAX_RECOMMENDATION_LENGTH
 )
 
 

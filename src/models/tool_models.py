@@ -12,9 +12,8 @@ from enum import Enum
 from pydantic import BaseModel, Field, validator, root_validator
 from pydantic.types import StrictStr, StrictInt, StrictFloat, StrictBool
 
-from ..core.constants import (
-    ToolType, ToolStatus, Priority, SupportedLanguage,
-    DEFAULT_TOOL_TIMEOUT, DEFAULT_MAX_TOOL_RETRIES
+from ..utils.constants import (
+    Priority, DEFAULT_RETRY_ATTEMPTS, MAX_TOOL_EXECUTION_TIME
 )
 
 

@@ -12,10 +12,8 @@ from enum import Enum
 from pydantic import BaseModel, Field, validator, root_validator
 from pydantic.types import StrictStr, StrictInt, StrictFloat, StrictBool
 
-from ..core.constants import (
-    SupportedLanguage, AnalysisType, AgentType, Priority, Severity,
-    ComplexityMetric, SecurityCategory, EngineeringPracticeCategory,
-    MAX_FILE_SIZE_BYTES, MAX_FILES_PER_REQUEST, MAX_FILENAME_LENGTH
+from ..utils.constants import (
+    AgentType, Priority, MAX_FILE_SIZE, MAX_FINDINGS_PER_AGENT
 )
 
 

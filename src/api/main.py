@@ -16,8 +16,8 @@ import os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 
 # Import core modules
-from ..config.loader import get_config
-from ..common import ADKCodeReviewError, ValidationError, ConfigurationError
+from ..utils.config_loader import get_config
+from ..utils.exceptions import ADKCodeReviewError, ValidationError, ConfigurationError
 from .middleware import SecurityMiddleware, LoggingMiddleware
 from .v1.router import api_router
 

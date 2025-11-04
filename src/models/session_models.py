@@ -12,9 +12,10 @@ from enum import Enum
 from pydantic import BaseModel, Field, validator, root_validator
 from pydantic.types import StrictStr, StrictInt, StrictFloat, StrictBool
 
-from ..core.constants import (
-    SessionStatus, WorkflowStatus, AgentType, AgentStatus,
-    MAX_CONCURRENT_SESSIONS, SESSION_CLEANUP_INTERVAL, MAX_SESSION_MEMORY_MB
+from ..utils.constants import (
+    DEFAULT_SESSION_TIMEOUT, SESSION_CLEANUP_INTERVAL, MAX_SESSION_MEMORY_MB,
+    WORKFLOW_STATE_PENDING, WORKFLOW_STATE_RUNNING, WORKFLOW_STATE_COMPLETED,
+    WORKFLOW_STATE_FAILED, WORKFLOW_STATE_CANCELLED
 )
 
 

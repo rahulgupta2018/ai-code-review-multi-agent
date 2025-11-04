@@ -12,8 +12,8 @@ from enum import Enum
 from pydantic import BaseModel, Field, validator, root_validator
 from pydantic.types import StrictStr, StrictInt, StrictFloat, StrictBool
 
-from ..agents.types import AgentType, AgentStatus, Priority
-from ..agents.constants import DEFAULT_AGENT_TIMEOUT, DEFAULT_RETRY_ATTEMPTS
+from ..utils.types import AgentType, AgentStatus, Priority
+from ..utils.constants import DEFAULT_AGENT_TIMEOUT, DEFAULT_RETRY_ATTEMPTS
 
 # TODO: Move GeminiModel to LLM module
 class GeminiModel(Enum):

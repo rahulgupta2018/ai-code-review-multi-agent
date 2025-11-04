@@ -12,9 +12,9 @@ from enum import Enum
 from pydantic import BaseModel, Field, validator, root_validator
 from pydantic.types import StrictStr, StrictInt, StrictFloat, StrictBool
 
-from ..core.constants import (
-    WorkflowType, WorkflowStatus, StepStatus, Priority,
-    DEFAULT_WORKFLOW_TIMEOUT, DEFAULT_MAX_WORKFLOW_RETRIES
+from ..utils.constants import (
+    WorkflowStatus, Priority, AgentStatus,
+    DEFAULT_WORKFLOW_TIMEOUT, DEFAULT_RETRY_ATTEMPTS
 )
 
 

@@ -80,6 +80,39 @@ def load_config() -> Dict[str, Any]:
                     file_config = yaml.safe_load(file) or {}
                     config = _deep_merge(config, file_config)
         
+        # Load ADK configuration
+        adk_config_dir = config_dir / "adk"
+        if adk_config_dir.exists():
+            adk_config = {}
+            for config_file in adk_config_dir.glob("*.yaml"):
+                with open(config_file, 'r', encoding='utf-8') as file:
+                    file_config = yaml.safe_load(file) or {}
+                    # Use filename (without extension) as the key under 'adk'
+                    config_key = config_file.stem
+                    adk_config[config_key] = file_config
+            if adk_config:
+                config['adk'] = adk_config
+        
+        # Load agents configuration
+        agents_config_dir = config_dir / "agents"
+        if agents_config_dir.exists():
+            for config_file in agents_config_dir.glob("*.yaml"):
+                with open(config_file, 'r', encoding='utf-8') as file:
+                    file_config = yaml.safe_load(file) or {}
+                    config = _deep_merge(config, file_config)
+        
+        # Load LLM configuration
+        llm_config_dir = config_dir / "llm"
+        if llm_config_dir.exists():
+            llm_config = {}
+            for config_file in llm_config_dir.glob("*.yaml"):
+                with open(config_file, 'r', encoding='utf-8') as file:
+                    file_config = yaml.safe_load(file) or {}
+                    config_key = config_file.stem
+                    llm_config[config_key] = file_config
+            if llm_config:
+                config['llm'] = llm_config
+        
         # Load observability configuration
         obs_config_dir = config_dir / "observability"
         if obs_config_dir.exists():
@@ -102,7 +135,7 @@ def load_config() -> Dict[str, Any]:
         
         _CONFIG_CACHE = config
         
-        logger.info(f"Configuration loaded for environment: {environment}, sources: api, observability, environments")
+        logger.info(f"Configuration loaded for environment: {environment}, sources: api, adk, agents, llm, observability, environments")
         
         return config
         

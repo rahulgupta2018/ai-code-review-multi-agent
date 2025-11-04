@@ -18,8 +18,8 @@ from pathlib import Path
 import structlog
 from pythonjsonlogger import jsonlogger
 
-from ..config.loader import get_config
-from ..api.constants import CORRELATION_ID_HEADER, REQUEST_ID_HEADER
+from .config_loader import get_config
+from .constants import CORRELATION_ID_HEADER, REQUEST_ID_HEADER
 
 # Context variables for tracking request-specific data
 correlation_id_var: ContextVar[Optional[str]] = ContextVar('correlation_id', default=None)

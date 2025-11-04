@@ -30,12 +30,21 @@ except ImportError:
             return {}
     HAS_ADK = False
 
-from ..config.loader import get_config
-from ..common.exceptions import ADKCodeReviewError
-from ..common.utils import generate_correlation_id
-from .types import AgentType, AgentStatus
-from .exceptions import AgentError, AgentExecutionError, AgentTimeoutError, AgentConfigurationError, AgentValidationError
-from .constants import DEFAULT_AGENT_TIMEOUT, AGENT_VERSION_KEY
+from ..utils.config_loader import get_config
+from ..utils.exceptions import (
+    ADKCodeReviewError, AgentError, AgentExecutionError, AgentTimeoutError, 
+    AgentConfigurationError, AgentValidationError, FunctionToolError
+)
+from ..utils.common import generate_correlation_id
+from ..utils.constants import (
+    DEFAULT_AGENT_TIMEOUT, 
+    AGENT_VERSION_KEY,
+    MAX_TOOL_EXECUTION_TIME,
+    AGENT_HEALTH_CHECK_INTERVAL,
+    AGENT_HEALTH_TIMEOUT
+)
+from ..utils.types import AgentType, AgentStatus
+from ..utils.adk_helpers import get_adk_helpers
 
 
 class ADKBaseAgent(ADKBaseAgentCore, ABC):
@@ -72,6 +81,11 @@ class ADKBaseAgent(ADKBaseAgentCore, ABC):
         self._tool_registry: Dict[str, Dict[str, Any]] = {}
         self._tool_timeouts: Dict[str, float] = {}
         
+        # ADK FunctionTool integration
+        self._function_tools: Dict[str, Any] = {}
+        self._adk_helpers = get_adk_helpers()
+        self._function_tools_registered = False
+        
         # Initialize tool orchestration
         self._load_tools()
         
@@ -79,21 +93,24 @@ class ADKBaseAgent(ADKBaseAgentCore, ABC):
                         self.agent_id, agent_type.value, len(self._tools))
     
     def _load_configuration(self, agent_type: AgentType, config_override: Optional[Dict[str, Any]] = None) -> None:
-        """Load configuration from YAML files with no hardcoding."""
+        """Load configuration from YAML files using consolidated config loader."""
         try:
             config = get_config()
+            
+            # Get ADK agent configuration
             adk_config = config.get('adk', {}).get('agent', {})
-            if not adk_config:
-                raise AgentConfigurationError("ADK agent configuration not found")
             
+            # Get agent configurations
             agent_configs = config.get('agents', {})
-            if not agent_configs:
-                raise AgentConfigurationError("Agent configurations not found")
             
+            # Get agent-specific configuration
             agent_specific_config = agent_configs.get(agent_type.value, {})
-            if not agent_specific_config:
-                raise AgentConfigurationError(f"Configuration for {agent_type.value} not found")
             
+            # Fail if no agent-specific configuration found
+            if not agent_specific_config:
+                raise AgentConfigurationError(f"No configuration found for agent type: {agent_type.value}")
+            
+            # Merge configurations with priority: config_override > agent_specific > adk_config
             self._config = {**adk_config, **agent_specific_config, **(config_override or {})}
             self._validate_configuration()
             
@@ -164,7 +181,7 @@ class ADKBaseAgent(ADKBaseAgentCore, ABC):
             tools_config = config.get('adk', {}).get('tools', {})
             
             if not tools_config:
-                self.logger.error("No ADK tools configuration found in config/adk/tools.yaml")
+                self.logger.error("No ADK tools configuration found")
                 raise AgentConfigurationError("ADK tools configuration not found")
             
             configured_tools = tools_config.get('tools', {})
@@ -420,6 +437,132 @@ class ADKBaseAgent(ADKBaseAgentCore, ABC):
                 'metadata': {'agent_id': self.agent_id, 'validation_timestamp': time.time()}
             }
     
+    async def _register_function_tools(self) -> None:
+        """Register existing tools as ADK FunctionTools for enhanced integration."""
+        try:
+            self.logger.info("Starting ADK FunctionTool registration for %d tools", len(self._tools))
+            
+            for tool_name, tool_info in self._tools.items():
+                try:
+                    # Create a wrapper function for the tool that conforms to ADK FunctionTool interface
+                    async def create_tool_wrapper(tn=tool_name, ti=tool_info):
+                        async def tool_function(**kwargs) -> Dict[str, Any]:
+                            """ADK FunctionTool wrapper for existing tool implementation."""
+                            try:
+                                # Execute the tool using our existing tool execution pipeline
+                                result = await self._execute_tool(tn, **kwargs)
+                                return result
+                            except Exception as e:
+                                self.logger.error("FunctionTool execution failed for %s: %s", tn, str(e))
+                                raise FunctionToolError(f"FunctionTool {tn} execution failed: {e}") from e
+                        return tool_function
+                    
+                    # Create the tool wrapper
+                    tool_wrapper = await create_tool_wrapper()
+                    
+                    # Register as ADK FunctionTool using adk_helpers
+                    function_tool = await self._adk_helpers.create_function_tool(
+                        name=tool_name,
+                        description=tool_info.get('description', f"ADK FunctionTool for {tool_name}"),
+                        func=tool_wrapper,
+                        validate_args=True
+                    )
+                    
+                    if function_tool:
+                        self._function_tools[tool_name] = function_tool
+                        self.logger.info("Registered ADK FunctionTool: %s", tool_name)
+                    else:
+                        self.logger.error("Failed to create ADK FunctionTool: %s", tool_name)
+                        
+                except Exception as e:
+                    self.logger.error("Failed to register FunctionTool %s: %s", tool_name, str(e))
+                    # Continue with other tools
+                    continue
+            
+            self.logger.info("ADK FunctionTool registration completed - %d tools registered", 
+                           len(self._function_tools))
+            
+        except Exception as e:
+            self.logger.error("ADK FunctionTool registration failed: %s", str(e))
+            # Don't fail agent initialization if FunctionTool registration fails
+            pass
+
+    def get_function_tools(self) -> Dict[str, Any]:
+        """Get all registered ADK FunctionTools."""
+        return self._function_tools.copy()
+    
+    def get_function_tool(self, tool_name: str) -> Optional[Any]:
+        """Get a specific ADK FunctionTool by name."""
+        return self._function_tools.get(tool_name)
+    
+    async def execute_function_tool(self, tool_name: str, **kwargs) -> Dict[str, Any]:
+        """Execute an ADK FunctionTool directly."""
+        if tool_name not in self._function_tools:
+            raise FunctionToolError(f"ADK FunctionTool not registered: {tool_name}")
+        
+        try:
+            function_tool = self._function_tools[tool_name]
+            
+            # Execute FunctionTool using ADK interface
+            if hasattr(function_tool, 'func'):
+                result = await function_tool.func(**kwargs)
+            else:
+                # Fallback to calling the tool directly
+                result = await function_tool(**kwargs)
+            
+            self.logger.info("ADK FunctionTool executed successfully: %s", tool_name)
+            return result
+            
+        except Exception as e:
+            self.logger.error("ADK FunctionTool execution failed for %s: %s", tool_name, str(e))
+            raise FunctionToolError(f"ADK FunctionTool {tool_name} execution failed: {e}") from e
+
+    async def validate_function_tool_integration(self) -> Dict[str, Any]:
+        """Validate that FunctionTool integration is working correctly."""
+        try:
+            validation_result = {
+                'status': 'success',
+                'adk_helpers_available': self._adk_helpers is not None,
+                'total_tools': len(self._tools),
+                'function_tools_registered': len(self._function_tools),
+                'function_tool_names': list(self._function_tools.keys()),
+                'integration_healthy': True,
+                'issues': []
+            }
+            
+            # Check if ADK helpers are available
+            if not self._adk_helpers:
+                validation_result['issues'].append("ADK helpers not available")
+                validation_result['integration_healthy'] = False
+            
+            # Check if all tools were registered as FunctionTools
+            missing_function_tools = set(self._tools.keys()) - set(self._function_tools.keys())
+            if missing_function_tools:
+                validation_result['issues'].append(f"Tools not registered as FunctionTools: {list(missing_function_tools)}")
+                validation_result['integration_healthy'] = False
+            
+            # Validate each FunctionTool
+            for tool_name, function_tool in self._function_tools.items():
+                if not hasattr(function_tool, 'name') or not hasattr(function_tool, 'description'):
+                    validation_result['issues'].append(f"FunctionTool {tool_name} missing required attributes")
+                    validation_result['integration_healthy'] = False
+            
+            if validation_result['issues']:
+                validation_result['status'] = 'warning' if validation_result['integration_healthy'] else 'error'
+            
+            self.logger.info("FunctionTool integration validation completed - Status: %s", 
+                           validation_result['status'])
+            return validation_result
+            
+        except Exception as e:
+            self.logger.error("FunctionTool integration validation failed: %s", str(e))
+            return {
+                'status': 'error',
+                'error': str(e),
+                'integration_healthy': False,
+                'issues': [f"Validation failed: {str(e)}"]
+            }
+    
     @property
     def config(self) -> Dict[str, Any]:
         """Get the agent configuration."""
@@ -475,8 +618,17 @@ class ADKBaseAgent(ADKBaseAgentCore, ABC):
             else:
                 raise AgentExecutionError(f"Agent execution failed: {e}") from e
     
+    async def _ensure_function_tools_registered(self) -> None:
+        """Ensure ADK FunctionTools are registered before use."""
+        if not self._function_tools_registered:
+            await self._register_function_tools()
+            self._function_tools_registered = True
+
     async def _execute_with_context(self, ctx, execution_id: str) -> Dict[str, Any]:
         """Execute agent logic with proper context setup."""
+        # Ensure FunctionTools are registered
+        await self._ensure_function_tools_registered()
+        
         if hasattr(ctx, 'session_id'):
             await self._setup_session(ctx.session_id)
         
@@ -622,7 +774,10 @@ class ADKBaseAgent(ADKBaseAgentCore, ABC):
                     'tools_loaded': len(self._tools) > 0,
                     'registered_tools_count': len(self._tools),
                     'tool_registry_status': 'operational' if self._tool_registry else 'empty',
-                    'tools_available': list(self._tools.keys())
+                    'tools_available': list(self._tools.keys()),
+                    'function_tools_registered': len(self._function_tools),
+                    'function_tool_names': list(self._function_tools.keys()),
+                    'adk_integration_status': 'operational' if self._function_tools else 'not_registered'
                 }
             }
             self.logger.info("Health check completed - Status: healthy, Tools: %d", len(self._tools))
@@ -637,6 +792,7 @@ class ADKBaseAgent(ADKBaseAgentCore, ABC):
                 'error': str(e),
                 'tool_orchestration': {
                     'tools_loaded': False,
+                    'function_tools_registered': 0,
                     'error': 'Health check failed during tool status evaluation'
                 }
             }
@@ -659,6 +815,9 @@ class ADKBaseAgent(ADKBaseAgentCore, ABC):
                 'registered_tools': list(self._tools.keys()),
                 'tool_registry': self._tool_registry,
                 'tool_count': len(self._tools),
-                'tool_timeouts': self._tool_timeouts
+                'tool_timeouts': self._tool_timeouts,
+                'function_tools': list(self._function_tools.keys()),
+                'function_tool_count': len(self._function_tools),
+                'adk_helpers_available': self._adk_helpers is not None
             }
         }

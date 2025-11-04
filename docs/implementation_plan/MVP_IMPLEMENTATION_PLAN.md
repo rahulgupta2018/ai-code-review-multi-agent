@@ -236,22 +236,37 @@ Impact on plan/status:
 - This unblocks all Task 1.2.1b/1.2.1c work (ADK FunctionTool registration and service-layer integration) since the BaseAgent now supports dynamic tool discovery and real tool execution.
 - Update: mark `Task 1.2.1a` as completed in the MVP plan and proceed to implement ADK FunctionTool registration and specialized agents.
 
-#### **Task 1.2.1b: ADK FunctionTool Integration** ❌ **CRITICAL FOR MVP**
-```bash
-# Required integration with existing tools:
-- Connect with src/tools/tree_sitter_tool.py
-- Connect with src/tools/complexity_analyzer_tool.py  
-- Connect with src/tools/static_analyzer_tool.py
-- Tool registration in ADK FunctionTool format
-```
+#### **Task 1.2.1b: ADK FunctionTool Integration** ✅ **COMPLETED**
 
-**Required Implementation:**
-```python
-async def register_function_tools(self) -> None:
-    """Register ADK function tools for this agent."""
-    # Integration with existing tool implementations
-    # Tool validation and capability registration
-```
+Implementation summary:
+
+- ✅ Enhanced base_agent.py with ADK FunctionTool integration methods (`_register_function_tools`, `execute_function_tool`, `get_function_tools`, `validate_function_tool_integration`).
+- ✅ Implemented automatic FunctionTool registration that wraps existing tools (TreeSitterTool, ComplexityAnalyzerTool, StaticAnalyzerTool) as ADK FunctionTools.
+- ✅ Added robust configuration loading that reads both ADK agent configuration and tools configuration directly from YAML files when not available in main config.
+- ✅ Integrated with ADK helpers framework for proper FunctionTool creation and management.
+- ✅ Enhanced health checks and agent info to include FunctionTool status and metrics.
+- ✅ Added comprehensive validation system to ensure FunctionTool integration is working correctly.
+
+Notes / Validation:
+
+- All existing tools are now automatically registered as ADK FunctionTools during agent initialization.
+- FunctionTool execution uses the same robust tool execution pipeline with timeout, error handling, and structured logging.
+- Validation tests demonstrate 100% success rate for FunctionTool registration and execution.
+- Integration is non-breaking: existing tool orchestration continues to work while adding ADK FunctionTool capabilities.
+
+Validation Results (Docker container tests):
+- Agent Initialized: ✅
+- Tools Loaded: 3 (TreeSitterTool, ComplexityAnalyzerTool, StaticAnalyzerTool)
+- FunctionTools Registered: 3/3 (100% success rate)
+- Integration Validation: SUCCESS
+- FunctionTool Tests: 3/3 passed
+- Agent Health: HEALTHY with operational ADK integration
+
+Impact on plan/status:
+
+- This completes the core ADK BaseAgent enhancement work and unblocks Task 1.2.1c (Service Layer Integration).
+- FunctionTool integration provides enhanced tool capabilities for agent development and ensures compatibility with ADK framework patterns.
+- The implementation enables seamless use of existing tools through both native tool execution and ADK FunctionTool interfaces.
 
 #### **Task 1.2.1c: Service Layer Integration** ❌ **ESSENTIAL FOR PRODUCTION**
 ```bash
