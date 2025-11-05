@@ -8,7 +8,6 @@ memory optimization, cleanup, and monitoring capabilities.
 
 import asyncio
 import gc
-import psutil
 import time
 from datetime import datetime, timedelta
 from typing import Any, Dict, List, Optional, Set, Tuple
@@ -17,6 +16,13 @@ import json
 import gzip
 import logging
 from collections import defaultdict
+
+# Conditional import for psutil
+try:
+    import psutil
+    HAS_PSUTIL = True
+except ImportError:
+    HAS_PSUTIL = False
 
 try:
     import structlog
@@ -31,12 +37,12 @@ except ImportError:
     def get_structured_logger(name: str):
         return logging.getLogger(name)
 
-from ..utils.config_loader import get_config
-from ..utils.exceptions import (
+from utils.config_loader import get_config
+from utils.exceptions import (
     ADKCodeReviewError, SessionError, SessionConfigurationError, SessionExecutionError
 )
-from ..utils.common import generate_correlation_id
-from ..utils.types import AgentSession, SessionStatus
+from utils.common import generate_correlation_id
+from utils.types import AgentSession, SessionStatus
 
 
 class ADKMemoryService:
@@ -126,14 +132,13 @@ class ADKMemoryService:
         """Validate the memory service configuration."""
         memory_config = self._config.get('memory', {})
         if not memory_config:
-            # Set default memory configuration
-            self._config['memory'] = {
-                'total_memory_limit': 2048,  # 2GB
-                'max_memory_per_session': 50,  # 50MB
-                'gc_threshold': 0.8,
-                'compression_enabled': True
-            }
-            return
+            raise SessionConfigurationError("Memory configuration not found - required section: 'memory'")
+        
+        # Validate required memory configuration fields
+        required_fields = ['total_memory_limit', 'max_memory_per_session', 'gc_threshold', 'compression_enabled']
+        missing_fields = [field for field in required_fields if field not in memory_config]
+        if missing_fields:
+            raise SessionConfigurationError(f"Missing required memory configuration: {missing_fields}")
         
         # Validate memory limits
         total_limit = memory_config.get('total_memory_limit', 2048)
@@ -611,8 +616,9 @@ class ADKMemoryService:
             # Get system memory info if available
             system_memory_mb = 0.0
             try:
-                process = psutil.Process()
-                system_memory_mb = process.memory_info().rss / (1024 * 1024)
+                if HAS_PSUTIL:
+                    process = psutil.Process()
+                    system_memory_mb = process.memory_info().rss / (1024 * 1024)
             except:
                 pass
             

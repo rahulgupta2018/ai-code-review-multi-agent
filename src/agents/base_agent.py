@@ -30,21 +30,26 @@ except ImportError:
             return {}
     HAS_ADK = False
 
-from ..utils.config_loader import get_config
-from ..utils.exceptions import (
+from utils.config_loader import get_config
+from utils.exceptions import (
     ADKCodeReviewError, AgentError, AgentExecutionError, AgentTimeoutError, 
     AgentConfigurationError, AgentValidationError, FunctionToolError
 )
-from ..utils.common import generate_correlation_id
-from ..utils.constants import (
+from utils.common import generate_correlation_id
+from utils.constants import (
     DEFAULT_AGENT_TIMEOUT, 
     AGENT_VERSION_KEY,
     MAX_TOOL_EXECUTION_TIME,
     AGENT_HEALTH_CHECK_INTERVAL,
     AGENT_HEALTH_TIMEOUT
 )
-from ..utils.types import AgentType, AgentStatus
-from ..utils.adk_helpers import get_adk_helpers
+from utils.types import AgentType, AgentStatus
+from utils.adk_helpers import get_adk_helpers
+
+# Service layer imports
+from services.session_service import ADKSessionService
+from services.memory_service import ADKMemoryService  
+from services.model_service import ADKModelService
 
 
 class ADKBaseAgent(ADKBaseAgentCore, ABC):
@@ -86,6 +91,14 @@ class ADKBaseAgent(ADKBaseAgentCore, ABC):
         self._adk_helpers = get_adk_helpers()
         self._function_tools_registered = False
         
+        # Service layer integration (real implementation)
+        self._session_service: Optional[ADKSessionService] = None
+        self._memory_service: Optional[ADKMemoryService] = None
+        self._model_service: Optional[ADKModelService] = None
+        
+        # Initialize services
+        self._initialize_services()
+        
         # Initialize tool orchestration
         self._load_tools()
         
@@ -116,6 +129,52 @@ class ADKBaseAgent(ADKBaseAgentCore, ABC):
             
         except Exception as e:
             raise AgentConfigurationError(f"Failed to load agent configuration: {e}") from e
+    
+    def _initialize_services(self) -> None:
+        """Initialize service layer components with error handling."""
+        try:
+            self.logger.info("Initializing service layer components...")
+            
+            # Initialize session service
+            try:
+                self._session_service = ADKSessionService()
+                self.logger.info("Session service initialized successfully")
+            except Exception as e:
+                self.logger.error("Failed to initialize session service: %s", str(e))
+                # Continue without session service - graceful degradation
+                self._session_service = None
+            
+            # Initialize memory service  
+            try:
+                self._memory_service = ADKMemoryService()
+                self.logger.info("Memory service initialized successfully")
+            except Exception as e:
+                self.logger.error("Failed to initialize memory service: %s", str(e))
+                # Continue without memory service - graceful degradation
+                self._memory_service = None
+            
+            # Initialize model service
+            try:
+                self._model_service = ADKModelService()
+                self.logger.info("Model service initialized successfully")
+            except Exception as e:
+                self.logger.error("Failed to initialize model service: %s", str(e))
+                # Continue without model service - graceful degradation
+                self._model_service = None
+            
+            self.logger.info(
+                "Service layer initialization completed - Session: %s, Memory: %s, Model: %s",
+                bool(self._session_service),
+                bool(self._memory_service), 
+                bool(self._model_service)
+            )
+            
+        except Exception as e:
+            self.logger.error("Service layer initialization failed: %s", str(e))
+            # Continue with degraded functionality
+            self._session_service = None
+            self._memory_service = None
+            self._model_service = None
     
     def _validate_configuration(self) -> None:
         """Validate the loaded configuration."""
@@ -650,31 +709,130 @@ class ADKBaseAgent(ADKBaseAgentCore, ABC):
             await self._cleanup_session()
     
     async def _setup_session(self, session_id: str) -> None:
-        """Set up session for agent execution."""
+        """Set up session using real ADK session service."""
         try:
-            self._current_session = {
-                'session_id': session_id,
-                'correlation_id': self.correlation_id,
-                'status': 'active',
-                'created_at': datetime.now(),
-                'updated_at': datetime.now(),
-                'metadata': {'agent_id': self.agent_id, 'agent_type': self.agent_type.value}
-            }
-            self.logger.info("Session setup completed - ID: %s", session_id)
+            if self._session_service:
+                # Use real session service
+                created_session_id = await self._session_service.create_session(
+                    session_id=session_id,
+                    correlation_id=self.correlation_id,
+                    metadata={
+                        'agent_id': self.agent_id,
+                        'agent_type': self.agent_type.value,
+                        'agent_name': self.name,
+                        'created_by': 'BaseAgent',
+                        'context': 'agent_execution'
+                    }
+                )
+                
+                # Retrieve session data
+                session_data = await self._session_service.get_session(created_session_id)
+                if session_data:
+                    self._current_session = session_data
+                    self.logger.info(
+                        "Session setup completed via service - ID: %s, Status: %s",
+                        session_id,
+                        session_data.get('status', 'unknown')
+                    )
+                else:
+                    raise AgentExecutionError(f"Failed to retrieve created session: {session_id}")
+                
+                # Allocate memory for session if memory service available
+                if self._memory_service:
+                    session_memory_data = {
+                        'agent_context': {
+                            'agent_id': self.agent_id,
+                            'agent_type': self.agent_type.value,
+                            'configuration': self._config,
+                            'tools': list(self._tools.keys())
+                        },
+                        'execution_context': {
+                            'correlation_id': self.correlation_id,
+                            'session_id': session_id,
+                            'start_time': datetime.now().isoformat()
+                        }
+                    }
+                    
+                    memory_allocated = await self._memory_service.allocate_session_memory(
+                        session_id,
+                        session_memory_data,
+                        compress=True
+                    )
+                    
+                    if memory_allocated:
+                        self.logger.info("Session memory allocated successfully - ID: %s", session_id)
+                    else:
+                        self.logger.warning("Session memory allocation failed - ID: %s", session_id)
+                
+            else:
+                # Fallback to in-memory session (graceful degradation)
+                self._current_session = {
+                    'session_id': session_id,
+                    'correlation_id': self.correlation_id,
+                    'status': AgentStatus.RUNNING.value,
+                    'created_at': datetime.now(),
+                    'updated_at': datetime.now(),
+                    'metadata': {
+                        'agent_id': self.agent_id, 
+                        'agent_type': self.agent_type.value,
+                        'fallback_mode': True
+                    }
+                }
+                self.logger.warning(
+                    "Session setup using fallback mode - ID: %s (service unavailable)",
+                    session_id
+                )
+                
         except Exception as e:
             self.logger.error("Session setup failed - ID: %s, Error: %s", session_id, str(e))
             raise AgentExecutionError(f"Failed to set up session: {e}") from e
     
     async def _cleanup_session(self) -> None:
-        """Clean up session data after execution."""
+        """Clean up session using real ADK session service."""
         try:
             if self._current_session:
                 session_id = self._current_session.get('session_id')
-                self.logger.info("Session cleanup completed - ID: %s", session_id)
+                
+                if self._session_service and session_id:
+                    # Update session status to completed
+                    await self._session_service.update_session(
+                        session_id,
+                        {
+                            'completion_time': datetime.now().isoformat(),
+                            'final_status': self.status.value,
+                            'metrics': self._metrics
+                        },
+                        status=None  # Let service determine final status
+                    )
+                    
+                    # Deallocate session memory if memory service available
+                    if self._memory_service:
+                        memory_freed = await self._memory_service.deallocate_session_memory(session_id)
+                        if memory_freed:
+                            self.logger.info("Session memory deallocated - ID: %s", session_id)
+                        else:
+                            self.logger.warning("Session memory deallocation failed - ID: %s", session_id)
+                    
+                    # Delete session (optional - depends on retention policy)
+                    session_deleted = await self._session_service.delete_session(session_id)
+                    if session_deleted:
+                        self.logger.info("Session cleanup completed via service - ID: %s", session_id)
+                    else:
+                        self.logger.warning("Session deletion failed - ID: %s", session_id)
+                        
+                else:
+                    # Fallback cleanup
+                    self.logger.info("Session cleanup completed (fallback mode) - ID: %s", session_id)
+                
+                # Clear local session data
                 self._current_session = None
                 self._session_data.clear()
+                
         except Exception as e:
             self.logger.warning("Session cleanup failed - Error: %s", str(e))
+            # Clear local data even if service cleanup fails
+            self._current_session = None
+            self._session_data.clear()
     
     async def _update_metrics(self, execution_time: float, success: bool) -> None:
         """Update agent performance metrics."""
@@ -760,8 +918,9 @@ class ADKBaseAgent(ADKBaseAgentCore, ABC):
         }
     
     async def health_check(self) -> Dict[str, Any]:
-        """Perform agent health check including tool orchestration status."""
-        try:            
+        """Perform agent health check including service layer status."""
+        try:
+            # Base health status
             health_status = {
                 'agent_id': self.agent_id,
                 'agent_type': self.agent_type.value,
@@ -780,8 +939,69 @@ class ADKBaseAgent(ADKBaseAgentCore, ABC):
                     'adk_integration_status': 'operational' if self._function_tools else 'not_registered'
                 }
             }
-            self.logger.info("Health check completed - Status: healthy, Tools: %d", len(self._tools))
+            
+            # Service layer health checks
+            service_health = {
+                'session_service': {'status': 'unavailable', 'error': 'Not initialized'},
+                'memory_service': {'status': 'unavailable', 'error': 'Not initialized'},
+                'model_service': {'status': 'unavailable', 'error': 'Not initialized'}
+            }
+            
+            # Check session service health
+            if self._session_service:
+                try:
+                    session_health = await self._session_service.health_check()
+                    service_health['session_service'] = session_health
+                except Exception as e:
+                    service_health['session_service'] = {
+                        'status': 'unhealthy',
+                        'error': str(e)
+                    }
+            
+            # Check memory service health
+            if self._memory_service:
+                try:
+                    memory_health = await self._memory_service.health_check()
+                    service_health['memory_service'] = memory_health
+                except Exception as e:
+                    service_health['memory_service'] = {
+                        'status': 'unhealthy',
+                        'error': str(e)
+                    }
+            
+            # Check model service health
+            if self._model_service:
+                try:
+                    model_health = await self._model_service.health_check()
+                    service_health['model_service'] = model_health
+                except Exception as e:
+                    service_health['model_service'] = {
+                        'status': 'unhealthy',
+                        'error': str(e)
+                    }
+            
+            # Add service health to overall status
+            health_status['service_layer'] = service_health
+            
+            # Determine overall health based on services
+            service_statuses = [s.get('status', 'unknown') for s in service_health.values()]
+            unhealthy_services = [s for s in service_statuses if s in ['unhealthy', 'degraded']]
+            
+            if unhealthy_services:
+                if len(unhealthy_services) == len(service_statuses):
+                    health_status['status'] = 'degraded'  # All services have issues
+                else:
+                    health_status['status'] = 'healthy'  # Some services still working
+            
+            self.logger.info(
+                "Health check completed - Status: %s, Tools: %d, Services: %s",
+                health_status['status'],
+                len(self._tools),
+                {k: v.get('status', 'unknown') for k, v in service_health.items()}
+            )
+            
             return health_status
+            
         except Exception as e:
             self.logger.error("Health check failed - Error: %s", str(e))
             return {
@@ -794,11 +1014,16 @@ class ADKBaseAgent(ADKBaseAgentCore, ABC):
                     'tools_loaded': False,
                     'function_tools_registered': 0,
                     'error': 'Health check failed during tool status evaluation'
+                },
+                'service_layer': {
+                    'session_service': {'status': 'unknown', 'error': 'Health check failed'},
+                    'memory_service': {'status': 'unknown', 'error': 'Health check failed'},
+                    'model_service': {'status': 'unknown', 'error': 'Health check failed'}
                 }
             }
     
     def get_agent_info(self) -> Dict[str, Any]:
-        """Get comprehensive agent information including tool orchestration details."""
+        """Get comprehensive agent information including service layer details."""
         return {
             'agent_id': self.agent_id,
             'agent_type': self.agent_type.value,
@@ -819,5 +1044,93 @@ class ADKBaseAgent(ADKBaseAgentCore, ABC):
                 'function_tools': list(self._function_tools.keys()),
                 'function_tool_count': len(self._function_tools),
                 'adk_helpers_available': self._adk_helpers is not None
+            },
+            'service_layer': {
+                'session_service_available': self._session_service is not None,
+                'memory_service_available': self._memory_service is not None,
+                'model_service_available': self._model_service is not None,
+                'session_service_type': type(self._session_service).__name__ if self._session_service else None,
+                'memory_service_type': type(self._memory_service).__name__ if self._memory_service else None,
+                'model_service_type': type(self._model_service).__name__ if self._model_service else None
             }
         }
+
+    async def shutdown(self) -> None:
+        """Shutdown the agent and all service layer components."""
+        try:
+            self.logger.info("Shutting down agent - ID: %s", self.agent_id)
+            
+            # Clean up current session if active
+            if self._current_session:
+                await self._cleanup_session()
+            
+            # Shutdown service layer components
+            if self._session_service:
+                try:
+                    await self._session_service.shutdown()
+                    self.logger.info("Session service shutdown completed")
+                except Exception as e:
+                    self.logger.warning("Session service shutdown failed: %s", str(e))
+            
+            if self._memory_service:
+                try:
+                    await self._memory_service.shutdown()
+                    self.logger.info("Memory service shutdown completed")
+                except Exception as e:
+                    self.logger.warning("Memory service shutdown failed: %s", str(e))
+            
+            if self._model_service:
+                try:
+                    await self._model_service.shutdown()
+                    self.logger.info("Model service shutdown completed")
+                except Exception as e:
+                    self.logger.warning("Model service shutdown failed: %s", str(e))
+            
+            # Clear agent state
+            self.status = AgentStatus.CANCELLED
+            self._tools.clear()
+            self._tool_registry.clear()
+            self._function_tools.clear()
+            self._session_data.clear()
+            
+            self.logger.info("Agent shutdown completed - ID: %s", self.agent_id)
+            
+        except Exception as e:
+            self.logger.error("Agent shutdown failed - ID: %s, Error: %s", self.agent_id, str(e))
+    
+    async def get_service_metrics(self) -> Dict[str, Any]:
+        """Get comprehensive metrics from all service layer components."""
+        try:
+            metrics = {
+                'agent_metrics': self._metrics,
+                'session_service_metrics': None,
+                'memory_service_metrics': None, 
+                'model_service_metrics': None
+            }
+            
+            # Get session service metrics
+            if self._session_service:
+                try:
+                    metrics['session_service_metrics'] = self._session_service.metrics
+                except Exception as e:
+                    self.logger.warning("Failed to get session service metrics: %s", str(e))
+            
+            # Get memory service metrics
+            if self._memory_service:
+                try:
+                    metrics['memory_service_metrics'] = self._memory_service.stats
+                except Exception as e:
+                    self.logger.warning("Failed to get memory service metrics: %s", str(e))
+            
+            # Get model service metrics
+            if self._model_service:
+                try:
+                    metrics['model_service_metrics'] = self._model_service.metrics
+                except Exception as e:
+                    self.logger.warning("Failed to get model service metrics: %s", str(e))
+            
+            return metrics
+            
+        except Exception as e:
+            self.logger.error("Failed to get service metrics: %s", str(e))
+            return {'error': str(e), 'agent_metrics': self._metrics}

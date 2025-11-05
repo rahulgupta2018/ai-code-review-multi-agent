@@ -23,6 +23,7 @@ reportlab = "^4.0.7"
 click = "^8.1.7"
 python-multipart = "^0.0.20"  # Updated to match google-adk requirements
 aiofiles = "^23.2.1"
+psutil = "^5.9.0"  # System process and memory monitoring
 
 # Google Cloud & Agent Development Kit Integration
 google-adk = "^1.15.0"  # Google Agent Development Kit

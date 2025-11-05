@@ -45,12 +45,12 @@ except ImportError:
     HAS_ADK = False
 
 from .config_loader import get_config
-from ..utils.exceptions import (
+from .exceptions import (
     ADKCodeReviewError, AgentError, AgentExecutionError, AgentValidationError,
     WorkflowError, WorkflowExecutionError, FunctionToolError
 )
-from ..utils.common import generate_correlation_id
-from ..utils.types import AgentType, AgentStatus, AgentResult, WorkflowExecution
+from .common import generate_correlation_id
+from .types import AgentType, AgentStatus, AgentResult, WorkflowExecution
 
 
 class ADKHelpers:

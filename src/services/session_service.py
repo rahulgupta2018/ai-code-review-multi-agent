@@ -33,7 +33,7 @@ try:
     from google.adk.core import InMemorySessionService as ADKInMemorySessionService
     HAS_ADK = True
 except ImportError:
-    # Mock InMemorySessionService for development/testing
+    # Fallback base class when ADK is not available - provides minimal interface
     class ADKInMemorySessionService:
         def __init__(self):
             pass
@@ -51,12 +51,12 @@ except ImportError:
             pass
     HAS_ADK = False
 
-from ..utils.config_loader import get_config
-from ..utils.exceptions import (
+from utils.config_loader import get_config
+from utils.exceptions import (
     ADKCodeReviewError, SessionError, SessionConfigurationError, SessionExecutionError
 )
-from ..utils.common import generate_correlation_id
-from ..utils.types import AgentSession, SessionStatus
+from utils.common import generate_correlation_id
+from utils.types import AgentSession, SessionStatus
 
 
 class ADKSessionService(ADKInMemorySessionService):
