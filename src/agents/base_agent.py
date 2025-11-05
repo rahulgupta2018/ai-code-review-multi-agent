@@ -41,7 +41,17 @@ from utils.constants import (
     AGENT_VERSION_KEY,
     MAX_TOOL_EXECUTION_TIME,
     AGENT_HEALTH_CHECK_INTERVAL,
-    AGENT_HEALTH_TIMEOUT
+    AGENT_HEALTH_TIMEOUT,
+    AGENT_PRIORITY_CRITICAL,
+    AGENT_PRIORITY_HIGH,
+    AGENT_PRIORITY_MEDIUM,
+    AGENT_PRIORITY_LOW,
+    QUICK_AGENT_TIMEOUT,
+    LONG_AGENT_TIMEOUT,
+    DEFAULT_RETRY_ATTEMPTS,
+    RETRY_BACKOFF_BASE,
+    MAX_AGENT_MEMORY_MB,
+    ALLOWED_FILE_TYPES
 )
 from utils.types import AgentType, AgentStatus
 from utils.adk_helpers import get_adk_helpers
@@ -96,11 +106,38 @@ class ADKBaseAgent(ADKBaseAgentCore, ABC):
         self._memory_service: Optional[ADKMemoryService] = None
         self._model_service: Optional[ADKModelService] = None
         
+        # Configuration-driven behavior attributes (set by _apply_agent_configuration from YAML)
+        self._execution_timeout: Optional[int] = None
+        self._execution_priority: Optional[int] = None
+        self._max_memory_mb: Optional[int] = None
+        self._max_concurrent_operations: Optional[int] = None
+        self._model_config: Dict[str, Any] = {}
+        self._max_retries: Optional[int] = None
+        self._retry_backoff_strategy: Optional[str] = None
+        self._retry_base_delay: Optional[float] = None
+        self._retry_max_delay: Optional[float] = None
+        self._retry_backoff_base: Optional[int] = None
+        self._max_execution_time: Optional[int] = None
+        self._collect_metrics: Optional[bool] = None
+        self._metrics_interval: Optional[int] = None
+        self._performance_tracking: Optional[bool] = None
+        self._resource_monitoring: Optional[bool] = None
+        self._health_check_interval: Optional[int] = None
+        self._health_timeout: Optional[int] = None
+        self._max_failed_health_checks: Optional[int] = None
+        self._validate_inputs: Optional[bool] = None
+        self._sanitize_outputs: Optional[bool] = None
+        self._max_input_size: Optional[int] = None
+        self._allowed_file_types: Optional[List[str]] = None
+        
         # Initialize services
         self._initialize_services()
         
         # Initialize tool orchestration
         self._load_tools()
+        
+        # Apply dynamic configuration-driven behavior
+        self._apply_agent_configuration()
         
         self.logger.info("Agent initialized - ID: %s, Type: %s, Tools: %d", 
                         self.agent_id, agent_type.value, len(self._tools))
@@ -187,6 +224,286 @@ class ADKBaseAgent(ADKBaseAgentCore, ABC):
         timeout = self._config.get('timeout', DEFAULT_AGENT_TIMEOUT)
         if not isinstance(timeout, (int, float)) or timeout <= 0:
             raise AgentConfigurationError(f"Invalid timeout value: {timeout}")
+    
+    def _apply_agent_configuration(self) -> None:
+        """Apply agent-specific configuration dynamically to modify runtime behavior."""
+        try:
+            self.logger.info("Applying configuration-driven behavior for agent type: %s", self.agent_type.value)
+            
+            # Apply timeout configuration dynamically
+            self._apply_timeout_configuration()
+            
+            # Apply priority-based execution ordering
+            self._apply_priority_configuration()
+            
+            # Apply model configuration for LLM integration
+            self._apply_model_configuration()
+            
+            # Apply retry strategy configuration
+            self._apply_retry_configuration()
+            
+            # Apply performance and resource limits
+            self._apply_resource_configuration()
+            
+            # Apply monitoring and metrics configuration
+            self._apply_monitoring_configuration()
+            
+            # Apply security configuration
+            self._apply_security_configuration()
+            
+            # Apply agent-specific analysis configuration
+            self._apply_analysis_configuration()
+            
+            self.logger.info("Configuration-driven behavior applied successfully")
+            
+        except Exception as e:
+            self.logger.error("Failed to apply agent configuration: %s", str(e))
+            raise AgentConfigurationError(f"Configuration application failed: {e}") from e
+    
+    def _apply_timeout_configuration(self) -> None:
+        """Apply dynamic timeout adjustment based on agent type and configuration."""
+        # Get timeout from agent-specific config or use default
+        agent_timeout = self._config.get('timeout', DEFAULT_AGENT_TIMEOUT)
+        
+        # Get ADK agent execution timeouts
+        adk_execution = self._config.get('execution', {})
+        default_timeout = adk_execution.get('default_timeout', DEFAULT_AGENT_TIMEOUT)
+        quick_timeout = adk_execution.get('quick_timeout', QUICK_AGENT_TIMEOUT)
+        long_timeout = adk_execution.get('long_timeout', LONG_AGENT_TIMEOUT)
+        
+        # Apply timeout based on agent priority and complexity
+        priority = self._config.get('priority', AGENT_PRIORITY_MEDIUM)
+        
+        if priority == AGENT_PRIORITY_CRITICAL:  # Critical priority (Security Agent)
+            self._execution_timeout = max(agent_timeout, long_timeout)
+        elif priority == AGENT_PRIORITY_HIGH:  # High priority (Code Quality Agent)
+            self._execution_timeout = max(agent_timeout, default_timeout)
+        else:  # Medium/Low priority
+            self._execution_timeout = min(agent_timeout, quick_timeout)
+        
+        # Apply tool-specific timeouts
+        for tool_name, tool_config in self._tools.items():
+            tool_timeout = tool_config.get('timeout', MAX_TOOL_EXECUTION_TIME)
+            # Adjust tool timeout based on agent timeout
+            adjusted_timeout = min(tool_timeout, self._execution_timeout * 0.8)
+            tool_config['timeout'] = adjusted_timeout
+        
+        self.logger.info("Timeout configuration applied - Agent: %ds, Priority: %d", 
+                        self._execution_timeout, priority)
+    
+    def _apply_priority_configuration(self) -> None:
+        """Apply priority-based execution ordering and resource allocation."""
+        priority = self._config.get('priority', AGENT_PRIORITY_MEDIUM)
+        
+        # Set execution priority for orchestration
+        self._execution_priority = priority
+        
+        # Configure resource allocation based on priority
+        resources = self._config.get('resources', {})
+        base_memory = resources.get('max_memory_mb', MAX_AGENT_MEMORY_MB)
+        
+        if priority == AGENT_PRIORITY_CRITICAL:  # Critical - allocate more resources
+            self._max_memory_mb = int(base_memory * 1.5)
+            self._max_concurrent_operations = resources.get('max_concurrent_operations', 5)
+        elif priority == AGENT_PRIORITY_HIGH:  # High - standard resources
+            self._max_memory_mb = base_memory
+            self._max_concurrent_operations = resources.get('max_concurrent_operations', 3)
+        else:  # Medium/Low - conservative resources
+            self._max_memory_mb = int(base_memory * 0.7)
+            self._max_concurrent_operations = min(resources.get('max_concurrent_operations', 2), 2)
+        
+        self.logger.info("Priority configuration applied - Priority: %d, Memory: %dMB, Operations: %d",
+                        priority, self._max_memory_mb, self._max_concurrent_operations)
+    
+    def _apply_model_configuration(self) -> None:
+        """Apply model configuration for LLM integration."""
+        # Get global model configuration
+        global_model = self._config.get('global', {}).get('model', {})
+        
+        # Get agent-specific model overrides
+        agent_model = self._config.get('model', {})
+        
+        # Merge model configuration
+        self._model_config = {**global_model, **agent_model}
+        
+        # Apply default model settings if not specified
+        if not self._model_config:
+            self._model_config = {
+                'provider': 'gemini',
+                'model_name': 'gemini-1.5-pro',
+                'temperature': 0.1,
+                'max_tokens': 4096
+            }
+        
+        # Adjust model parameters based on agent type
+        if self.agent_type.value == 'security':
+            # Security agent needs more conservative responses
+            self._model_config['temperature'] = min(self._model_config.get('temperature', 0.1), 0.05)
+        elif self.agent_type.value == 'code_quality':
+            # Code quality agent can be slightly more creative
+            self._model_config['temperature'] = min(self._model_config.get('temperature', 0.1), 0.15)
+        
+        self.logger.info("Model configuration applied - Provider: %s, Model: %s, Temperature: %.2f",
+                        self._model_config.get('provider', 'unknown'),
+                        self._model_config.get('model_name', 'unknown'),
+                        self._model_config.get('temperature', 0.0))
+    
+    def _apply_retry_configuration(self) -> None:
+        """Apply retry strategy configuration."""
+        # Get global retry configuration
+        global_retry = self._config.get('global', {}).get('retry', {})
+        
+        # Get agent-specific retry configuration
+        agent_retry = self._config.get('retry', {})
+        
+        # Get ADK execution retry configuration
+        execution_retry = self._config.get('execution', {})
+        
+        # Merge retry configurations
+        retry_config = {**global_retry, **agent_retry}
+        
+        # Apply retry settings using constants as defaults
+        self._max_retries = retry_config.get('max_attempts', execution_retry.get('max_retries', DEFAULT_RETRY_ATTEMPTS))
+        self._retry_backoff_strategy = retry_config.get('backoff_strategy', 'exponential')
+        self._retry_base_delay = retry_config.get('base_delay', 1.0)
+        self._retry_max_delay = retry_config.get('max_delay', 60.0)
+        self._retry_backoff_base = execution_retry.get('retry_backoff_base', RETRY_BACKOFF_BASE)
+        
+        self.logger.info("Retry configuration applied - Max retries: %d, Strategy: %s, Base delay: %.1fs",
+                        self._max_retries, self._retry_backoff_strategy, self._retry_base_delay)
+    
+    def _apply_resource_configuration(self) -> None:
+        """Apply performance and resource limits configuration."""
+        resources = self._config.get('resources', {})
+        
+        # Apply resource limits
+        self._max_execution_time = resources.get('max_execution_time', 600)
+        
+        # Ensure execution time doesn't exceed agent timeout (both should be set by now)
+        if self._execution_timeout is not None:
+            self._max_execution_time = min(self._max_execution_time, self._execution_timeout)
+        
+        # Apply concurrent operation limits (may have been set by priority configuration)
+        if self._max_concurrent_operations is None:
+            self._max_concurrent_operations = resources.get('max_concurrent_operations', 3)
+        
+        self.logger.info("Resource configuration applied - Max execution: %ds, Concurrent ops: %d",
+                        self._max_execution_time, self._max_concurrent_operations)
+    
+    def _apply_monitoring_configuration(self) -> None:
+        """Apply monitoring and metrics configuration."""
+        monitoring = self._config.get('monitoring', {})
+        
+        # Apply monitoring settings using configuration values
+        self._collect_metrics = monitoring.get('collect_metrics', True)
+        self._metrics_interval = monitoring.get('metrics_interval', 60)
+        self._performance_tracking = monitoring.get('performance_tracking', True)
+        self._resource_monitoring = monitoring.get('resource_monitoring', True)
+        
+        # Apply health check configuration using constants as defaults
+        health_config = self._config.get('health', {})
+        self._health_check_interval = health_config.get('check_interval', AGENT_HEALTH_CHECK_INTERVAL)
+        self._health_timeout = health_config.get('timeout', AGENT_HEALTH_TIMEOUT)
+        self._max_failed_health_checks = health_config.get('max_failed_checks', 3)
+        
+        self.logger.info("Monitoring configuration applied - Metrics: %s, Tracking: %s, Health interval: %ds",
+                        self._collect_metrics, self._performance_tracking, self._health_check_interval)
+    
+    def _apply_security_configuration(self) -> None:
+        """Apply security configuration."""
+        security = self._config.get('security', {})
+        
+        # Apply security settings using constants and configuration
+        self._validate_inputs = security.get('validate_inputs', True)
+        self._sanitize_outputs = security.get('sanitize_outputs', True)
+        self._max_input_size = security.get('max_input_size', 10485760)  # 10MB from config
+        self._allowed_file_types = security.get('allowed_file_types', ALLOWED_FILE_TYPES)
+        
+        self.logger.info("Security configuration applied - Input validation: %s, Output sanitization: %s",
+                        self._validate_inputs, self._sanitize_outputs)
+    
+    def _apply_analysis_configuration(self) -> None:
+        """Apply agent-specific analysis configuration."""
+        analysis_config = self._config.get('analysis', {})
+        
+        if not analysis_config:
+            self.logger.debug("No specific analysis configuration found for agent type: %s", self.agent_type.value)
+            return
+        
+        # Apply analysis configuration based on agent type
+        if self.agent_type.value == 'code_quality':
+            self._apply_code_quality_analysis_config(analysis_config)
+        elif self.agent_type.value == 'security':
+            self._apply_security_analysis_config(analysis_config)
+        elif self.agent_type.value == 'engineering_practices':
+            self._apply_engineering_practices_analysis_config(analysis_config)
+        
+        self.logger.info("Analysis configuration applied for agent type: %s", self.agent_type.value)
+    
+    def _apply_code_quality_analysis_config(self, config: Dict[str, Any]) -> None:
+        """Apply code quality specific analysis configuration."""
+        self._complexity_threshold = config.get('complexity_threshold', 10)
+        self._duplication_threshold = config.get('duplication_threshold', 0.1)
+        self._maintainability_threshold = config.get('maintainability_threshold', 70.0)
+        self._test_coverage_threshold = config.get('test_coverage_threshold', 80.0)
+        
+        # Apply metrics configuration
+        self._metrics_to_collect = self._config.get('metrics', [
+            'cyclomatic_complexity', 'cognitive_complexity', 'lines_of_code',
+            'code_duplication', 'maintainability_index', 'technical_debt_ratio'
+        ])
+        
+        # Apply quality rules
+        rules = self._config.get('rules', {})
+        self._max_function_length = rules.get('max_function_length', 50)
+        self._max_class_length = rules.get('max_class_length', 300)
+        self._max_parameters = rules.get('max_parameters', 5)
+        self._max_nesting_depth = rules.get('max_nesting_depth', 4)
+    
+    def _apply_security_analysis_config(self, config: Dict[str, Any]) -> None:
+        """Apply security specific analysis configuration."""
+        self._vulnerability_scanning = config.get('vulnerability_scanning', True)
+        self._secret_detection = config.get('secret_detection', True)
+        self._dependency_check = config.get('dependency_check', True)
+        self._code_injection_detection = config.get('code_injection_detection', True)
+        
+        # Apply risk thresholds
+        thresholds = self._config.get('thresholds', {})
+        self._critical_risk_threshold = thresholds.get('critical_risk', 90.0)
+        self._high_risk_threshold = thresholds.get('high_risk', 70.0)
+        self._medium_risk_threshold = thresholds.get('medium_risk', 40.0)
+        self._low_risk_threshold = thresholds.get('low_risk', 20.0)
+        
+        # Apply security patterns
+        self._security_patterns = self._config.get('patterns', [
+            'sql_injection', 'xss_vulnerabilities', 'hardcoded_secrets',
+            'insecure_random', 'weak_crypto', 'path_traversal'
+        ])
+    
+    def _apply_engineering_practices_analysis_config(self, config: Dict[str, Any]) -> None:
+        """Apply engineering practices specific analysis configuration."""
+        practices = self._config.get('practices', {})
+        
+        # Apply testing practices configuration
+        testing = practices.get('testing', {})
+        self._check_unit_tests = testing.get('unit_tests', True)
+        self._check_integration_tests = testing.get('integration_tests', True)
+        self._check_test_naming = testing.get('test_naming', True)
+        self._check_test_coverage = testing.get('test_coverage', True)
+        
+        # Apply error handling practices
+        error_handling = practices.get('error_handling', {})
+        self._check_exception_handling = error_handling.get('exception_handling', True)
+        self._check_error_logging = error_handling.get('error_logging', True)
+        self._check_graceful_degradation = error_handling.get('graceful_degradation', True)
+        
+        # Apply scoring weights
+        scoring = self._config.get('scoring', {})
+        self._testing_weight = scoring.get('testing', 0.3)
+        self._error_handling_weight = scoring.get('error_handling', 0.2)
+        self._logging_weight = scoring.get('logging', 0.15)
+        self._documentation_weight = scoring.get('documentation', 0.2)
+        self._performance_weight = scoring.get('performance', 0.15)
     
     def _load_tools(self) -> None:
         """Load and register tools based strictly on agent configuration - no fallbacks."""
@@ -918,7 +1235,7 @@ class ADKBaseAgent(ADKBaseAgentCore, ABC):
         }
     
     async def health_check(self) -> Dict[str, Any]:
-        """Perform agent health check including service layer status."""
+        """Perform agent health check including service layer status and configuration-driven behavior."""
         try:
             # Base health status
             health_status = {
@@ -937,6 +1254,25 @@ class ADKBaseAgent(ADKBaseAgentCore, ABC):
                     'function_tools_registered': len(self._function_tools),
                     'function_tool_names': list(self._function_tools.keys()),
                     'adk_integration_status': 'operational' if self._function_tools else 'not_registered'
+                },
+                'configuration_driven_behavior': {
+                    'execution_timeout': self._execution_timeout or 0,
+                    'execution_priority': self._execution_priority or 0,
+                    'max_memory_mb': self._max_memory_mb or 0,
+                    'max_concurrent_operations': self._max_concurrent_operations or 0,
+                    'model_provider': self._model_config.get('provider', 'not_configured'),
+                    'model_name': self._model_config.get('model_name', 'not_configured'),
+                    'model_temperature': self._model_config.get('temperature', 0.0),
+                    'max_retries': self._max_retries or 0,
+                    'retry_strategy': self._retry_backoff_strategy or 'not_configured',
+                    'metrics_collection': self._collect_metrics or False,
+                    'performance_tracking': self._performance_tracking or False,
+                    'resource_monitoring': self._resource_monitoring or False,
+                    'health_check_interval': self._health_check_interval or 0,
+                    'input_validation': self._validate_inputs or False,
+                    'output_sanitization': self._sanitize_outputs or False,
+                    'max_input_size_mb': (self._max_input_size or 0) / 1048576,  # Convert to MB
+                    'allowed_file_types_count': len(self._allowed_file_types or [])
                 }
             }
             
@@ -1099,13 +1435,40 @@ class ADKBaseAgent(ADKBaseAgentCore, ABC):
             self.logger.error("Agent shutdown failed - ID: %s, Error: %s", self.agent_id, str(e))
     
     async def get_service_metrics(self) -> Dict[str, Any]:
-        """Get comprehensive metrics from all service layer components."""
+        """Get comprehensive metrics from all service layer components and configuration-driven behavior."""
         try:
             metrics = {
                 'agent_metrics': self._metrics,
                 'session_service_metrics': None,
                 'memory_service_metrics': None, 
-                'model_service_metrics': None
+                'model_service_metrics': None,
+                'configuration_metrics': {
+                    'execution_timeout_seconds': self._execution_timeout or 0,
+                    'execution_priority': self._execution_priority or 0,
+                    'memory_limit_mb': self._max_memory_mb or 0,
+                    'concurrent_operations_limit': self._max_concurrent_operations or 0,
+                    'max_execution_time_seconds': self._max_execution_time or 0,
+                    'retry_attempts_configured': self._max_retries or 0,
+                    'retry_strategy': self._retry_backoff_strategy or 'not_configured',
+                    'retry_base_delay_seconds': self._retry_base_delay or 0.0,
+                    'retry_max_delay_seconds': self._retry_max_delay or 0.0,
+                    'metrics_collection_enabled': self._collect_metrics or False,
+                    'performance_tracking_enabled': self._performance_tracking or False,
+                    'resource_monitoring_enabled': self._resource_monitoring or False,
+                    'health_check_interval_seconds': self._health_check_interval or 0,
+                    'health_timeout_seconds': self._health_timeout or 0,
+                    'max_failed_health_checks': self._max_failed_health_checks or 0,
+                    'input_validation_enabled': self._validate_inputs or False,
+                    'output_sanitization_enabled': self._sanitize_outputs or False,
+                    'max_input_size_bytes': self._max_input_size or 0,
+                    'allowed_file_types_count': len(self._allowed_file_types or []),
+                    'model_configuration': {
+                        'provider': self._model_config.get('provider', 'not_configured'),
+                        'model_name': self._model_config.get('model_name', 'not_configured'),
+                        'temperature': self._model_config.get('temperature', 0.0),
+                        'max_tokens': self._model_config.get('max_tokens', 0)
+                    }
+                }
             }
             
             # Get session service metrics
@@ -1134,3 +1497,118 @@ class ADKBaseAgent(ADKBaseAgentCore, ABC):
         except Exception as e:
             self.logger.error("Failed to get service metrics: %s", str(e))
             return {'error': str(e), 'agent_metrics': self._metrics}
+    
+    def get_configuration_summary(self) -> Dict[str, Any]:
+        """Get a summary of the current configuration-driven behavior settings."""
+        return {
+            'agent_info': {
+                'agent_id': self.agent_id,
+                'agent_type': self.agent_type.value,
+                'status': self.status.value,
+                'configuration_applied': True
+            },
+            'execution_configuration': {
+                'timeout_seconds': self._execution_timeout or 0,
+                'priority': self._execution_priority or 0,
+                'max_execution_time_seconds': self._max_execution_time or 0,
+                'max_concurrent_operations': self._max_concurrent_operations or 0
+            },
+            'resource_configuration': {
+                'max_memory_mb': self._max_memory_mb or 0,
+                'max_input_size_mb': (self._max_input_size or 0) / 1048576,
+                'allowed_file_types': self._allowed_file_types or []
+            },
+            'retry_configuration': {
+                'max_retries': self._max_retries or 0,
+                'strategy': self._retry_backoff_strategy or 'not_configured',
+                'base_delay_seconds': self._retry_base_delay or 0.0,
+                'max_delay_seconds': self._retry_max_delay or 0.0,
+                'backoff_base': self._retry_backoff_base or 0
+            },
+            'model_configuration': self._model_config,
+            'monitoring_configuration': {
+                'collect_metrics': self._collect_metrics or False,
+                'metrics_interval_seconds': self._metrics_interval or 0,
+                'performance_tracking': self._performance_tracking or False,
+                'resource_monitoring': self._resource_monitoring or False,
+                'health_check_interval_seconds': self._health_check_interval or 0,
+                'health_timeout_seconds': self._health_timeout or 0,
+                'max_failed_health_checks': self._max_failed_health_checks or 0
+            },
+            'security_configuration': {
+                'input_validation': self._validate_inputs or False,
+                'output_sanitization': self._sanitize_outputs or False,
+                'max_input_size_bytes': self._max_input_size or 0,
+                'allowed_file_types_count': len(self._allowed_file_types or [])
+            }
+        }
+    
+    def get_execution_timeout(self) -> int:
+        """Get the configured execution timeout for this agent."""
+        if self._execution_timeout is None:
+            self.logger.warning("Execution timeout not configured, returning default")
+            return DEFAULT_AGENT_TIMEOUT
+        return self._execution_timeout
+    
+    def get_execution_priority(self) -> int:
+        """Get the configured execution priority for this agent."""
+        if self._execution_priority is None:
+            self.logger.warning("Execution priority not configured, returning default")
+            return AGENT_PRIORITY_MEDIUM
+        return self._execution_priority
+    
+    def get_model_configuration(self) -> Dict[str, Any]:
+        """Get the model configuration for LLM integration."""
+        return self._model_config.copy()
+    
+    def get_retry_configuration(self) -> Dict[str, Any]:
+        """Get the retry strategy configuration."""
+        return {
+            'max_retries': self._max_retries or DEFAULT_RETRY_ATTEMPTS,
+            'strategy': self._retry_backoff_strategy or 'exponential',
+            'base_delay': self._retry_base_delay or 1.0,
+            'max_delay': self._retry_max_delay or 60.0,
+            'backoff_base': self._retry_backoff_base or RETRY_BACKOFF_BASE
+        }
+    
+    def get_resource_limits(self) -> Dict[str, Any]:
+        """Get the resource limits configuration."""
+        return {
+            'max_memory_mb': self._max_memory_mb or MAX_AGENT_MEMORY_MB,
+            'max_execution_time_seconds': self._max_execution_time or 600,
+            'max_concurrent_operations': self._max_concurrent_operations or 3,
+            'max_input_size_bytes': self._max_input_size or 10485760
+        }
+    
+    def is_metrics_collection_enabled(self) -> bool:
+        """Check if metrics collection is enabled."""
+        return self._collect_metrics if self._collect_metrics is not None else True
+    
+    def is_performance_tracking_enabled(self) -> bool:
+        """Check if performance tracking is enabled."""
+        return self._performance_tracking if self._performance_tracking is not None else True
+    
+    def is_input_validation_enabled(self) -> bool:
+        """Check if input validation is enabled."""
+        return self._validate_inputs if self._validate_inputs is not None else True
+    
+    def is_output_sanitization_enabled(self) -> bool:
+        """Check if output sanitization is enabled."""
+        return self._sanitize_outputs if self._sanitize_outputs is not None else True
+    
+    def get_allowed_file_types(self) -> List[str]:
+        """Get the list of allowed file types."""
+        if self._allowed_file_types is None:
+            self.logger.warning("Allowed file types not configured, returning default")
+            return ALLOWED_FILE_TYPES.copy()
+        return self._allowed_file_types.copy()
+    
+    def validate_input_size(self, input_size: int) -> bool:
+        """Validate if input size is within configured limits."""
+        max_size = self._max_input_size if self._max_input_size is not None else 10485760  # 10MB default
+        return input_size <= max_size
+    
+    def validate_file_type(self, file_extension: str) -> bool:
+        """Validate if file type is allowed based on configuration."""
+        allowed_types = self._allowed_file_types if self._allowed_file_types is not None else ALLOWED_FILE_TYPES
+        return file_extension.lower() in [ft.lower() for ft in allowed_types]
