@@ -1,0 +1,94 @@
+# Reporting Templates Configuration
+templates:
+  executive_summary:
+    name: "Executive Summary Report"
+    description: "High-level overview for management"
+    sections:
+      - "overview"
+      - "key_findings"
+      - "recommendations"
+      - "risk_assessment"
+    
+    format_options:
+      - "pdf"
+      - "html"
+      - "markdown"
+  
+  technical_detailed:
+    name: "Technical Detailed Report"
+    description: "Comprehensive technical analysis"
+    sections:
+      - "code_quality_analysis"
+      - "security_assessment"
+      - "performance_analysis"
+      - "architecture_review"
+      - "detailed_recommendations"
+    
+    format_options:
+      - "html"
+      - "pdf"
+      - "json"
+  
+  agent_specific:
+    name: "Agent-Specific Report"
+    description: "Focused report per agent"
+    sections:
+      - "agent_overview"
+      - "findings"
+      - "metrics"
+      - "recommendations"
+    
+    format_options:
+      - "json"
+      - "html"
+      - "markdown"
+
+template_customization:
+  variables:
+    - name: "project_name"
+      type: "string"
+      required: true
+    
+    - name: "analysis_date"
+      type: "datetime"
+      required: true
+    
+    - name: "analyst_name"
+      type: "string"
+      required: false
+  
+  styling:
+    css_customization: true
+    logo_placement: true
+    color_schemes:
+      - "default"
+      - "corporate"
+      - "dark_mode"
+
+chart_templates:
+  complexity_trends:
+    type: "line_chart"
+    data_source: "complexity_metrics"
+    x_axis: "file_path"
+    y_axis: "complexity_score"
+  
+  security_severity:
+    type: "pie_chart"
+    data_source: "security_findings"
+    category: "severity"
+  
+  agent_performance:
+    type: "bar_chart"
+    data_source: "agent_metrics"
+    x_axis: "agent_name"
+    y_axis: "execution_time"
+
+export_settings:
+  include_raw_data: false
+  compress_attachments: true
+  watermark: false
+  
+  delivery_options:
+    email_notification: true
+    webhook_notification: true
+    file_storage: true

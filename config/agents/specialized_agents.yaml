@@ -1,0 +1,154 @@
+# Specialized Agents Configuration
+# Configuration for Code Quality, Security, and Engineering Practices agents
+
+agents:
+  # Code Quality Agent
+  code_quality:
+    name: "CodeQualityAgent"
+    description: "Analyzes code quality metrics and patterns"
+    enabled: true
+    priority: 2  # High priority
+    timeout: 300  # 5 minutes
+    
+    # Tools configuration
+    tools:
+      - "tree_sitter_tool"
+      - "complexity_analyzer_tool"
+    
+    # Analysis configuration
+    analysis:
+      complexity_threshold: 10
+      duplication_threshold: 0.1  # 10%
+      maintainability_threshold: 70.0
+      test_coverage_threshold: 80.0
+      
+    # Metrics to collect
+    metrics:
+      - "cyclomatic_complexity"
+      - "cognitive_complexity" 
+      - "lines_of_code"
+      - "code_duplication"
+      - "maintainability_index"
+      - "technical_debt_ratio"
+      
+    # Quality rules
+    rules:
+      max_function_length: 50
+      max_class_length: 300
+      max_parameters: 5
+      max_nesting_depth: 4
+      
+  # Security Agent
+  security:
+    name: "SecurityAgent"
+    description: "Identifies security vulnerabilities and risks"
+    enabled: true
+    priority: 1  # Critical priority
+    timeout: 400  # 6 minutes 40 seconds
+    
+    # Tools configuration
+    tools:
+      - "tree_sitter_tool"
+      - "static_analyzer_tool"
+    
+    # Security analysis
+    analysis:
+      vulnerability_scanning: true
+      secret_detection: true
+      dependency_check: true
+      code_injection_detection: true
+      
+    # Risk thresholds
+    thresholds:
+      critical_risk: 90.0
+      high_risk: 70.0
+      medium_risk: 40.0
+      low_risk: 20.0
+      
+    # Security patterns to detect
+    patterns:
+      - "sql_injection"
+      - "xss_vulnerabilities"
+      - "hardcoded_secrets"
+      - "insecure_random"
+      - "weak_crypto"
+      - "path_traversal"
+      
+  # Engineering Practices Agent
+  engineering_practices:
+    name: "EngineeringPracticesAgent"
+    description: "Evaluates development practices and standards"
+    enabled: true
+    priority: 3  # Medium priority
+    timeout: 250  # 4 minutes 10 seconds
+    
+    # Tools configuration
+    tools:
+      - "tree_sitter_tool"
+      - "complexity_analyzer_tool"
+    
+    # Practice areas
+    practices:
+      testing:
+        unit_tests: true
+        integration_tests: true
+        test_naming: true
+        test_coverage: true
+        
+      error_handling:
+        exception_handling: true
+        error_logging: true
+        graceful_degradation: true
+        
+      logging:
+        structured_logging: true
+        log_levels: true
+        sensitive_data_filtering: true
+        
+      documentation:
+        code_comments: true
+        api_documentation: true
+        readme_quality: true
+        
+      performance:
+        algorithm_efficiency: true
+        resource_usage: true
+        caching_strategies: true
+        
+    # Scoring weights
+    scoring:
+      testing: 0.3
+      error_handling: 0.2
+      logging: 0.15
+      documentation: 0.2
+      performance: 0.15
+      
+# Global agent settings
+global:
+  # Execution settings
+  execution:
+    parallel_execution: false
+    max_concurrent_agents: 3
+    agent_coordination: true
+    result_aggregation: true
+    
+  # Output settings
+  output:
+    include_raw_results: false
+    include_metrics: true
+    include_recommendations: true
+    max_findings_per_agent: 100
+    
+  # Model configuration for all agents
+  model:
+    provider: "gemini"
+    model_name: "gemini-1.5-pro"
+    temperature: 0.1
+    max_tokens: 4096
+    
+  # Retry configuration
+  retry:
+    max_attempts: 3
+    backoff_strategy: "exponential"
+    base_delay: 1.0  # seconds
+    max_delay: 60.0  # seconds

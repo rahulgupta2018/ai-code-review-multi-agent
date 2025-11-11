@@ -1,0 +1,41 @@
+# Cloud Native Agent Configuration
+agent_id: "cloud_native"
+name: "Cloud Native Agent"
+version: "1.0.0"
+priority: 5
+
+analysis_scope:
+  - containerization_review
+  - kubernetes_best_practices
+  - service_mesh_patterns
+  - observability_analysis
+
+containerization:
+  docker_best_practices:
+    - "multi_stage_builds"
+    - "minimal_base_images"
+    - "security_scanning"
+    - "layer_optimization"
+  
+  security_checks:
+    - "non_root_user"
+    - "read_only_filesystem"
+    - "resource_limits"
+
+kubernetes_patterns:
+  deployment_strategies:
+    - "rolling_updates"
+    - "blue_green"
+    - "canary"
+  
+  resource_management:
+    - "resource_requests"
+    - "resource_limits"
+    - "horizontal_pod_autoscaling"
+
+observability:
+  monitoring_patterns:
+    - "health_checks"
+    - "metrics_collection"
+    - "distributed_tracing"
+    - "structured_logging"

@@ -1,0 +1,406 @@
+# Code Quality Agent Configuration
+# Clean, consolidated configuration for code quality analysis
+# This configuration replaces and consolidates the old scattered configurations
+
+version: "1.0.0"
+agent_id: "code_quality"
+name: "Code Quality Agent"
+description: "Comprehensive code quality analysis with complexity, maintainability, and pattern detection"
+priority: 1
+
+# =============================================================================
+# CORE AGENT CONFIGURATION
+# =============================================================================
+
+agent:
+  type: "CodeQualityAgent"
+  model: ${LLM_MODEL:-llama3.1:8b}
+  lightweight_model: "gemini-2.0-flash"  # For cost-effective analysis
+  output_key: "code_quality_analysis"
+  output_format: "json"
+  
+  instructions: |
+    You are an expert code quality analyst specializing in complexity, maintainability, 
+    and code pattern detection. Analyze code for:
+    - Complexity metrics and cognitive load
+    - Maintainability indicators and technical debt
+    - Code smells and anti-patterns
+    - Documentation quality and coverage
+    - Naming conventions and consistency
+    
+    Provide specific, actionable recommendations for improvement.
+
+# =============================================================================
+# ANALYSIS SCOPE & FEATURES
+# =============================================================================
+
+analysis_scope:
+  enabled_features:
+    - complexity_analysis        # Cyclomatic and cognitive complexity
+    - maintainability_scoring    # Holistic quality assessment
+    - code_smells_detection     # Anti-patterns and smells
+    - documentation_quality     # Coverage and quality analysis
+    - naming_conventions        # Consistency checking
+    - duplication_detection     # Code clone analysis
+    - structure_analysis        # File/function/class organization
+  
+  # Analysis limits
+  max_file_size_mb: 1
+  max_files_per_analysis: 1000
+  analysis_timeout_seconds: 300
+
+# =============================================================================
+# COMPLEXITY ANALYSIS CONFIGURATION
+# =============================================================================
+
+complexity_analysis:
+  metrics:
+    cyclomatic_complexity:
+      enabled: true
+      # Language-specific thresholds
+      thresholds:
+        python: {low: 5, medium: 10, high: 15, critical: 20}
+        javascript: {low: 5, medium: 12, high: 18, critical: 25}
+        typescript: {low: 5, medium: 12, high: 18, critical: 25}
+        java: {low: 6, medium: 12, high: 20, critical: 30}
+        go: {low: 5, medium: 10, high: 15, critical: 20}
+        rust: {low: 6, medium: 12, high: 18, critical: 25}
+        cpp: {low: 6, medium: 12, high: 20, critical: 30}
+        csharp: {low: 6, medium: 12, high: 20, critical: 30}
+        swift: {low: 5, medium: 10, high: 15, critical: 20}
+        kotlin: {low: 5, medium: 12, high: 18, critical: 25}
+        php: {low: 6, medium: 12, high: 20, critical: 30}
+        ruby: {low: 4, medium: 8, high: 12, critical: 18}
+        sql: {low: 8, medium: 15, high: 25, critical: 35}
+        default: {low: 5, medium: 10, high: 15, critical: 20}
+    
+    cognitive_complexity:
+      enabled: true
+      # Language-specific thresholds
+      thresholds:
+        python: {low: 7, medium: 12, high: 20, critical: 30}
+        javascript: {low: 8, medium: 15, high: 25, critical: 35}
+        typescript: {low: 8, medium: 15, high: 25, critical: 35}
+        java: {low: 8, medium: 15, high: 25, critical: 35}
+        go: {low: 7, medium: 12, high: 20, critical: 30}
+        rust: {low: 8, medium: 15, high: 25, critical: 35}
+        cpp: {low: 8, medium: 15, high: 25, critical: 35}
+        csharp: {low: 8, medium: 15, high: 25, critical: 35}
+        swift: {low: 6, medium: 12, high: 18, critical: 25}
+        kotlin: {low: 7, medium: 12, high: 20, critical: 30}
+        php: {low: 8, medium: 15, high: 25, critical: 35}
+        ruby: {low: 6, medium: 10, high: 15, critical: 22}
+        sql: {low: 10, medium: 18, high: 30, critical: 45}
+        default: {low: 7, medium: 15, high: 25, critical: 35}
+    
+    nesting_depth:
+      enabled: true
+      thresholds:
+        low: 3
+        medium: 4
+        high: 5
+        critical: 6
+    
+    function_length:
+      enabled: true
+      # Language-specific line limits
+      thresholds:
+        python: {medium: 30, high: 50, critical: 80}
+        javascript: {medium: 40, high: 60, critical: 100}
+        typescript: {medium: 40, high: 60, critical: 100}
+        java: {medium: 50, high: 80, critical: 120}
+        go: {medium: 30, high: 50, critical: 80}
+        rust: {medium: 40, high: 60, critical: 100}
+        cpp: {medium: 40, high: 60, critical: 100}
+        csharp: {medium: 50, high: 80, critical: 120}
+        swift: {medium: 30, high: 50, critical: 80}
+        kotlin: {medium: 40, high: 60, critical: 100}
+        php: {medium: 40, high: 60, critical: 100}
+        ruby: {medium: 25, high: 40, critical: 60}
+        sql: {medium: 60, high: 100, critical: 150}
+        default: {medium: 40, high: 60, critical: 100}
+    
+    class_length:
+      enabled: true
+      # Language-specific line limits
+      thresholds:
+        python: {medium: 200, high: 400, critical: 600}
+        javascript: {medium: 250, high: 450, critical: 700}
+        typescript: {medium: 250, high: 450, critical: 700}
+        java: {medium: 300, high: 500, critical: 800}
+        go: {medium: 200, high: 400, critical: 600}
+        rust: {medium: 250, high: 450, critical: 700}
+        cpp: {medium: 250, high: 450, critical: 700}
+        csharp: {medium: 300, high: 500, critical: 800}
+        swift: {medium: 200, high: 400, critical: 600}
+        kotlin: {medium: 200, high: 350, critical: 550}
+        php: {medium: 200, high: 400, critical: 600}
+        ruby: {medium: 150, high: 300, critical: 500}
+        sql: {medium: 100, high: 200, critical: 300}
+        default: {medium: 250, high: 450, critical: 700}
+
+# =============================================================================
+# MAINTAINABILITY SCORING
+# =============================================================================
+
+maintainability_scoring:
+  # Weighted factors for overall score
+  factors:
+    complexity_weight: 0.30      # Complexity metrics impact
+    duplication_weight: 0.25     # Code duplication impact
+    documentation_weight: 0.20   # Documentation coverage impact
+    naming_weight: 0.15          # Naming convention compliance
+    structure_weight: 0.10       # Code organization impact
+  
+  # Quality thresholds
+  thresholds:
+    excellent: 85    # 85-100: Excellent maintainability
+    good: 70         # 70-84: Good maintainability
+    acceptable: 50   # 50-69: Acceptable maintainability
+    poor: 30         # 30-49: Poor maintainability
+    critical: 0      # 0-29: Critical issues
+
+# =============================================================================
+# CODE SMELLS & ANTI-PATTERNS
+# =============================================================================
+
+code_smell_detection:
+  rules:
+    # Size-based smells
+    long_method:
+      enabled: true
+      max_lines: 50
+      severity: "medium"
+    
+    large_class:
+      enabled: true
+      max_lines: 500
+      max_methods: 20
+      severity: "medium"
+    
+    too_many_parameters:
+      enabled: true
+      max_parameters: 5
+      severity: "medium"
+    
+    # Complexity smells
+    complex_conditional:
+      enabled: true
+      max_conditions: 4
+      severity: "high"
+    
+    deeply_nested_code:
+      enabled: true
+      max_nesting: 4
+      severity: "high"
+    
+    # Design smells
+    god_object:
+      enabled: true
+      max_methods: 30
+      max_lines: 1000
+      severity: "high"
+    
+    feature_envy:
+      enabled: true
+      external_call_threshold: 0.7
+      severity: "medium"
+    
+    data_clumps:
+      enabled: true
+      parameter_group_threshold: 3
+      severity: "medium"
+    
+    # Language-specific smells
+    magic_numbers:
+      enabled: true
+      exclude_common: [0, 1, -1, 2, 10, 100]
+      severity: "low"
+    
+    dead_code:
+      enabled: true
+      severity: "medium"
+
+# =============================================================================
+# NAMING CONVENTIONS
+# =============================================================================
+
+naming_conventions:
+  # References tree_sitter language configuration for naming standards
+  check_consistency: true
+  
+  # Override thresholds (uses tree_sitter defaults if not specified)
+  validation_overrides:
+    strict_mode: false
+    case_sensitivity: true
+    abbreviation_detection: true
+
+# =============================================================================
+# DUPLICATION DETECTION
+# =============================================================================
+
+duplication_detection:
+  enabled: true
+  
+  # Similarity thresholds for clone types
+  similarity_thresholds:
+    exact_clone: 1.0          # Type 1: Exact duplicates
+    parameterized_clone: 0.9   # Type 2: Parameter variations
+    near_miss_clone: 0.8      # Type 3: Minor modifications
+    semantic_clone: 0.7       # Type 4: Functional similarity
+  
+  # Minimum clone requirements
+  minimum_clone_size:
+    lines: 5
+    tokens: 50
+    nodes: 10
+  
+  # Quality impact scoring
+  quality_impact:
+    percentage_thresholds:
+      excellent: 3     # <= 3% duplication
+      good: 8         # 4-8% duplication
+      acceptable: 15   # 9-15% duplication
+      poor: 25        # 16-25% duplication
+      critical: 26    # > 25% duplication
+
+# =============================================================================
+# DOCUMENTATION QUALITY
+# =============================================================================
+
+documentation_quality:
+  enabled: true
+  
+  # Coverage thresholds
+  coverage_thresholds:
+    excellent: 90    # >= 90% coverage
+    good: 75        # 75-89% coverage
+    acceptable: 50   # 50-74% coverage
+    poor: 25        # 25-49% coverage
+    critical: 0     # < 25% coverage
+  
+  # Language-specific documentation patterns (references tree_sitter config)
+  
+  # Quality indicators
+  quality_indicators:
+    - contains_parameters_docs
+    - contains_return_docs
+    - contains_examples
+    - contains_exception_docs
+    - has_meaningful_description
+
+# =============================================================================
+# QUALITY CONTROL & BIAS PREVENTION
+# =============================================================================
+
+quality_control:
+  # Validation rules
+  validation_rules:
+    min_confidence_threshold: 0.6
+    require_evidence: true
+    cross_validate_high_severity: true
+  
+  # Bias prevention
+  bias_prevention:
+    language_neutrality: true        # Avoid language preferences
+    framework_neutrality: true      # Avoid framework bias
+    severity_consistency: true      # Consistent severity assessment
+    evidence_based_recommendations: true
+  
+  # Output filtering
+  output_filtering:
+    duplicate_finding_detection: true
+    low_confidence_filtering: true
+    noise_reduction: true
+    max_findings_per_file: 25
+
+# =============================================================================
+# REPORTING CONFIGURATION
+# =============================================================================
+
+reporting:
+  # Finding categories
+  categories:
+    - complexity
+    - maintainability
+    - code_smells
+    - documentation
+    - naming_conventions
+    - duplication
+    - structure
+  
+  # Evidence requirements
+  evidence_requirements:
+    complexity_findings: 2       # Metrics + analysis
+    maintainability_findings: 3  # Multiple factors
+    code_smell_findings: 2      # Pattern + impact
+    duplication_findings: 1     # Clone detection
+  
+  # Recommendation generation
+  recommendations:
+    max_recommendations: 10
+    priority_based_sorting: true
+    effort_estimation: true
+    impact_assessment: true
+    specific_guidance: true
+
+# =============================================================================
+# PERFORMANCE & OPTIMIZATION
+# =============================================================================
+
+performance:
+  # Parallel processing
+  max_concurrent_files: 10
+  enable_result_caching: true
+  cache_ttl_minutes: 60
+  
+  # Progress tracking
+  enable_progress_reporting: true
+  progress_update_interval_seconds: 5
+  
+  # Memory optimization
+  max_memory_usage_mb: 512
+  enable_garbage_collection: true
+
+# =============================================================================
+# LLM INTEGRATION
+# =============================================================================
+
+llm_integration:
+  # Enhanced analysis prompts
+  prompts:
+    complexity_analysis:
+      system_prompt: |
+        You are a code complexity expert. Analyze complexity metrics and provide:
+        1. Complexity assessment with specific concerns
+        2. Cognitive load evaluation for maintainers
+        3. Specific refactoring recommendations
+        4. Priority ranking of complexity issues
+        Focus on practical, actionable advice.
+      
+      max_tokens: 800
+      temperature: 0.2
+    
+    maintainability_analysis:
+      system_prompt: |
+        You are a code maintainability expert. Analyze maintainability factors and provide:
+        1. Overall maintainability assessment
+        2. Key improvement opportunities
+        3. Technical debt identification
+        4. Long-term maintenance considerations
+        Provide specific, measurable recommendations.
+      
+      max_tokens: 1000
+      temperature: 0.3
+    
+    code_quality_synthesis:
+      system_prompt: |
+        You are a senior code quality consultant. Synthesize quality analysis results and provide:
+        1. Executive summary of code quality
+        2. Priority-ranked improvement roadmap
+        3. Risk assessment for current quality state
+        4. Specific next steps with effort estimates
+        Focus on business impact and practical implementation.
+      
+      max_tokens: 1200
+      temperature: 0.3

@@ -1,0 +1,241 @@
+# LLM Models Configuration
+
+version: "1.0.0"
+
+default_provider: "ollama"
+
+providers:
+  ollama:
+    models:
+      llama3_1_8b:
+        name: "llama3.1:8b"
+        max_tokens: 8192
+        temperature: 0.3
+        top_p: 0.9
+        cost_per_1k_tokens:
+          input: 0.0
+          output: 0.0
+        context_window: 128000
+        supports_functions: true
+        
+      llama3_1_70b:
+        name: "llama3.1:70b"
+        max_tokens: 8192
+        temperature: 0.3
+        top_p: 0.9
+        cost_per_1k_tokens:
+          input: 0.0
+          output: 0.0
+        context_window: 128000
+        supports_functions: true
+        
+      codellama:
+        name: "codellama:13b"
+        max_tokens: 4096
+        temperature: 0.1
+        specialized_for: "code_analysis"
+        cost_per_1k_tokens:
+          input: 0.0
+          output: 0.0
+          
+      # Gemini-alternative models available via Ollama
+      phi3_medium:
+        name: "phi3:medium"
+        max_tokens: 4096
+        temperature: 0.3
+        context_window: 128000
+        specialized_for: "reasoning"
+        cost_per_1k_tokens:
+          input: 0.0
+          output: 0.0
+        notes: "Microsoft Phi-3 Medium - excellent reasoning capabilities"
+        status: "installed"
+        
+      phi3_mini:
+        name: "phi3:mini"
+        max_tokens: 4096
+        temperature: 0.3
+        context_window: 128000
+        specialized_for: "lightweight_tasks"
+        cost_per_1k_tokens:
+          input: 0.0
+          output: 0.0
+        notes: "Microsoft Phi-3 Mini - lightweight and fast"
+        status: "installed"
+        
+      gemma2_9b:
+        name: "gemma2:9b"
+        max_tokens: 8192
+        temperature: 0.3
+        context_window: 8192
+        specialized_for: "general_purpose"
+        cost_per_1k_tokens:
+          input: 0.0
+          output: 0.0
+        notes: "Google Gemma2 9B - Google's own open-source model"
+        status: "installed"
+        
+      qwen2_7b:
+        name: "qwen2:7b"
+        max_tokens: 8192
+        temperature: 0.3
+        context_window: 128000
+        specialized_for: "reasoning_multilingual"
+        cost_per_1k_tokens:
+          input: 0.0
+          output: 0.0
+        notes: "Alibaba Qwen2 7B - strong reasoning and multilingual"
+        status: "installed"
+        
+      mistral_nemo:
+        name: "mistral-nemo"
+        max_tokens: 8192
+        temperature: 0.3
+        context_window: 128000
+        specialized_for: "multilingual"
+        cost_per_1k_tokens:
+          input: 0.0
+          output: 0.0
+        notes: "Strong alternative to Gemini for multilingual tasks"
+        status: "available"
+    
+    rate_limits:
+      requests_per_minute: 1000
+      tokens_per_minute: 500000
+      concurrent_requests: 10
+    
+    endpoints:
+      base_url: "http://host.docker.internal:11434"
+      generate: "/api/generate"
+      chat: "/api/chat"
+      embeddings: "/api/embeddings"
+    
+    connection:
+      timeout: 120
+      retries: 3
+      retry_delay: 1.0
+
+  google_gemini:
+    models:
+      gemini_pro:
+        name: "gemini-pro"
+        max_tokens: 8192
+        temperature: 0.3
+        top_p: 0.9
+        cost_per_1k_tokens:
+          input: 0.00025
+          output: 0.0005
+        
+      gemini_pro_vision:
+        name: "gemini-pro-vision"
+        max_tokens: 4096
+        supports_images: true
+        cost_per_1k_tokens:
+          input: 0.00025
+          output: 0.0005
+    
+    rate_limits:
+      requests_per_minute: 60
+      tokens_per_minute: 100000
+    
+    endpoints:
+      generate: "https://generativelanguage.googleapis.com/v1beta/models"
+    
+  openai:
+    models:
+      gpt_4:
+        name: "gpt-4"
+        max_tokens: 8192
+        temperature: 0.3
+        cost_per_1k_tokens:
+          input: 0.03
+          output: 0.06
+      
+      gpt_3_5_turbo:
+        name: "gpt-3.5-turbo"
+        max_tokens: 4096
+        temperature: 0.3
+        cost_per_1k_tokens:
+          input: 0.0015
+          output: 0.002
+    
+    rate_limits:
+      requests_per_minute: 20
+      tokens_per_minute: 40000
+
+# Model selection strategy
+model_selection:
+  strategy: "development_optimized"  # options: cost_optimized, performance_optimized, balanced, development_optimized
+  
+  routing_rules:
+    - condition: "environment == 'development'"
+      model: "llama3_1_8b"
+      provider: "ollama"
+      reason: "Primary local development model"
+    
+    - condition: "analysis_type == 'security'"
+      model: "gemma2_9b"
+      provider: "ollama"
+      reason: "Google Gemma2 for security analysis (Gemini alternative)"
+    
+    - condition: "analysis_type == 'code_quality'"
+      model: "codellama"
+      provider: "ollama"
+      reason: "Specialized code analysis model"
+    
+    - condition: "analysis_type == 'reasoning' OR complexity_score > 70"
+      model: "phi3_medium"
+      provider: "ollama"
+      reason: "Enhanced reasoning capabilities (Gemini alternative)"
+    
+    - condition: "language != 'english' OR multilingual == true"
+      model: "qwen2_7b"
+      provider: "ollama"
+      reason: "Multilingual support and strong reasoning"
+    
+    - condition: "task_type == 'lightweight' OR file_size < 500"
+      model: "phi3_mini"
+      provider: "ollama"
+      reason: "Fast processing for simple tasks"
+    
+    - condition: "file_size > 1000 AND environment == 'production'"
+      model: "gpt_4"
+      provider: "openai"
+      reason: "Large files in production"
+    
+    - condition: "complexity_score > 80 AND environment == 'production'"
+      model: "gemini_pro"
+      provider: "google_gemini"
+      reason: "Complex analysis in production"
+
+# Fallback configuration
+fallback_strategy:
+  enable: true
+  max_retries: 3
+  fallback_sequence:
+    - "ollama"
+    - "google_gemini"
+    - "openai"
+
+# Development configuration
+development:
+  preferred_provider: "ollama"
+  preferred_model: "llama3_1_8b"
+  enable_model_switching: false
+  cache_responses: true
+  
+  # Local development optimizations
+  ollama_health_check: true
+  auto_pull_models: false
+  warm_up_on_start: true
+
+# Performance monitoring
+monitoring:
+  track_response_times: true
+  track_token_usage: true
+  track_error_rates: true
+  log_model_switches: true
+  
+  # Ollama specific monitoring
+  track_local_performance: true
+  monitor_memory_usage: true

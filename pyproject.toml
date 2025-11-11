@@ -1,0 +1,150 @@
+[tool.poetry]
+name = "agentic-code-review-system"
+version = "0.1.0"
+description = "Multi-agent code review system built with Google ADK"
+authors = ["Rahul Gupta <rahulgupta2002@gmail.com>"]
+readme = "README.md"
+# packages = []  # Will be defined in Phase 1+
+
+[tool.poetry.dependencies]
+python = "^3.10"
+# Google ADK - Core dependency
+google-adk = "^1.15.1"
+google-api-core= "^2.25.2"
+google-api-python-client= "^2.184.0"
+google-auth = "^2.41.1"
+google-auth-httplib2 = "^0.2.0"
+
+
+# Core dependencies for ADK functionality
+fastapi = "^0.118.0"
+fastuuid = "^0.14.0"
+uvicorn = "^0.34.0"
+pydantic = "^2.5.0"
+pyyaml = "^6.0.1"
+httpx = "^0.28.1"
+websockets = "^15.0"
+python-multipart = "^0.0.20"
+aiofiles = "^23.2.1"
+aiohttp = "^3.12.15"
+anyio = "^4.11.0"
+authlib = "^1.6.4"
+cachetools = "^6.2.0"
+click = "^8.3.0"
+cryptography = "^46.0.2"
+docstring-parser = "^0.17.0"
+
+litellm = "^1.77.5"
+
+# Google Cloud dependencies for ADK
+google-generativeai = "^0.8.3"
+
+
+# Code analysis tools
+tree-sitter = "^0.25.2"
+tree-sitter-python = "^0.25.0"
+tree-sitter-javascript = "^0.25.0"
+
+# Basic utility libraries
+structlog = "^23.2.0"
+jinja2 = "^3.1.2"
+requests = "^2.32.0"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^7.4.3"
+pytest-asyncio = "^0.21.1"
+pytest-cov = "^4.1.0"
+black = "^23.11.0"
+isort = "^5.12.0"
+flake8 = "^6.1.0"
+mypy = "^1.7.1"
+pre-commit = "^3.5.0"
+
+[tool.poetry.group.test.dependencies]
+pytest-mock = "^3.12.0"
+httpx = "^0.28.1"  # Updated to match main dependency
+pytest-xdist = "^3.4.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.scripts]
+adk-review = "src.cli.main:main"
+
+[tool.black]
+line-length = 100
+target-version = ['py311']
+include = '\.pyi?$'
+extend-exclude = '''
+/(
+  # directories
+  \.eggs
+  | \.git
+  | \.hg
+  | \.mypy_cache
+  | \.tox
+  | \.venv
+  | build
+  | dist
+)/
+'''
+
+[tool.isort]
+profile = "black"
+multi_line_output = 3
+line_length = 100
+known_first_party = ["src"]
+
+[tool.mypy]
+python_version = "3.11"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+check_untyped_defs = true
+disallow_untyped_decorators = true
+no_implicit_optional = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+warn_no_return = true
+warn_unreachable = true
+strict_equality = true
+
+[tool.pytest.ini_options]
+minversion = "6.0"
+addopts = "-ra -q --strict-markers --cov=src --cov-report=html --cov-report=term-missing"
+testpaths = ["tests"]
+python_files = ["test_*.py", "*_test.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+markers = [
+    "slow: marks tests as slow (deselect with '-m \"not slow\"')",
+    "integration: marks tests as integration tests",
+    "unit: marks tests as unit tests",
+    "memory: marks tests for memory system",
+    "adk: marks tests for ADK integration",
+]
+
+[tool.coverage.run]
+source = ["src"]
+omit = [
+    "*/tests/*",
+    "*/test_*",
+    "*/__pycache__/*",
+    "*/migrations/*",
+]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "if self.debug:",
+    "if settings.DEBUG",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if 0:",
+    "if __name__ == .__main__.:",
+    "class .*\\bProtocol\\):",
+    "@(abc\\.)?abstractmethod",
+]
