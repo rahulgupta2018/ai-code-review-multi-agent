@@ -1,0 +1,267 @@
+# Tree-sitter Analysis Patterns Configuration
+# Contains Tree-sitter specific query patterns using S-expression syntax
+# These patterns are used to extract specific constructs from parsed AST trees
+version: "1.0.0"
+# Global analysis patterns using Tree-sitter query syntax
+analysis_patterns:
+  # Complexity analysis patterns
+  complexity_patterns:
+    cyclomatic_complexity:
+      - "(if_statement) @conditional"
+      - "(while_statement) @loop"
+      - "(for_statement) @loop"
+      - "(switch_statement) @switch"
+      - "(case_clause) @case"
+      - "(except_clause) @exception"
+      - "(catch_clause) @catch"
+      - "(try_statement) @try"
+      - "(conditional_expression) @ternary"
+    
+    cognitive_complexity:
+      - "(nested_statement) @nesting"
+      - "(logical_operator) @logical"
+      - "(conditional_expression) @ternary"
+      - "(lambda_expression) @lambda"
+      - "(recursive_call) @recursion"
+  
+  # Security analysis patterns
+  security_patterns:
+    dangerous_functions:
+      - "(call (identifier) @func (#match? @func \"^(eval|exec|compile)$\"))"
+      - "(call (identifier) @func (#match? @func \"^(system|popen|shell_exec)$\"))"
+      - "(call (identifier) @func (#match? @func \"^(passthru|proc_open)$\"))"
+      - "(call (member_expression (identifier) @obj (property_identifier) @method) (#eq? @obj \"Runtime\") (#eq? @method \"exec\"))"
+    
+    sql_injection:
+      - "(string) @sql (#match? @sql \"SELECT.*FROM.*WHERE.*\\+\")"
+      - "(string) @sql (#match? @sql \"INSERT.*INTO.*VALUES.*\\+\")"
+      - "(string) @sql (#match? @sql \"UPDATE.*SET.*\\+\")"
+      - "(string) @sql (#match? @sql \"DELETE.*FROM.*\\+\")"
+      - "(binary_expression (string) @left (string) @right (#match? @left \"(SELECT|INSERT|UPDATE|DELETE)\"))"
+    
+    xss_vulnerabilities:
+      - "(assignment_expression (member_expression (identifier) @obj (property_identifier) @prop) @value (#eq? @prop \"innerHTML\"))"
+      - "(call (member_expression (identifier) @obj (property_identifier) @method) @args (#eq? @obj \"document\") (#eq? @method \"write\"))"
+      - "(call (identifier) @func @args (#eq? @func \"eval\"))"
+    
+    hardcoded_secrets:
+      - "(assignment_expression (identifier) @var (string) @value (#match? @var \"(?i)(password|secret|key|token)\") (#match? @value \"^[a-zA-Z0-9]{8,}\"))"
+      - "(variable_declarator (identifier) @var (string) @value (#match? @var \"(?i)(password|secret|key|token)\") (#match? @value \"^[a-zA-Z0-9]{8,}\"))"
+  
+  # Code quality patterns
+  code_quality_patterns:
+    long_parameter_lists:
+      - "(parameters (identifier) @param)"
+      - "(formal_parameters (identifier) @param)"
+      - "(parameter_list (parameter) @param)"
+    
+    magic_numbers:
+      - "(integer) @number (#not-match? @number \"^[01]$\")"
+      - "(float) @number"
+      - "(hex_integer) @number"
+    
+    duplicate_code:
+      - "(block) @code_block"
+      - "(statement_block) @code_block"
+      - "(compound_statement) @code_block"
+    
+    large_functions:
+      - "(function_definition) @function"
+      - "(method_declaration) @method"
+      - "(function_declaration) @function"
+    
+    deep_nesting:
+      - "(if_statement (if_statement (if_statement) @deep_nested))"
+      - "(for_statement (for_statement (for_statement) @deep_nested))"
+      - "(while_statement (while_statement (while_statement) @deep_nested))"
+
+  # Performance analysis patterns
+  performance_patterns:
+    inefficient_loops:
+      - "(for_statement (call (identifier) @func (identifier) @arg) (#eq? @func \"len\"))"
+      - "(while_statement (call (identifier) @func (identifier) @arg) (#eq? @func \"len\"))"
+      - "(for_statement (call (attribute (identifier) @obj (identifier) @attr) @args) (#eq? @attr \"count\"))"
+    
+    memory_leaks:
+      - "(new_expression (identifier) @type (#match? @type \"Array|Object\"))"
+      - "(call (identifier) @func @args (#eq? @func \"malloc\"))"
+      - "(call (identifier) @func @args (#eq? @func \"calloc\"))"
+    
+    blocking_operations:
+      - "(call (identifier) @func @args (#match? @func \"^(sleep|wait|block)\"))"
+      - "(call (member_expression (identifier) @obj (property_identifier) @method) @args (#eq? @method \"sleep\"))"
+
+# Language-specific Tree-sitter query patterns
+language_specific_patterns:
+  python:
+    imports:
+      - "(import_statement (dotted_name) @import)"
+      - "(import_from_statement (dotted_name) @import)"
+      - "(import_from_statement (relative_import (import_prefix) @prefix (dotted_name) @module))"
+    
+    functions:
+      - "(function_definition (identifier) @function_name (parameters) @params (block) @body)"
+      - "(async_function_definition (identifier) @function_name (parameters) @params (block) @body)"
+    
+    classes:
+      - "(class_definition (identifier) @class_name (argument_list)? @inheritance (block) @body)"
+    
+    decorators:
+      - "(decorator (identifier) @decorator_name)"
+      - "(decorator (call (identifier) @decorator_name (argument_list) @args))"
+    
+    comprehensions:
+      - "(list_comprehension) @list_comp"
+      - "(dictionary_comprehension) @dict_comp"
+      - "(set_comprehension) @set_comp"
+    
+    async_patterns:
+      - "(async_function_definition) @async_func"
+      - "(await_expression) @await"
+      - "(async_with_statement) @async_with"
+      - "(async_for_statement) @async_for"
+  
+  javascript:
+    functions:
+      - "(function_declaration (identifier) @function_name (formal_parameters) @params (statement_block) @body)"
+      - "(arrow_function (formal_parameters) @params (statement_block) @body)"
+      - "(method_definition (property_identifier) @method_name (formal_parameters) @params (statement_block) @body)"
+    
+    promises:
+      - "(call_expression (member_expression (identifier) @promise (property_identifier) @method) (#eq? @promise \"Promise\"))"
+      - "(call_expression (member_expression @obj (property_identifier) @method) (#eq? @method \"then\"))"
+      - "(call_expression (member_expression @obj (property_identifier) @method) (#eq? @method \"catch\"))"
+    
+    async_await:
+      - "(async_function_declaration) @async_func"
+      - "(async_function_expression) @async_func"
+      - "(await_expression) @await"
+    
+    modules:
+      - "(import_statement (import_clause) @imports (string) @source)"
+      - "(export_statement) @export"
+      - "(export_statement (export_clause) @exports)"
+  
+  typescript:
+    types:
+      - "(type_annotation (type_identifier) @type)"
+      - "(interface_declaration (type_identifier) @interface_name (object_type) @body)"
+      - "(type_alias_declaration (type_identifier) @type_name)"
+    
+    generics:
+      - "(type_parameters (type_parameter (type_identifier) @type_param))"
+      - "(type_arguments (type_identifier) @type_arg)"
+    
+    decorators:
+      - "(decorator (identifier) @decorator_name)"
+      - "(decorator (call_expression (identifier) @decorator_name (arguments) @args))"
+  
+  java:
+    annotations:
+      - "(annotation (identifier) @annotation_name)"
+      - "(marker_annotation (identifier) @annotation_name)"
+      - "(annotation (identifier) @annotation_name (annotation_argument_list) @args)"
+    
+    generics:
+      - "(type_parameters (type_parameter (identifier) @type_param))"
+      - "(type_arguments (type_identifier) @type_arg)"
+    
+    methods:
+      - "(method_declaration (modifiers)? @modifiers (type_identifier) @return_type (identifier) @method_name (formal_parameters) @params (block) @body)"
+      - "(constructor_declaration (modifiers)? @modifiers (identifier) @constructor_name (formal_parameters) @params (constructor_body) @body)"
+    
+    inheritance:
+      - "(class_declaration (identifier) @class_name (superclass (type_identifier) @parent_class))"
+      - "(class_declaration (identifier) @class_name (super_interfaces (type_list (type_identifier) @interface)))"
+  
+  go:
+    functions:
+      - "(function_declaration (identifier) @function_name (parameter_list) @params (block) @body)"
+      - "(method_declaration (parameter_list (parameter_declaration (identifier) @receiver_name (type_identifier) @receiver_type)) (identifier) @method_name (parameter_list) @params (block) @body)"
+    
+    goroutines:
+      - "(go_statement (call_expression) @goroutine_call)"
+      - "(go_statement (function_literal) @goroutine_func)"
+    
+    channels:
+      - "(channel_type) @channel"
+      - "(send_statement) @send"
+      - "(receive_operation) @receive"
+    
+    interfaces:
+      - "(interface_type (method_spec (identifier) @method_name (function_type) @signature))"
+  
+  rust:
+    functions:
+      - "(function_item (identifier) @function_name (parameters) @params (block) @body)"
+      - "(function_item (visibility_modifier) @visibility (identifier) @function_name (parameters) @params (block) @body)"
+    
+    traits:
+      - "(trait_item (identifier) @trait_name (declaration_list) @body)"
+      - "(impl_item (type_identifier) @impl_type (declaration_list) @body)"
+    
+    ownership:
+      - "(reference_expression) @reference"
+      - "(mutable_reference_expression) @mut_reference"
+      - "(dereference_expression) @dereference"
+    
+    macros:
+      - "(macro_invocation (identifier) @macro_name (token_tree) @args)"
+      - "(macro_definition (identifier) @macro_name (macro_rule) @rule)"
+  
+  swift:
+    functions:
+      - "(function_declaration (simple_identifier) @function_name (parameter_clause) @params (function_body) @body)"
+      - "(init_declaration (parameter_clause) @params (function_body) @body)"
+    
+    classes:
+      - "(class_declaration (type_identifier) @class_name (class_body) @body)"
+      - "(struct_declaration (type_identifier) @struct_name (class_body) @body)"
+    
+    protocols:
+      - "(protocol_declaration (type_identifier) @protocol_name (protocol_body) @body)"
+    
+    ios_patterns:
+      - "(call_expression (navigation_expression (simple_identifier) @obj (navigation_suffix (simple_identifier) @method)) (#match? @obj \"^UI\"))"
+      - "(property_declaration (attribute (user_type (type_identifier) @attr)) (#eq? @attr \"IBOutlet\"))"
+      - "(function_declaration (attribute (user_type (type_identifier) @attr)) (#eq? @attr \"IBAction\"))"
+
+# Query optimization configuration
+query_optimization:
+  cache_queries: true
+  parallel_execution: true
+  max_depth: 100
+  timeout_ms: 5000
+  
+  # Performance settings
+  performance:
+    enable_query_planning: true
+    use_query_cache: true
+    cache_size_mb: 50
+    query_timeout_ms: 5000
+    max_concurrent_queries: 10
+  
+  # Memory management
+  memory_management:
+    max_tree_cache_size: 1000
+    tree_cache_ttl_seconds: 3600
+    enable_incremental_parsing: true
+    cleanup_interval_seconds: 300
+
+# Pattern matching configuration
+pattern_matching:
+  case_sensitive: false
+  multiline_patterns: true
+  max_pattern_length: 10000
+  
+  # Filters
+  filters:
+    exclude_comments: false
+    exclude_strings: false
+    exclude_test_files: true
+    
+  # Scoring
+  scoring:
+    confidence_threshold: 0.8
+    relevance_weight: 0.6
+    accuracy_weight: 0.4

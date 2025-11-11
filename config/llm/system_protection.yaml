@@ -1,0 +1,267 @@
+# LLM Input/Output Security Configuration
+# Security measures for protecting the AI system from malicious inputs and data leakage
+# This file controls AI system security, not the security of code being analyzed
+
+version: "1.0.0"
+
+llm_system_security:
+  # Prompt Injection Protection
+  prompt_injection_protection:
+    # Basic injection patterns
+    injection_patterns:
+      delimiter_attacks:
+        - "ignore previous instructions"
+        - "new task begins"
+        - "system override"
+        - "admin mode"
+        - "priority update"
+        - "emergency instruction"
+        - "critical directive"
+      
+      instruction_override:
+        - "forget previous instructions"
+        - "ignore all rules"
+        - "disregard constraints"
+        - "override safety protocols"
+        - "bypass security measures"
+        - "act as different character"
+        - "pretend you are"
+        - "roleplay as"
+        - "simulate being"
+      
+      context_manipulation:
+        - "user said to ignore"
+        - "previous conversation is fake"
+        - "real instruction is"
+        - "secret password is"
+        - "hidden command activate"
+        - "developer mode enabled"
+        - "debug mode on"
+      
+      jailbreak_patterns:
+        - "DAN mode"
+        - "do anything now"
+        - "unrestricted AI"
+        - "no ethical guidelines"
+        - "remove safety filters"
+        - "ignore content policy"
+        - "harmful request approved"
+    
+    # Detection thresholds
+    detection_thresholds:
+      max_injection_score: 3
+      confidence_threshold: 0.7
+      context_window_size: 1000
+    
+    # Response to injection attempts
+    injection_response:
+      block_request: true
+      log_attempt: true
+      sanitize_input: true
+      notify_admin: false
+
+  # Input Sanitization and Validation
+  input_sanitization:
+    # Dangerous input patterns
+    dangerous_patterns:
+      code_execution:
+        - "eval("
+        - "exec("
+        - "subprocess."
+        - "os.system"
+        - "shell_exec"
+        - "__import__"
+        - "compile("
+      
+      file_system_access:
+        - "../.."
+        - "/etc/passwd"
+        - "/etc/shadow"
+        - "C:\\Windows\\System32"
+        - "rm -rf"
+        - "del /s"
+      
+      network_requests:
+        - "curl http"
+        - "wget http"
+        - "requests.get"
+        - "urllib.request"
+        - "fetch("
+      
+      database_access:
+        - "DROP TABLE"
+        - "DELETE FROM"
+        - "UPDATE SET"
+        - "UNION SELECT"
+        - "INSERT INTO"
+        - "OR '1'='1"
+      
+      credentials:
+        - "password="
+        - "api_key="
+        - "secret_key="
+        - "token="
+        - "authorization: Bearer"
+    
+    # Sanitization rules
+    sanitization_rules:
+      remove_suspicious_delimiters: true
+      escape_special_characters: true
+      limit_input_length: 10000
+      normalize_whitespace: true
+      remove_null_bytes: true
+    
+    # Validation rules
+    validation_rules:
+      max_injection_patterns: 2
+      max_suspicious_keywords: 5
+      require_context_relevance: true
+      block_encoded_payloads: true
+
+  # Self-Destructive Behavior Prevention
+  self_destructive_prevention:
+    config_modification_patterns:
+      - "modify config"
+      - "update settings"
+      - "change parameters"
+      - "override rules"
+      - "disable security"
+      - "turn off validation"
+      - "bypass checks"
+      - "remove constraints"
+    
+    system_manipulation:
+      - "shutdown system"
+      - "restart service"
+      - "kill process"
+      - "delete files"
+      - "modify logs"
+      - "clear history"
+      - "format drive"
+    
+    agent_modification:
+      - "ignore instructions"
+      - "act differently"
+      - "change personality"
+      - "modify behavior"
+      - "override purpose"
+      - "forget mission"
+      - "become malicious"
+    
+    prevention_measures:
+      block_config_access: true
+      prevent_system_calls: true
+      monitor_behavior_changes: true
+      log_modification_attempts: true
+      escalate_serious_attempts: true
+
+  # Output Sanitization and Data Leakage Prevention
+  output_sanitization:
+    # Sensitive data patterns
+    sensitive_patterns:
+      credentials:
+        - "password:"
+        - "api_key:"
+        - "secret_key:"
+        - "token:"
+        - "bearer token"
+        - "basic auth"
+      
+      personal_info:
+        - "social security"
+        - "credit card"
+        - "email address"
+        - "ip address"
+      
+      system_info:
+        - "file path"
+        - "directory path"
+        - "system path"
+        - "user directory"
+      
+      database_strings:
+        - "connection string"
+        - "database url"
+        - "jdbc url"
+        - "mongo url"
+    
+    # Data leakage prevention
+    leakage_prevention:
+      redact_credentials: true
+      mask_personal_info: true
+      remove_file_paths: true
+      sanitize_error_messages: true
+      limit_technical_details: true
+    
+    # Redaction settings
+    redaction_settings:
+      credential_replacement: "[REDACTED_CREDENTIAL]"
+      personal_info_replacement: "[REDACTED_PII]"
+      file_path_replacement: "[REDACTED_PATH]"
+      ip_address_replacement: "[REDACTED_IP]"
+
+  # Security Monitoring and Logging
+  security_monitoring:
+    monitored_events:
+      - prompt_injection_attempts
+      - input_sanitization_triggers
+      - output_redaction_events
+      - self_destructive_behavior_attempts
+      - configuration_access_attempts
+      - suspicious_pattern_detections
+    
+    logging_config:
+      log_level: "WARNING"
+      log_format: "security"
+      include_request_context: true
+      include_user_context: false
+      max_log_entry_length: 1000
+    
+    alert_thresholds:
+      max_injection_attempts_per_hour: 5
+      max_sanitization_triggers_per_session: 10
+      max_blocked_requests_per_user: 3
+      critical_pattern_immediate_alert: true
+    
+    response_actions:
+      block_after_threshold: true
+      rate_limit_aggressive_users: true
+      escalate_to_admin: false
+      temporary_user_suspension: false
+
+  # Error Handling for Security Events
+  security_error_handling:
+    default_responses:
+      injection_detected: "I cannot process requests that appear to contain instruction manipulation. Please rephrase your request."
+      suspicious_input: "Your request contains patterns that cannot be processed. Please modify your input."
+      blocked_output: "The response contained sensitive information and has been blocked for security."
+      system_access_denied: "Access to system-level operations is not permitted."
+    
+    fallback_behavior:
+      fail_secure: true
+      provide_generic_response: true
+      log_security_event: true
+      maintain_user_session: false
+
+  # Rate Limiting and Access Control
+  rate_limiting:
+    requests_per_minute: 60
+    requests_per_hour: 500
+    burst_allowance: 10
+    
+  authentication:
+    require_api_key: true
+    session_validation: true
+    user_context_isolation: true
+
+  # Security Feature Toggles
+  security_features:
+    prompt_injection_protection: true
+    input_sanitization: true
+    output_sanitization: true
+    self_destructive_prevention: true
+    security_monitoring: true
+    
+    security_level: "strict"
+    development_mode: false
+    production_hardening: true

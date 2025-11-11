@@ -1,9 +1,15 @@
+# Docker Compose Configuration for AI Code Review Multi-Agent System
+# Phase 1 - Simplified container with native Ollama connectivity
+
 services:
+  # Main Application Service
   adk-code-review:
     build:
       context: .
       dockerfile: Dockerfile
+      target: simple
     container_name: adk-code-review
+    hostname: adk-code-review
     restart: unless-stopped
     environment:
       - ADK_WORKSPACE=/app/adk-workspace
@@ -12,23 +18,63 @@ services:
       - ADK_LOG_LEVEL=INFO
       - ENVIRONMENT=development
       - DEBUG=true
+      # Native Ollama connectivity via host
+      - OLLAMA_API_BASE=http://host.docker.internal:11434
     ports:
-      - "8080:8000"
-      - "8201:8200"
+      - "8000:8000"     # Main API
+      - "8200:8200"     # ADK Dev Portal
     volumes:
       # Source code for development
       - .:/app
       - ./data:/app/data
       - ./logs:/app/logs
       - ./outputs:/app/outputs
+<<<<<<< HEAD
       # ADK workspace
       - adk-workspace:/app/adk-workspace
+=======
+      - ./credentials:/app/credentials
+      # ADK workspace
+      - adk-workspace:/app/adk-workspace
+      # Cache volumes
+      - pip-cache:/root/.cache/pip
+      - poetry-cache:/root/.cache/pypoetry
+    networks:
+      - ai-code-review-network
+>>>>>>> origin/main
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
       interval: 30s
       timeout: 10s
       retries: 3
       start_period: 40s
+<<<<<<< HEAD
 
 volumes:
   adk-workspace:
+=======
+    profiles:
+      - main
+      - development
+
+# Networks
+networks:
+  ai-code-review-network:
+    driver: bridge
+    name: ai-code-review-network
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
+
+# Volumes
+volumes:
+  # Development data
+  adk-workspace:
+    name: ai-code-review-adk-workspace
+  
+  # Cache volumes
+  pip-cache:
+    name: ai-code-review-pip-cache
+  poetry-cache:
+    name: ai-code-review-poetry-cache
+>>>>>>> origin/main

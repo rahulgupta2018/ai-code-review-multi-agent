@@ -1,6 +1,6 @@
-# ADK Code Review System - Phase 0
+# AI Code Review Multi-Agent System - Phase 1 Complete
 
-A multi-agent code review system built with Google ADK (Agent Development Kit).
+A comprehensive multi-agent code review platform built with **Google ADK (Agent Development Kit)**, featuring native Ollama integration, LiteLLM routing, and containerized deployment.
 
 ## 🏗️ Architecture Overview
 
