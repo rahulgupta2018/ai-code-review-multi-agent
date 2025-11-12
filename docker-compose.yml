@@ -29,10 +29,6 @@ services:
       - ./data:/app/data
       - ./logs:/app/logs
       - ./outputs:/app/outputs
-<<<<<<< HEAD
-      # ADK workspace
-      - adk-workspace:/app/adk-workspace
-=======
       - ./credentials:/app/credentials
       # ADK workspace
       - adk-workspace:/app/adk-workspace
@@ -41,18 +37,12 @@ services:
       - poetry-cache:/root/.cache/pypoetry
     networks:
       - ai-code-review-network
->>>>>>> origin/main
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
       interval: 30s
       timeout: 10s
       retries: 3
       start_period: 40s
-<<<<<<< HEAD
-
-volumes:
-  adk-workspace:
-=======
     profiles:
       - main
       - development
@@ -77,4 +67,3 @@ volumes:
     name: ai-code-review-pip-cache
   poetry-cache:
     name: ai-code-review-poetry-cache
->>>>>>> origin/main

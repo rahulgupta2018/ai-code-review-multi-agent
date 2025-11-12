@@ -79,5 +79,5 @@ EXPOSE 8000 8200
 HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
     CMD curl -f http://localhost:8000/docs || exit 1
 
-# Default command - run ADK web server directly pointing to main project structure
-CMD ["adk", "web", "--host", "0.0.0.0", "--port", "8000", "/app"]
+# Default command - run in API mode to provide web endpoints
+CMD ["python", "main.py", "api"]
