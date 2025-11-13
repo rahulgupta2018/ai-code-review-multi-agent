@@ -75,9 +75,9 @@ USER appuser
 # Expose ports
 EXPOSE 8000 8200
 
-# Health check
+# Health check - check port 8200 for ADK web server or port 8000 for API server
 HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
-    CMD curl -f http://localhost:8000/docs || exit 1
+    CMD curl -f http://localhost:8200/ || curl -f http://localhost:8000/docs || exit 1
 
 # Default command - run in API mode to provide web endpoints
 CMD ["python", "main.py", "api"]

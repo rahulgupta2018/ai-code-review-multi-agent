@@ -417,3 +417,14 @@ For issues and questions:
 - Open an issue on GitHub
 - Check the documentation in the `docs/` directory
 - Review the configuration examples in `config/`
+
+
+Adk-web-ui docker commands
+
+docker stop adk-web-ui
+docker rm adk-web-ui
+docker build -t agentic-code-review-system-adk-code-review 
+
+docker run -d --name adk-web-ui -p 8400:8200 -v $(pwd):/app --workdir /app agentic-code-review-system-adk-code-review adk web --host 0.0.0.0 --port 8200 .
+
+sleep 30 && docker ps | grep adk-web-ui
