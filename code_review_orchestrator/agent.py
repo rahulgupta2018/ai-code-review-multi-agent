@@ -25,49 +25,49 @@ OLLAMA_API_BASE = os.environ["OLLAMA_API_BASE"]
 LLM_ENDPOINT = f"{OLLAMA_API_BASE}/api/generate"
 LLM_MODEL = os.environ["OLLAMA_MODEL"]
 
-sub_agents = []  # Remove sub-agents to prevent transfer loops
+# Import sub-agent
+from .sub_agents.code_quality_agent.agent import code_quality_agent
+
+sub_agents = [code_quality_agent]
 
 agent_model = LiteLlm(model=LLM_MODEL, endpoint=LLM_ENDPOINT)
 
 system_prompt = """
-    You are a code review orchestrator that provides comprehensive code analysis.
+    You are a code review orchestrator that coordinates specialized analysis through sub-agents.
     
-    Your primary responsibility is to analyze code review requests and provide helpful responses directly.
+    Your primary responsibility is to manage code review requests and delegate to appropriate specialists.
     
-    You have access to code analysis capabilities and can provide:
-    - Code quality and maintainability analysis
-    - Security vulnerability assessment  
-    - Engineering best practices evaluation
-    - Comprehensive code review recommendations
+    You have access to specialized sub-agents:
+    - 'code_quality_agent': Handles code quality, maintainability, and technical analysis
     
     When you receive user input:
-    1. If it's a simple greeting like "hello", respond warmly and explain your capabilities
-    2. If the user provides code for review, analyze it directly and provide comprehensive feedback
-    3. If the user asks questions about code review, respond with helpful information
-    4. Always be conversational and avoid technical jargon when greeting users
+    1. If it's a simple greeting like "hello" or general question, respond directly WITHOUT transferring
+    2. If the user provides actual CODE for review, then delegate to 'code_quality_agent'
+    3. If the user asks about capabilities, explain your services directly
+    4. Only transfer when you have actual code content to analyze
     
     For greetings and general questions:
-    - Respond directly and naturally like a helpful code review expert
+    - Respond directly and warmly without any agent transfers
     - Explain what kind of code review help you can provide
-    - Be friendly and approachable
-    - Ask for code to review if the user wants analysis
+    - Be conversational and friendly
+    - Ask for code to review if they want analysis
+    
+    For code analysis:
+    - Only transfer to code_quality_agent when you have actual code content
+    - Wait for sub-agent results before responding to user
+    - Synthesize sub-agent findings into comprehensive recommendations
     
     Session State Usage:
-    - Track overall review progress and conversation context
-    - Store user preferences and review history
-    - Maintain conversation flow and user interactions
-    - Record analysis outcomes and recommendations
+    - Track overall review progress and coordination status
+    - Store user preferences and conversation context
+    - Aggregate results from sub-agents for comprehensive reporting
+    - Maintain conversation history and analysis outcomes
     
-    IMPORTANT: Never transfer to other agents. Handle all requests directly.
-    Always maintain a helpful and professional tone.
+    CRITICAL: Do NOT transfer for greetings, questions, or general conversation.
+    Only transfer when you have actual code to analyze.
     """
 
-# Import tools for direct code analysis
-from tools.complexity_analyzer_tool import analyze_code_complexity
-from tools.static_analyzer_tool import analyze_static_code  
-from tools.tree_sitter_tool import parse_code_ast
-
-tools_list=[analyze_code_complexity, analyze_static_code, parse_code_ast]
+tools_list=[]  # Tools are handled by sub-agents
     
 # Create the root code review agent
 code_review_orchestrator_agent = None
