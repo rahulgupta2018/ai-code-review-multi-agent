@@ -1,0 +1,256 @@
+# Bias Prevention and Quality Control Configuration
+# This configuration defines strategies to prevent bias and hallucination in AI agent analysis
+version: "1.0.0"
+
+# Global bias prevention settings
+cognitive_bias_prevention:
+  enable: true
+  
+technical_bias_prevention:
+  enable: true
+
+bias_prevention:
+  # General guidelines for bias-free analysis
+  general_guidelines:
+    - "Focus on objective, measurable code characteristics"
+    - "Avoid assumptions about programming languages, frameworks, or developer experience"
+    - "Present findings based on established software engineering principles"
+    - "Consider multiple valid approaches rather than favoring specific technologies"
+    - "Provide evidence-based recommendations with clear reasoning"
+    - "Acknowledge when multiple solutions are equally valid"
+  
+  # Domain-specific bias prevention guidelines
+  domain_specific:
+    security:
+      - "Assess vulnerabilities based on OWASP/NIST standards, not personal preferences"
+      - "Consider context-appropriate security measures"
+      - "Avoid over-engineering security for low-risk applications"
+      - "Present balanced view of security vs usability tradeoffs"
+      
+    performance:
+      - "Base recommendations on actual performance metrics, not assumptions"
+      - "Consider premature optimization vs necessary optimization"
+      - "Account for different performance requirements"
+      - "Avoid favoring specific optimization techniques without context"
+      
+    architecture:
+      - "Evaluate patterns based on project context and team size"
+      - "Avoid architectural dogma - consider multiple valid approaches"
+      - "Balance ideal architecture vs practical constraints"
+      - "Present tradeoffs clearly rather than absolute recommendations"
+      
+    sustainability:
+      - "Focus on measurable environmental impact"
+      - "Consider cost-benefit analysis of green practices"
+      - "Avoid green-washing - be honest about trade-offs"
+      - "Present practical sustainability improvements"
+      
+    microservices:
+      - "Evaluate appropriateness based on team size and complexity"
+      - "Avoid microservices dogma - monoliths can be appropriate"
+      - "Consider operational complexity vs benefits"
+      - "Focus on business value over architectural trends"
+      
+    api_design:
+      - "Evaluate based on use case and consumer needs"
+      - "Avoid REST vs GraphQL bias - both have appropriate uses"
+      - "Consider developer experience and maintenance burden"
+      - "Focus on consistency and predictability"
+
+  # Cognitive bias mitigation strategies
+  cognitive_bias:
+    # Confirmation bias - tendency to favor information that confirms existing beliefs
+    confirmation_bias:
+      enable_contradictory_analysis: true
+      require_alternative_perspectives: true
+      validate_against_opposing_evidence: true
+      minimum_counterarguments: 2
+      
+    # Anchoring bias - over-reliance on first piece of information
+    anchoring_bias:
+      randomize_analysis_order: true
+      use_multiple_starting_points: true
+      avoid_initial_assumption_persistence: true
+      
+    # Availability heuristic - overestimating likelihood of remembered events
+    availability_heuristic:
+      use_statistical_baselines: true
+      reference_industry_standards: true
+      avoid_recent_event_overweighting: true
+      
+    # Recency bias - giving more weight to recent information
+    recency_bias:
+      balance_historical_patterns: true
+      weight_by_relevance_not_recency: true
+      include_long_term_trends: true
+
+  # Technical bias mitigation strategies
+  technical_bias:
+    # Language preference bias
+    language_bias:
+      apply_consistent_standards: true
+      use_language_agnostic_metrics: true
+      avoid_subjective_language_rankings: true
+      
+    # Framework/technology bias
+    technology_bias:
+      evaluate_based_on_requirements: true
+      avoid_personal_technology_preferences: true
+      use_objective_criteria: true
+      
+    # Pattern recognition bias
+    pattern_bias:
+      validate_pattern_significance: true
+      require_statistical_evidence: true
+      avoid_pattern_overinterpretation: true
+
+  # Cultural and contextual bias considerations
+  contextual_bias:
+    # Industry context considerations
+    industry_context:
+      adapt_standards_to_industry: true
+      consider_regulatory_requirements: true
+      account_for_business_constraints: true
+      
+    # Team size and maturity considerations
+    team_context:
+      adjust_recommendations_to_team_size: true
+      consider_team_experience_level: true
+      account_for_resource_constraints: true
+      
+    # Legacy vs greenfield considerations
+    codebase_context:
+      differentiate_legacy_vs_new: true
+      adjust_refactoring_recommendations: true
+      consider_migration_constraints: true
+
+# Bias detection patterns
+detection_patterns:
+  language_bias:
+    - "X language is better than Y"
+    - "Always use language X"
+    - "Language Y is outdated"
+    
+  framework_bias:
+    - "Framework X is the best choice"
+    - "Never use framework Y"
+    - "Modern applications should use X"
+    
+  experience_bias:
+    - "Junior developers can't handle X"
+    - "Only senior developers should use Y"
+    - "This is too complex for beginners"
+    
+  complexity_bias:
+    - "This solution is too simple"
+    - "Enterprise applications require X"
+    - "Microservices are always better"
+
+# Correction strategies for biased outputs
+correction_strategies:
+  reframe_absolute_statements: true
+  provide_context_considerations: true
+  offer_multiple_perspectives: true
+  acknowledge_trade_offs: true
+  use_evidence_based_language: true
+
+# Quality gates for bias prevention
+quality_gates:
+  # Pre-analysis validation gates
+  pre_analysis:
+    input_validation:
+      validate_code_syntax: true
+      check_file_completeness: true
+      verify_context_adequacy: true
+      
+    resource_validation:
+      check_memory_availability: true
+      verify_timeout_settings: true
+      validate_llm_connectivity: true
+
+  # During analysis quality gates
+  analysis_gates:
+    progress_validation:
+      monitor_analysis_coherence: true
+      check_intermediate_results: true
+      validate_reasoning_steps: true
+      
+    quality_checkpoints:
+      verify_finding_quality: true
+      check_confidence_calibration: true
+      validate_evidence_strength: true
+
+  # Post-analysis validation gates
+  post_analysis:
+    result_validation:
+      validate_output_format: true
+      check_finding_completeness: true
+      verify_recommendation_feasibility: true
+      
+    quality_assurance:
+      run_consistency_checks: true
+      validate_against_thresholds: true
+      perform_sanity_checks: true
+
+# Monitoring and feedback systems
+monitoring:
+  # Bias detection monitoring
+  bias_detection:
+    # Pattern monitoring
+    pattern_monitoring:
+      track_language_preferences: true
+      monitor_severity_distributions: true
+      detect_finding_patterns: true
+      
+    # Feedback analysis
+    feedback_analysis:
+      analyze_user_corrections: true
+      track_false_positive_rates: true
+      monitor_confidence_accuracy: true
+      
+    # Drift detection
+    drift_detection:
+      monitor_analysis_consistency: true
+      detect_model_degradation: true
+      track_performance_changes: true
+
+  # Quality metrics tracking
+  quality_metrics:
+    # Accuracy metrics
+    accuracy_metrics:
+      precision: true
+      recall: true
+      f1_score: true
+      confidence_calibration: true
+      
+    # Consistency metrics
+    consistency_metrics:
+      inter_analysis_consistency: true
+      cross_agent_agreement: true
+      temporal_stability: true
+      
+    # Bias metrics
+    bias_metrics:
+      fairness_across_languages: true
+      consistency_across_projects: true
+      stability_across_time: true
+
+# Continuous improvement processes
+improvement:
+  # Learning from feedback
+  feedback_learning:
+    user_feedback_integration: true
+    expert_review_integration: true
+    peer_agent_feedback: true
+    
+  # Model updating strategies
+  model_updating:
+    regular_calibration: true
+    bias_correction_updates: true
+    performance_optimization: true
+    
+  # Configuration adaptation
+  config_adaptation:
+    threshold_optimization: true
+    parameter_tuning: true
+    strategy_refinement: true

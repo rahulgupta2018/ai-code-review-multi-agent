@@ -1,0 +1,1089 @@
+# Tree-sitter Language Configuration
+# Comprehensive multi-language support configuration for AST parsing and analysis
+version: "1.0.0"
+# Language support configuration
+supported_languages:
+  python:
+    grammar: "tree-sitter-python"
+    file_extensions: [".py", ".pyw", ".pyi"]
+
+    # AST node mappings
+    ast_node_mappings:
+      functions: ["function_definition", "async_function_definition"]
+      classes: ["class_definition"]
+      imports: ["import_statement", "import_from_statement"]
+      control_flow: ["if_statement", "for_statement", "while_statement", "try_statement", "with_statement"]
+      comments: ["comment"]
+      decorators: ["decorator"]
+      comprehensions: ["list_comprehension", "dict_comprehension", "set_comprehension"]
+    
+    # Framework detection patterns
+    frameworks:
+      - name: "FastAPI"
+        patterns: ["FastAPI", "@app.get", "@app.post", "APIRouter"]
+      - name: "Django"
+        patterns: ["django", "models.Model", "forms.Form", "views.View"]
+      - name: "Flask"
+        patterns: ["Flask", "@app.route", "request", "jsonify"]
+      - name: "TensorFlow"
+        patterns: ["tensorflow", "tf.", "keras"]
+      - name: "PyTorch"
+        patterns: ["torch", "nn.Module", "DataLoader"]
+    
+    # Analysis patterns
+    complexity_patterns:
+      - function_definition
+      - class_definition
+      - if_statement
+      - for_statement
+      - while_statement
+      - try_statement
+      - with_statement
+      - list_comprehension
+      - dict_comprehension
+      
+    security_patterns:
+      - import_statement
+      - call
+      - attribute
+      - string
+      
+    maintainability_patterns:
+      - docstring
+      - comment
+      - function_definition
+      - decorator
+    
+    # Code patterns
+    patterns:
+      decorator_pattern: ["@\\w+"]
+      async_pattern: ["async def", "await"]
+      
+    # Complexity thresholds
+    complexity_thresholds:
+      max_function_lines: 50
+      max_class_lines: 400
+      max_cyclomatic_complexity: 10
+      
+    # Legacy patterns for CodeAnalyzer compatibility
+    legacy_patterns:
+      class_pattern: 'class\\s+(\\w+)'
+      method_pattern: 'def\\s+(\\w+)\\s*\\('
+      import_pattern: '(?:from\\s+\\w+\\s+)?import\\s+[\\w\\.,\\s]+'
+      complexity_keywords: [if, elif, else, for, while, try, except, with]
+
+  javascript:
+    grammar: "tree-sitter-javascript"
+    version: "0.25.2"
+    file_extensions: [".js", ".jsx", ".mjs", ".cjs"]
+    
+    # Advanced AST node mappings
+    ast_node_mappings:
+      functions: ["function_declaration", "function_expression", "arrow_function", "method_definition"]
+      classes: ["class_declaration"]
+      imports: ["import_statement", "import_clause"]
+      exports: ["export_statement", "export_clause"]
+      control_flow: ["if_statement", "for_statement", "while_statement", "try_statement", "switch_statement"]
+      comments: ["comment"]
+      async_patterns: ["async_function", "await_expression"]
+    
+    # Framework detection patterns
+    frameworks:
+      - name: "React"
+        patterns: ["import React", "useState", "useEffect", "JSX.Element"]
+      - name: "Node.js"
+        patterns: ["require(", "module.exports", "process.env"]
+      - name: "Express"
+        patterns: ["express()", "app.get", "app.post", "middleware"]
+      - name: "Vue"
+        patterns: ["Vue.component", "createApp", "defineComponent"]
+      - name: "Angular"
+        patterns: ["@Component", "@Injectable", "@NgModule"]
+    
+    # Analysis patterns
+    complexity_patterns:
+      - function_declaration
+      - arrow_function
+      - if_statement
+      - while_statement
+      - for_statement
+      - switch_statement
+      - try_statement
+      
+    security_patterns:
+      - call_expression
+      - member_expression
+      - import_statement
+      - eval_expression
+      
+    maintainability_patterns:
+      - comment
+      - function_declaration
+      - class_declaration
+      - jsdoc_comment
+    
+    # Code patterns
+    patterns:
+      module_pattern: ["module.exports", "exports.", "require("]
+      async_pattern: ["async", "await", "Promise"]
+      component_pattern: ["function.*\\(.*\\).*{", "const.*=.*\\(.*\\).*=>", "class.*extends.*Component"]
+      hook_pattern: ["useState", "useEffect", "useCallback", "useMemo"]
+      
+    # Complexity thresholds
+    complexity_thresholds:
+      max_function_lines: 40
+      max_class_lines: 300
+      max_cyclomatic_complexity: 8
+      
+    # Legacy patterns for CodeAnalyzer compatibility
+    legacy_patterns:
+      class_pattern: 'class\\s+(\\w+)'
+      method_pattern: '(?:function\\s+(\\w+)|(\\w+)\\s*:\\s*function|\\s*(\\w+)\\s*\\()'
+      import_pattern: "import.*from\\s*[\"'].*[\"']|require\\([\"'].*[\"']\\)"
+      complexity_keywords: [if, else, for, while, switch, case, try, catch]
+
+  typescript:
+    grammar: "tree-sitter-typescript"
+    version: "0.25.2"
+    file_extensions: [".ts", ".tsx"]
+    
+    # Advanced AST node mappings
+    ast_node_mappings:
+      functions: ["function_declaration", "function_expression", "arrow_function", "method_definition"]
+      classes: ["class_declaration"]
+      interfaces: ["interface_declaration"]
+      types: ["type_alias_declaration", "type_annotation"]
+      imports: ["import_statement", "import_clause"]
+      control_flow: ["if_statement", "for_statement", "while_statement", "try_statement", "switch_statement"]
+      comments: ["comment"]
+      generics: ["type_parameter", "type_arguments"]
+    
+    # Framework detection patterns
+    frameworks:
+      - name: "React"
+        patterns: ["import React", "useState", "useEffect", "JSX.Element", "React.FC"]
+      - name: "Angular"
+        patterns: ["@Component", "@Injectable", "@NgModule", "OnInit"]
+      - name: "Vue"
+        patterns: ["Vue.component", "createApp", "defineComponent", "CompositionAPI"]
+      - name: "NestJS"
+        patterns: ["@Controller", "@Injectable", "@Module", "NestFactory"]
+    
+    # Analysis patterns
+    complexity_patterns:
+      - function_declaration
+      - arrow_function
+      - if_statement
+      - for_statement
+      - interface_declaration
+      - type_alias_declaration
+      
+    security_patterns:
+      - call_expression
+      - member_expression
+      - import_declaration
+      - type_assertion
+      
+    maintainability_patterns:
+      - comment
+      - interface_declaration
+      - type_alias_declaration
+      - jsdoc_comment
+    
+    # Code patterns
+    patterns:
+      component_pattern: ["@Component", "React.Component", "defineComponent"]
+      hook_pattern: ["useState", "useEffect", "useCallback", "useMemo"]
+      type_pattern: ["interface", "type", "enum"]
+      
+    # Complexity thresholds
+    complexity_thresholds:
+      max_function_lines: 40
+      max_class_lines: 300
+      max_cyclomatic_complexity: 8
+      
+    # Legacy patterns for CodeAnalyzer compatibility
+    legacy_patterns:
+      class_pattern: 'class\\s+(\\w+)'
+      method_pattern: '(?:function\\s+(\\w+)|(?:\\w+)\\s*\\([^)]*\\)\\s*\\{|(?:\\w+)\\s*\\([^)]*\\)\\s*=>)'
+      import_pattern: "import\\s+(?:\\{[^}]+\\}|\\*\\s+as\\s+\\w+|\\w+)\\s+from\\s+['\\\"][^'\\\"]+['\\\"]"
+      complexity_keywords: [if, else, for, while, switch, case, try, catch]
+
+  java:
+    grammar: "tree-sitter-java"
+    version: "0.25.2"
+    file_extensions: [".java"]
+    
+    # Advanced AST node mappings
+    ast_node_mappings:
+      functions: ["method_declaration", "constructor_declaration"]
+      classes: ["class_declaration"]
+      interfaces: ["interface_declaration"]
+      enums: ["enum_declaration"]
+      records: ["record_declaration"]
+      annotations: ["marker_annotation", "normal_annotation", "single_element_annotation"]
+      fields: ["field_declaration"]
+      variables: ["local_variable_declaration"]
+      modifiers: ["modifier"]
+      package: ["package_declaration"]
+      imports: ["import_declaration"]
+      control_flow: ["if_statement", "for_statement", "while_statement", "do_statement", "try_statement", "switch_statement", "switch_expression", "break_statement", "continue_statement"]
+      comments: ["line_comment", "block_comment"]
+    
+    # Framework detection patterns
+    frameworks:
+      - name: "Spring"
+        patterns: ["@SpringBootApplication", "@RestController", "@Service", "@Repository", "@Autowired"]
+      - name: "Android"
+        patterns: ["import android.", "extends Activity", "extends Fragment", "findViewById"]
+      - name: "Hibernate"
+        patterns: ["@Entity", "@Table", "@Column", "SessionFactory"]
+      - name: "JUnit"
+        patterns: ["@Test", "@Before", "@After", "Assert."]
+    
+    # Analysis patterns
+    complexity_patterns:
+      - method_declaration
+      - class_declaration
+      - if_statement
+      - for_statement
+      - while_statement
+      - switch_statement
+      - try_statement
+      
+    security_patterns:
+      - method_invocation
+      - object_creation_expression
+      - import_declaration
+      - string_literal
+      
+    maintainability_patterns:
+      - block_comment
+      - line_comment
+      - method_declaration
+      - javadoc_comment
+    
+    # Code patterns
+    patterns:
+      mvc_pattern: ["@Controller", "@Service", "@Repository"]
+      dependency_injection: ["@Autowired", "@Inject", "@Component"]
+      
+    # Complexity thresholds
+    complexity_thresholds:
+      max_function_lines: 50
+      max_class_lines: 500
+      max_cyclomatic_complexity: 10
+      
+    # Legacy patterns for CodeAnalyzer compatibility
+    legacy_patterns:
+      class_pattern: '(?:public\\s+|private\\s+|protected\\s+)?class\\s+(\\w+)'
+      method_pattern: '(?:public\\s+|private\\s+|protected\\s+)?[\\w<>\\[\\]]+\\s+(\\w+)\\s*\\('
+      import_pattern: 'import\\s+[\\w\\.\\*]+;'
+      complexity_keywords: [if, else, for, while, switch, case, try, catch]
+
+  go:
+    grammar: "tree-sitter-go"
+    version: "0.25.2"
+    file_extensions: [".go"]
+    
+    # Advanced AST node mappings
+    ast_node_mappings:
+      functions: ["function_declaration", "method_declaration"]
+      interfaces: ["interface_type"]
+      structs: ["struct_type"]
+      imports: ["import_declaration"]
+      control_flow: ["if_statement", "for_statement", "switch_statement", "select_statement"]
+      comments: ["comment"]
+      goroutines: ["go_statement"]
+      channels: ["channel_type", "send_statement", "receive_operation"]
+    
+    # Framework detection patterns
+    frameworks:
+      - name: "Gin"
+        patterns: ["gin.Default", "c.JSON", "gin.Context", "gin.Engine"]
+      - name: "Echo"
+        patterns: ["echo.New", "c.String", "echo.Context"]
+      - name: "Fiber"
+        patterns: ["fiber.New", "fiber.App", "c.JSON"]
+      - name: "gRPC"
+        patterns: ["grpc.", "pb.", "google.golang.org/grpc"]
+    
+    # Analysis patterns
+    complexity_patterns:
+      - function_declaration
+      - method_declaration
+      - if_statement
+      - for_statement
+      - switch_statement
+      - select_statement
+      
+    security_patterns:
+      - call_expression
+      - import_spec
+      - string_literal
+      
+    maintainability_patterns:
+      - comment
+      - function_declaration
+      - interface_type
+    
+    # Code patterns
+    patterns:
+      goroutine_pattern: ["go func", "go \\w+"]
+      channel_pattern: ["make(chan", "<-", "chan "]
+      error_handling: ["if err != nil", "return.*err"]
+      
+    # Complexity thresholds
+    complexity_thresholds:
+      max_function_lines: 50
+      max_struct_lines: 200
+      max_cyclomatic_complexity: 10
+
+  rust:
+    grammar: "tree-sitter-rust"
+    version: "0.25.2"
+    file_extensions: [".rs"]
+    
+    # Advanced AST node mappings
+    ast_node_mappings:
+      functions: ["function_item"]
+      structs: ["struct_item"]
+      enums: ["enum_item"]
+      traits: ["trait_item"]
+      impls: ["impl_item"]
+      modules: ["mod_item"]
+      imports: ["use_declaration"]
+      control_flow: ["if_expression", "loop_expression", "while_expression", "for_expression", "match_expression"]
+      comments: ["line_comment", "block_comment"]
+      macros: ["macro_invocation", "macro_definition"]
+    
+    # Framework detection patterns
+    frameworks:
+      - name: "Actix"
+        patterns: ["actix_web", "HttpResponse", "web::", "App::new"]
+      - name: "Tokio"
+        patterns: ["tokio::", "#[tokio::main]", "async fn", "await"]
+      - name: "Serde"
+        patterns: ["serde::", "#[derive(Serialize", "#[derive(Deserialize"]
+      - name: "Diesel"
+        patterns: ["diesel::", "#[derive(Queryable", "schema::"]
+    
+    # Analysis patterns
+    complexity_patterns:
+      - function_item
+      - impl_item
+      - if_expression
+      - loop_expression
+      - match_expression
+      - for_expression
+      
+    security_patterns:
+      - call_expression
+      - use_declaration
+      - unsafe_block
+      
+    maintainability_patterns:
+      - line_comment
+      - block_comment
+      - function_item
+      - doc_comment
+    
+    # Code patterns
+    patterns:
+      ownership_pattern: ["&", "&mut", "Box<", "Rc<", "Arc<"]
+      error_handling: ["Result<", "Option<", "?", "unwrap", "expect"]
+      async_pattern: ["async", "await", "Future"]
+      
+    # Complexity thresholds
+    complexity_thresholds:
+      max_function_lines: 50
+      max_impl_lines: 300
+      max_cyclomatic_complexity: 10
+
+  cpp:
+    grammar: "tree-sitter-cpp"
+    version: "0.25.2"
+    file_extensions: [".cpp", ".cxx", ".cc", ".c++", ".hpp", ".hxx", ".h++", ".h"]
+    
+    # Advanced AST node mappings
+    ast_node_mappings:
+      functions: ["function_definition", "function_declarator"]
+      classes: ["class_specifier"]
+      structs: ["struct_specifier"]
+      namespaces: ["namespace_definition"]
+      templates: ["template_declaration"]
+      includes: ["preproc_include"]
+      control_flow: ["if_statement", "for_statement", "while_statement", "switch_statement", "try_statement"]
+      comments: ["comment"]
+    
+    # Framework detection patterns
+    frameworks:
+      - name: "Qt"
+        patterns: ["#include <Q", "QObject", "QWidget", "QApplication"]
+      - name: "Boost"
+        patterns: ["#include <boost/", "boost::", "BOOST_"]
+      - name: "STL"
+        patterns: ["std::", "#include <vector>", "#include <string>"]
+    
+    # Analysis patterns
+    complexity_patterns:
+      - function_definition
+      - class_specifier
+      - if_statement
+      - for_statement
+      - while_statement
+      - switch_statement
+      
+    security_patterns:
+      - call_expression
+      - preproc_include
+      - pointer_declarator
+      
+    maintainability_patterns:
+      - comment
+      - function_definition
+      - class_specifier
+    
+    # Complexity thresholds
+    complexity_thresholds:
+      max_function_lines: 60
+      max_class_lines: 800
+      max_cyclomatic_complexity: 12
+
+  csharp:
+    grammar: "tree-sitter-c-sharp"
+    version: "0.25.2"
+    file_extensions: [".cs", ".csx"]
+    
+    # Advanced AST node mappings
+    ast_node_mappings:
+      functions: ["method_declaration", "constructor_declaration"]
+      classes: ["class_declaration"]
+      interfaces: ["interface_declaration"]
+      properties: ["property_declaration"]
+      events: ["event_declaration"]
+      imports: ["using_directive"]
+      control_flow: ["if_statement", "for_statement", "while_statement", "try_statement", "switch_statement"]
+      comments: ["comment"]
+      attributes: ["attribute_list"]
+    
+    # Framework detection patterns
+    frameworks:
+      - name: "ASP.NET"
+        patterns: ["[ApiController]", "[HttpGet]", "[HttpPost]", "ControllerBase"]
+      - name: "Entity Framework"
+        patterns: ["DbContext", "DbSet", "[Table]", "Entity<"]
+      - name: "WPF"
+        patterns: ["Window", "UserControl", "DependencyProperty"]
+      - name: "Xamarin"
+        patterns: ["Xamarin.", "ContentPage", "StackLayout"]
+    
+    # Analysis patterns
+    complexity_patterns:
+      - method_declaration
+      - class_declaration
+      - if_statement
+      - for_statement
+      - while_statement
+      - switch_statement
+      
+    security_patterns:
+      - invocation_expression
+      - using_directive
+      - interpolated_string
+      
+    maintainability_patterns:
+      - comment
+      - method_declaration
+      - xml_documentation
+    
+    # Complexity thresholds
+    complexity_thresholds:
+      max_method_lines: 50
+      max_class_lines: 500
+      max_cyclomatic_complexity: 10
+
+  php:
+    grammar: "tree-sitter-php"
+    version: "0.25.2"
+    file_extensions: [".php", ".phtml"]
+    
+    # Advanced AST node mappings
+    ast_node_mappings:
+      functions: ["function_definition", "method_declaration"]
+      classes: ["class_declaration"]
+      interfaces: ["interface_declaration"]
+      traits: ["trait_declaration"]
+      includes: ["include_expression", "require_expression"]
+      control_flow: ["if_statement", "for_statement", "while_statement", "try_statement", "switch_statement"]
+      comments: ["comment"]
+    
+    # Framework detection patterns
+    frameworks:
+      - name: "Laravel"
+        patterns: ["Illuminate\\", "Artisan::", "Route::", "Schema::"]
+      - name: "Symfony"
+        patterns: ["Symfony\\", "@Route", "Controller", "Service"]
+      - name: "WordPress"
+        patterns: ["wp_", "add_action", "add_filter", "get_option"]
+    
+    # Analysis patterns
+    complexity_patterns:
+      - function_definition
+      - method_declaration
+      - if_statement
+      - for_statement
+      - while_statement
+      - switch_statement
+      
+    security_patterns:
+      - function_call_expression
+      - include_expression
+      - variable_name
+      
+    maintainability_patterns:
+      - comment
+      - function_definition
+      - phpdoc_comment
+    
+    # Complexity thresholds
+    complexity_thresholds:
+      max_function_lines: 50
+      max_class_lines: 400
+      max_cyclomatic_complexity: 10
+
+  ruby:
+    grammar: "tree-sitter-ruby"
+    version: "0.25.2"
+    file_extensions: [".rb", ".rbw"]
+    
+    # Advanced AST node mappings
+    ast_node_mappings:
+      functions: ["method", "singleton_method"]
+      classes: ["class"]
+      modules: ["module"]
+      blocks: ["block", "do_block"]
+      control_flow: ["if", "unless", "case", "while", "until", "for"]
+      comments: ["comment"]
+    
+    # Framework detection patterns
+    frameworks:
+      - name: "Rails"
+        patterns: ["ActiveRecord", "ActionController", "ApplicationController"]
+      - name: "Sinatra"
+        patterns: ["Sinatra::", "get '/", "post '/"]
+      - name: "RSpec"
+        patterns: ["describe", "it ", "expect(", "should"]
+    
+    # Analysis patterns
+    complexity_patterns:
+      - method
+      - class
+      - if
+      - for
+      - while
+      - case
+      
+    security_patterns:
+      - call
+      - constant
+      - string
+      
+    maintainability_patterns:
+      - comment
+      - method
+      - module
+    
+    # Complexity thresholds
+    complexity_thresholds:
+      max_method_lines: 30
+      max_class_lines: 300
+      max_cyclomatic_complexity: 8
+
+  kotlin:
+    grammar: "tree-sitter-kotlin"
+    version: "0.25.2"
+    file_extensions: [".kt", ".kts"]
+    
+    # Advanced AST node mappings
+    ast_node_mappings:
+      functions: ["function_declaration"]
+      classes: ["class_declaration"]
+      interfaces: ["interface_declaration"]
+      objects: ["object_declaration", "companion_object"]
+      data_classes: ["class_declaration"] # with data modifier
+      imports: ["import_header"]
+      control_flow: ["if_expression", "for_statement", "while_statement", "try_expression", "when_expression"]
+      comments: ["line_comment", "multiline_comment"]
+    
+    # Framework detection patterns
+    frameworks:
+      - name: "Android"
+        patterns: ["import android.", "Activity", "Fragment", "View", "Context"]
+      - name: "Spring"
+        patterns: ["@RestController", "@Service", "@Component", "@Autowired"]
+      - name: "Ktor"
+        patterns: ["io.ktor", "routing", "call.respond"]
+    
+    # Analysis patterns
+    complexity_patterns:
+      - function_declaration
+      - class_declaration
+      - if_expression
+      - for_statement
+      - while_statement
+      - when_expression
+      
+    security_patterns:
+      - call_expression
+      - import_header
+      - string_literal
+      
+    maintainability_patterns:
+      - comment
+      - function_declaration
+      - kdoc_comment
+    
+    # Code patterns
+    patterns:
+      data_class: ["data class"]
+      extension_function: ["fun \\w+\\.\\w+"]
+      null_safety: ["?", "!!", "?."]
+      
+    # Complexity thresholds
+    complexity_thresholds:
+      max_function_lines: 40
+      max_class_lines: 350
+      max_cyclomatic_complexity: 8
+
+  swift:
+    grammar: "tree-sitter-swift"
+    version: "0.25.2"
+    file_extensions: [".swift"]
+    
+    # Advanced AST node mappings
+    ast_node_mappings:
+      functions: ["function_declaration", "init_declaration"]
+      classes: ["class_declaration"]
+      structs: ["struct_declaration"]
+      protocols: ["protocol_declaration"]
+      enums: ["enum_declaration"]
+      extensions: ["extension_declaration"]
+      imports: ["import_declaration"]
+      control_flow: ["if_statement", "guard_statement", "for_statement", "while_statement", "switch_statement"]
+      comments: ["comment", "multiline_comment"]
+      closures: ["closure_expression"]
+    
+    # Framework detection patterns
+    frameworks:
+      - name: "iOS"
+        patterns: ["UIKit", "SwiftUI", "Foundation", "CoreData", "AVFoundation", "CoreLocation"]
+      - name: "macOS"
+        patterns: ["Cocoa", "AppKit", "CoreFoundation"]
+      - name: "SwiftUI"
+        patterns: ["@State", "@Binding", "@ObservedObject", "View"]
+    
+    # Analysis patterns
+    complexity_patterns:
+      - function_declaration
+      - class_declaration
+      - if_statement
+      - guard_statement
+      - for_statement
+      - while_statement
+      - switch_statement
+      
+    security_patterns:
+      - call_expression
+      - import_declaration
+      - string_literal
+      
+    maintainability_patterns:
+      - comment
+      - function_declaration
+      - documentation_comment
+    
+    # iOS-specific patterns
+    ios_patterns:
+      ui_elements: ["UI\\w+", "NS\\w+"]
+      view_controllers: ["ViewController", "Controller"]
+      delegates: ["Delegate", "DataSource"]
+      outlets_actions: ["@IBOutlet", "@IBAction"]
+      
+    # Code patterns
+    patterns:
+      functions: "^\\s*(?:@\\w+\\s+)*(?:private|public|internal|fileprivate)?\\s*(?:static\\s+)?(?:override\\s+)?func\\s+(\\w+)"
+      classes: "^\\s*(?:@\\w+\\s+)*(?:private|public|internal|fileprivate)?\\s*(?:final\\s+)?class\\s+(\\w+)"
+      structs: "^\\s*(?:@\\w+\\s+)*(?:private|public|internal|fileprivate)?\\s*struct\\s+(\\w+)"
+      protocols: "^\\s*(?:@\\w+\\s+)*(?:private|public|internal|fileprivate)?\\s*protocol\\s+(\\w+)"
+      enums: "^\\s*(?:@\\w+\\s+)*(?:private|public|internal|fileprivate)?\\s*enum\\s+(\\w+)"
+      extensions: "^\\s*extension\\s+(\\w+)"
+      imports: "^\\s*import\\s+(\\w+)"
+      properties: "^\\s*(?:@\\w+\\s+)*(?:private|public|internal|fileprivate)?\\s*(?:static\\s+)?(?:let|var)\\s+(\\w+)"
+      iboutlets: "@IBOutlet\\s+(?:weak\\s+)?var\\s+(\\w+)"
+      ibactions: "@IBAction\\s+func\\s+(\\w+)"
+      viewcontrollers: "class\\s+(\\w*ViewController)"
+      ui_elements: ":\\s*(UI\\w+)"
+      
+    # iOS detection patterns
+    ios_detection:
+      mvc_architecture: ["ViewController", "Model", "View"]
+      mvvm_architecture: ["ViewModel", "@Published", "ObservableObject"]
+      coordinator_pattern: ["Coordinator", "Router"]
+      
+    # Complexity thresholds
+    complexity_thresholds:
+      max_function_lines: 30
+      max_class_lines: 400
+      max_cyclomatic_complexity: 8
+
+  sql:
+    grammar: "tree-sitter-sql"
+    version: "0.25.2"
+    file_extensions: [".sql", ".psql", ".mysql"]
+    
+    # Advanced AST node mappings
+    ast_node_mappings:
+      functions: ["function_definition", "procedure_definition"]
+      tables: ["create_table", "alter_table"]
+      queries: ["select_statement", "insert_statement", "update_statement", "delete_statement"]
+      control_flow: ["if_statement", "case_expression", "while_statement"]
+      comments: ["comment"]
+    
+    # Framework detection patterns
+    frameworks:
+      - name: "PostgreSQL"
+        patterns: ["CREATE FUNCTION", "PLPGSQL", "RETURNS", "$$"]
+      - name: "MySQL"
+        patterns: ["DELIMITER", "CREATE PROCEDURE", "BEGIN", "END"]
+      - name: "SQL Server"
+        patterns: ["TSQL", "CREATE PROC", "@@", "RAISERROR"]
+    
+    # Analysis patterns
+    complexity_patterns:
+      - select_statement
+      - case_expression
+      - subquery
+      - join_clause
+      
+    security_patterns:
+      - dynamic_sql
+      - concatenation
+      - user_input
+      
+    maintainability_patterns:
+      - comment
+      - function_definition
+      - view_definition
+
+# Parser configuration and optimization
+parsing_configuration:
+  cache_parse_trees: true
+  incremental_parsing: true
+  max_file_size: 10485760  # 10MB (increased from 1MB)
+  timeout_seconds: 30
+  memory_limit_mb: 100
+  
+  # Language priority for mixed-language files
+  language_priority:
+    - typescript
+    - javascript
+    - python
+    - java
+    - go
+    - rust
+    - swift
+    - kotlin
+    - cpp
+    - csharp
+    - php
+    - ruby
+    - sql
+
+# Performance optimization settings
+performance_optimization:
+  parallel_parsing: true
+  lazy_loading: true
+  tree_reuse: true
+  memory_cleanup_interval: 300  # 5 minutes
+  max_worker_threads: 4
+  
+  # Query optimization
+  query_optimization:
+    enable_caching: true
+    cache_ttl: 3600  # 1 hour
+    parallel_execution: true
+    max_depth: 100
+    timeout_ms: 5000
+
+# File processing configuration
+file_processing:
+  include_patterns:
+    - "*.py"
+    - "*.js"
+    - "*.ts"
+    - "*.tsx"
+    - "*.jsx"
+    - "*.java"
+    - "*.kt"
+    - "*.kts"
+    - "*.swift"
+    - "*.rs"
+    - "*.go"
+    - "*.cs"
+    - "*.csx"
+    - "*.php"
+    - "*.phtml"
+    - "*.rb"
+    - "*.rbw"
+    - "*.sql"
+    - "*.psql"
+    - "*.mysql"
+    - "*.cpp"
+    - "*.cxx"
+    - "*.cc"
+    - "*.c++"
+    - "*.hpp"
+    - "*.hxx"
+    - "*.h++"
+    - "*.h"
+
+  exclude_patterns:
+    - "*/node_modules/*"
+    - "*/venv/*"
+    - "*/env/*"
+    - "*/.venv/*"
+    - "*/.env/*"
+    - "*/dist/*"
+    - "*/build/*"
+    - "*/target/*"
+    - "*/.git/*"
+    - "*/.svn/*"
+    - "*/coverage/*"
+    - "*/htmlcov/*"
+    - "*/__pycache__/*"
+    - "*.pyc"
+    - "*.class"
+    - "*.jar"
+    - "*.war"
+    - "*.ear"
+    - "*.zip"
+    - "*.tar.gz"
+    - "*/vendor/*"
+    - "*/tmp/*"
+    - "*/temp/*"
+    - "*/.idea/*"
+    - "*/.vscode/*"
+    - "*/Pods/*"  # iOS CocoaPods
+    - "*/DerivedData/*"  # Xcode
+    - "*/xcuserdata/*"  # Xcode user data
+
+  exclude_directories:
+    - "node_modules"
+    - "venv"
+    - "env"
+    - ".venv"
+    - ".env"
+    - "dist"
+    - "build"
+    - "target"
+    - ".git"
+    - ".svn"
+    - "coverage"
+    - "htmlcov"
+    - "__pycache__"
+    - "vendor"
+    - "tmp"
+    - "temp"
+    - ".idea"
+    - ".vscode"
+    - ".pytest_cache"
+    - ".mypy_cache"
+    - ".tox"
+    - ".coverage"
+    - "logs"
+    - "log"
+    - "Pods"
+    - "DerivedData"
+    - "xcuserdata"
+
+  limits:
+    max_file_size_mb: 10
+    max_total_files: 10000
+    max_directory_depth: 20
+    parallel_processing: true
+    max_workers: 4
+
+# Analysis configuration
+analysis:
+  # Global quality thresholds
+  quality_thresholds:
+    max_function_lines: 50
+    max_class_lines: 500
+    max_cyclomatic_complexity: 10
+    max_cognitive_complexity: 15
+    max_nesting_depth: 4
+
+  # Security analysis patterns
+  security_patterns:
+    - name: "hardcoded_secrets"
+      patterns: ["password\\s*=\\s*['\"]", "api_key\\s*=\\s*['\"]", "secret\\s*=\\s*['\"]"]
+      severity: "high"
+      languages: ["python", "javascript", "typescript", "java", "go", "rust"]
+      
+    - name: "sql_injection"
+      patterns: ["\\+.*SELECT", "\\+.*INSERT", "\\+.*UPDATE", "string.*query.*\\+"]
+      severity: "critical"
+      languages: ["python", "javascript", "typescript", "java", "php", "csharp"]
+      
+    - name: "xss_vulnerability"
+      patterns: ["innerHTML.*\\+", "document\\.write\\(.*\\+", "eval\\(.*user"]
+      severity: "high"
+      languages: ["javascript", "typescript"]
+      
+    - name: "command_injection"
+      patterns: ["exec\\(.*user", "system\\(.*user", "Runtime\\.getRuntime"]
+      severity: "critical"
+      languages: ["python", "java", "php", "ruby"]
+
+  # Performance analysis patterns
+  performance_patterns:
+    - name: "inefficient_loops"
+      patterns: ["for.*in.*range\\(len\\(", "while.*len\\("]
+      severity: "medium"
+      languages: ["python"]
+      
+    - name: "n_plus_one_queries"
+      patterns: ["for.*in.*\\w+\\.objects", "forEach.*find\\("]
+      severity: "medium"
+      languages: ["python", "javascript", "typescript"]
+      
+    - name: "memory_leaks"
+      patterns: ["new.*\\[\\]", "malloc\\(", "retain.*without.*release"]
+      severity: "high"
+      languages: ["cpp", "c", "objective-c"]
+
+  # Maintainability analysis patterns
+  maintainability_patterns:
+    - name: "long_parameter_list"
+      max_parameters: 5
+      severity: "low"
+      languages: "all"
+      
+    - name: "deep_nesting"
+      max_depth: 4
+      severity: "medium"
+      languages: "all"
+      
+    - name: "large_classes"
+      max_methods: 20
+      max_lines: 500
+      severity: "medium"
+      languages: "all"
+      
+    - name: "duplicated_code"
+      min_duplicate_lines: 6
+      similarity_threshold: 0.8
+      severity: "low"
+      languages: "all"
+
+# Framework-specific analysis
+frameworks:
+  react:
+    component_patterns:
+      - "function.*\\(.*\\).*{"
+      - "const.*=.*\\(.*\\).*=>"
+      - "class.*extends.*Component"
+    hook_patterns:
+      - "useState"
+      - "useEffect"
+      - "useContext"
+      - "useReducer"
+      - "useCallback"
+      - "useMemo"
+    anti_patterns:
+      - "useEffect.*\\[\\].*{.*setState"
+      - "useState.*in.*loop"
+
+  ios:
+    ui_patterns:
+      view_controllers: ["UIViewController", "UITableViewController", "UICollectionViewController"]
+      ui_elements: ["UIButton", "UILabel", "UITextField", "UIImageView", "UIView"]
+      constraints: ["NSLayoutConstraint", "addConstraint", "translatesAutoresizingMaskIntoConstraints"]
+    architectural_patterns:
+      mvc: ["UIViewController", "UIView", "Model"]
+      mvvm: ["ViewModel", "@ObservableObject", "@Published"]
+      coordinator: ["Coordinator", "Navigation", "Router"]
+    swiftui_patterns:
+      - "@State"
+      - "@Binding"
+      - "@ObservedObject"
+      - "@EnvironmentObject"
+      - "View"
+      - "body"
+
+  spring:
+    patterns:
+      - "@SpringBootApplication"
+      - "@RestController"
+      - "@Service"
+      - "@Repository"
+      - "@Autowired"
+      - "@RequestMapping"
+    anti_patterns:
+      - "@Autowired.*field"
+      - "new.*Repository"
+      - "static.*service"
+
+# Language-specific analysis settings
+language_analysis:
+  swift:
+    ios_specific: true
+    framework_detection: true
+    architectural_pattern_detection: true
+    ui_component_analysis: true
+    swiftui_analysis: true
+    
+  javascript:
+    framework_detection: true
+    async_pattern_analysis: true
+    module_system_detection: true
+    react_pattern_analysis: true
+    
+  typescript:
+    type_safety_analysis: true
+    interface_analysis: true
+    generic_analysis: true
+    framework_detection: true
+    
+  python:
+    framework_detection: true
+    import_analysis: true
+    decorator_patterns: true
+    async_analysis: true
+    
+  java:
+    annotation_analysis: true
+    spring_pattern_detection: true
+    android_pattern_detection: true
+    enterprise_pattern_analysis: true
+    
+  kotlin:
+    null_safety_analysis: true
+    coroutine_analysis: true
+    android_pattern_detection: true
+    
+  go:
+    concurrency_analysis: true
+    error_handling_patterns: true
+    interface_analysis: true
+    
+  rust:
+    ownership_analysis: true
+    unsafe_code_detection: true
+    async_analysis: true
+    
+  csharp:
+    dotnet_pattern_analysis: true
+    async_await_analysis: true
+    linq_analysis: true

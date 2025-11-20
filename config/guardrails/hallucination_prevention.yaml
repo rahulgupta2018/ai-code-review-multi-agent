@@ -1,0 +1,298 @@
+# Hallucination Prevention Configuration
+# This configuration defines strategies to prevent AI hallucination and ensure factual accuracy
+
+# Hallucination Prevention Rules
+# Comprehensive rules to prevent AI hallucination and ensure reliable code analysis
+
+version: "1.0.0"
+
+# Evidence validation
+evidence_validation:
+  enable: true
+
+# Context grounding  
+context_grounding:
+  enable: true
+
+hallucination_prevention:
+  # Fact verification
+  fact_checking:
+    # Code accuracy verification
+    code_verification:
+      verify_syntax_accuracy: true
+      validate_api_usage: true
+      check_import_statements: true
+      confirm_language_features: true
+      validate_method_signatures: true
+      check_variable_declarations: true
+      verify_control_flow_logic: true
+      
+    # Best practice verification
+    practice_verification:
+      cross_reference_documentation: true
+      validate_against_style_guides: true
+      confirm_pattern_implementations: true
+      check_framework_conventions: true
+      verify_library_usage: true
+      
+    # Metric calculation verification
+    metric_verification:
+      validate_complexity_calculations: true
+      verify_security_assessments: true
+      confirm_performance_claims: true
+      check_maintainability_scores: true
+      validate_coupling_measurements: true
+      verify_cohesion_analysis: true
+
+  # Evidence requirements
+  evidence_validation:
+    # Finding evidence
+    finding_evidence:
+      require_code_snippets: true
+      mandate_line_number_references: true
+      include_reasoning_chain: true
+      provide_alternative_solutions: true
+      require_specific_examples: true
+      validate_code_context: true
+      
+    # Confidence calibration
+    confidence_calibration:
+      use_evidence_strength_mapping: true
+      apply_uncertainty_quantification: true
+      include_confidence_intervals: true
+      require_multiple_indicators: true
+      validate_pattern_matches: true
+      
+    # Source attribution
+    source_attribution:
+      cite_analysis_sources: true
+      reference_standards_used: true
+      acknowledge_limitations: true
+      specify_analysis_methods: true
+      document_assumptions: true
+
+  # Response consistency
+  consistency_checks:
+    # Internal consistency
+    internal_consistency:
+      check_finding_alignment: true
+      validate_severity_consistency: true
+      ensure_recommendation_coherence: true
+      verify_metric_correlation: true
+      check_pattern_consistency: true
+      
+    # Cross-analysis consistency
+    cross_analysis_consistency:
+      compare_with_similar_files: true
+      validate_against_project_patterns: true
+      check_cross_agent_alignment: true
+      verify_historical_consistency: true
+      
+    # Temporal consistency
+    temporal_consistency:
+      track_analysis_evolution: true
+      flag_sudden_assessment_changes: true
+      maintain_historical_context: true
+      detect_contradictory_findings: true
+
+# LLM hallucination prevention
+llm_safeguards:
+  # Input validation
+  input_validation:
+    # Code sanitization
+    code_sanitization:
+      remove_sensitive_data: true
+      validate_code_completeness: true
+      check_syntax_before_analysis: true
+      limit_code_snippet_size: 500
+      
+    # Context validation
+    context_validation:
+      validate_file_metadata: true
+      check_language_detection: true
+      verify_project_structure: true
+      confirm_analysis_scope: true
+
+  # Output validation
+  output_validation:
+    # Response structure validation
+    structure_validation:
+      validate_json_format: true
+      check_required_fields: true
+      verify_data_types: true
+      validate_value_ranges: true
+      
+    # Content validation
+    content_validation:
+      check_code_references_exist: true
+      validate_line_numbers: true
+      verify_api_existence: true
+      confirm_language_syntax: true
+      validate_pattern_claims: true
+      
+    # Factual accuracy
+    factual_accuracy:
+      cross_reference_claims: true
+      validate_technical_statements: true
+      check_framework_facts: true
+      verify_library_information: true
+
+  # Response filtering
+  response_filtering:
+    # Confidence thresholds
+    confidence_filtering:
+      min_confidence_for_critical: 0.9
+      min_confidence_for_high: 0.8
+      min_confidence_for_medium: 0.7
+      min_confidence_for_low: 0.6
+      
+    # Content filtering
+    content_filtering:
+      filter_speculative_claims: true
+      remove_uncertain_statements: true
+      flag_contradictory_information: true
+      highlight_assumptions: true
+      
+    # Quality gates
+    quality_gates:
+      require_evidence_citations: true
+      mandate_confidence_scores: true
+      enforce_reasoning_chains: true
+      validate_recommendation_feasibility: true
+
+# Real-time validation
+real_time_validation:
+  # Dynamic fact checking
+  dynamic_checking:
+    # Code execution validation
+    execution_validation:
+      validate_syntax_realtime: true
+      check_import_availability: true
+      verify_api_accessibility: true
+      test_code_snippets: false  # Disabled for security
+      
+    # Pattern validation
+    pattern_validation:
+      validate_design_patterns: true
+      check_architectural_claims: true
+      verify_anti_pattern_detection: true
+      confirm_best_practice_adherence: true
+
+  # Consistency monitoring
+  consistency_monitoring:
+    # Cross-reference validation
+    cross_reference:
+      validate_against_documentation: true
+      check_community_standards: true
+      verify_framework_guidelines: true
+      confirm_industry_practices: true
+      
+    # Historical validation
+    historical_validation:
+      compare_with_previous_analysis: true
+      check_pattern_evolution: true
+      validate_trend_consistency: true
+      monitor_assessment_stability: true
+
+# Error detection and correction
+error_detection:
+  # Hallucination indicators
+  hallucination_indicators:
+    # Technical impossibilities
+    technical_impossibilities:
+      detect_syntax_errors: true
+      flag_non_existent_apis: true
+      identify_invalid_patterns: true
+      catch_logical_contradictions: true
+      
+    # Inconsistency patterns
+    inconsistency_patterns:
+      conflicting_recommendations: true
+      contradictory_severity_levels: true
+      incompatible_pattern_claims: true
+      misaligned_metrics: true
+      
+    # Confidence misalignment
+    confidence_misalignment:
+      high_confidence_low_evidence: true
+      low_confidence_strong_evidence: true
+      inconsistent_confidence_levels: true
+      unrealistic_certainty: true
+
+  # Correction mechanisms
+  correction_mechanisms:
+    # Automated correction
+    automated_correction:
+      fix_syntax_references: true
+      correct_line_numbers: true
+      adjust_confidence_scores: true
+      remove_invalid_claims: true
+      
+    # Human validation triggers
+    validation_triggers:
+      flag_for_review_threshold: 0.3
+      require_expert_validation: true
+      escalate_contradictions: true
+      highlight_novel_claims: true
+
+# Monitoring and feedback
+monitoring:
+  # Hallucination detection metrics
+  detection_metrics:
+    # Accuracy tracking
+    accuracy_tracking:
+      track_factual_accuracy: true
+      monitor_prediction_accuracy: true
+      measure_consistency_scores: true
+      evaluate_evidence_quality: true
+      
+    # Error rate monitoring
+    error_monitoring:
+      hallucination_rate: true
+      false_positive_rate: true
+      confidence_calibration_error: true
+      consistency_violation_rate: true
+
+  # Real-time alerts
+  alerting:
+    # Quality alerts
+    quality_alerts:
+      high_hallucination_rate: 0.1
+      low_evidence_quality: 0.6
+      confidence_miscalibration: 0.3
+      
+    # Consistency alerts
+    consistency_alerts:
+      cross_analysis_divergence: 0.4
+      temporal_inconsistency: 0.5
+      internal_contradiction: 0.2
+
+# Continuous improvement
+improvement:
+  # Learning from errors
+  error_learning:
+    # Hallucination pattern analysis
+    pattern_analysis:
+      identify_common_hallucinations: true
+      analyze_error_contexts: true
+      track_correction_effectiveness: true
+      
+    # Model improvement
+    model_improvement:
+      feedback_integration: true
+      error_pattern_prevention: true
+      confidence_calibration_updates: true
+      
+  # Validation enhancement
+  validation_enhancement:
+    # Rule refinement
+    rule_refinement:
+      update_validation_rules: true
+      improve_detection_accuracy: true
+      enhance_correction_mechanisms: true
+      
+    # Process optimization
+    process_optimization:
+      streamline_fact_checking: true
+      optimize_evidence_validation: true
+      improve_consistency_checks: true

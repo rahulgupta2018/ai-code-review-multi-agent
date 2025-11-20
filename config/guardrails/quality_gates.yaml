@@ -1,0 +1,68 @@
+# Code Quality Gates Configuration
+# Quality thresholds and gates for code being analyzed
+# This file defines quality standards for the target codebase, not AI outputs
+version: "1.0.0"
+
+code_quality_gates:
+  code_quality:
+    enabled: true
+    thresholds:
+      cyclomatic_complexity: 15
+      cognitive_complexity: 25
+      maintainability_index: 60
+      test_coverage: 80
+    
+    blocking: true
+    failure_action: "block_merge"
+  
+  security:
+    enabled: true
+    thresholds:
+      critical_vulnerabilities: 0
+      high_vulnerabilities: 0
+      secrets_detected: 0
+    
+    blocking: true
+    failure_action: "block_merge"
+  
+  performance:
+    enabled: true
+    thresholds:
+      max_execution_time: 5000  # milliseconds
+      memory_usage_mb: 500
+      database_queries_per_request: 50
+    
+    blocking: false
+    failure_action: "warning"
+  
+  architecture:
+    enabled: true
+    thresholds:
+      coupling_factor: 0.3
+      cohesion_factor: 0.7
+      circular_dependencies: 0
+    
+    blocking: false
+    failure_action: "warning"
+
+gate_execution:
+  parallel_execution: true
+  timeout_per_gate: 300  # 5 minutes
+  retry_on_failure: true
+  max_retries: 2
+
+reporting:
+  generate_gate_reports: true
+  include_recommendations: true
+  export_formats: ["json", "html", "pdf", "markdown"]
+
+notifications:
+  on_gate_failure:
+    email: false
+    slack: false
+    webhook: true
+  
+  on_gate_success:
+    email: false
+    slack: false
+    webhook: true

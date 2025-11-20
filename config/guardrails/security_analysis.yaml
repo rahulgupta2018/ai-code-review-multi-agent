@@ -1,0 +1,100 @@
+# Application Security Analysis Rules
+# Security vulnerability detection rules for code being analyzed
+# This file defines what security issues to look for in target applications
+version: "1.0.0"
+
+application_security_analysis:
+  vulnerability_detection:
+    sql_injection:
+      enabled: true
+      severity: "critical"
+      patterns:
+        - 'SELECT.*FROM.*WHERE.*\$\{.*\}'
+        - 'INSERT.*INTO.*VALUES.*\$\{.*\}'
+        - 'UPDATE.*SET.*\$\{.*\}'
+    
+    xss_prevention:
+      enabled: true
+      severity: "high"
+      patterns:
+        - 'innerHTML.*\+.*'
+        - 'document\.write\(.*\+.*\)'
+        - 'eval\(.*user.*\)'
+    
+    command_injection:
+      enabled: true
+      severity: "critical"
+      patterns:
+        - 'exec\(.*user.*\)'
+        - 'system\(.*user.*\)'
+        - 'subprocess\..*shell=True'
+
+secrets_detection:
+  enabled: true
+  entropy_threshold: 4.0
+  
+  patterns:
+    aws_access_key:
+      pattern: 'AKIA[0-9A-Z]{16}'
+      severity: "critical"
+    
+    api_key:
+      pattern: '[aA][pP][iI][_-]?[kK][eE][yY].*'
+      severity: "high"
+    
+    password:
+      pattern: '[pP][aA][sS][sS][wW][oO][rR][dD].*'
+      severity: "medium"
+
+dependency_security:
+  check_vulnerabilities: true
+  check_licenses: true
+  
+  vulnerability_sources:
+    - "nvd"
+    - "snyk"
+    - "ossindex"
+  
+  license_compliance:
+    allowed_licenses:
+      - "MIT"
+      - "Apache-2.0"
+      - "BSD-3-Clause"
+    
+    forbidden_licenses:
+      - "GPL-3.0"
+      - "AGPL-3.0"
+
+authentication_patterns:
+  password_complexity:
+    min_length: 12
+    require_uppercase: true
+    require_lowercase: true
+    require_numbers: true
+    require_special_chars: true
+  
+  session_management:
+    session_timeout: 1800  # 30 minutes
+    secure_cookies: true
+    httponly_cookies: true
+
+encryption_standards:
+  symmetric_algorithms:
+    recommended:
+      - "AES-256-GCM"
+      - "ChaCha20-Poly1305"
+    
+    deprecated:
+      - "DES"
+      - "3DES"
+      - "RC4"
+  
+  asymmetric_algorithms:
+    recommended:
+      - "RSA-2048"
+      - "RSA-4096"
+      - "ECDSA-P256"
+    
+    deprecated:
+      - "RSA-1024"
+      - "DSA"

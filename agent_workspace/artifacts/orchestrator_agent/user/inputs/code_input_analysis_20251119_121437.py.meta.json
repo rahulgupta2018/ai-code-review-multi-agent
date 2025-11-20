@@ -1,0 +1,19 @@
+{
+  "filename": "code_input_analysis_20251119_121437.py",
+  "app_name": "orchestrator_agent",
+  "user_id": "user",
+  "session_id": "b7ce003c-2403-47f6-a9eb-5a47e2d2600b",
+  "content_type": "text",
+  "size_bytes": 3066,
+  "created_at": "2025-11-19T12:14:37.386680",
+  "version": 1,
+  "custom": {
+    "analysis_id": "analysis_20251119_121437",
+    "request_type": "code_review_full",
+    "language": "python",
+    "total_lines": 64,
+    "optimized": true,
+    "tokens_saved": 96,
+    "timestamp": "2025-11-19T12:14:37.385936"
+  }
+}
